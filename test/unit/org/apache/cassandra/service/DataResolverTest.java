@@ -36,6 +36,8 @@ import org.apache.cassandra.db.*;
 import org.apache.cassandra.db.marshal.ByteType;
 import org.apache.cassandra.db.marshal.IntegerType;
 import org.apache.cassandra.db.marshal.MapType;
+import org.apache.cassandra.db.monitoring.ApproximateTime;
+import org.apache.cassandra.db.monitoring.ConstructionTime;
 import org.apache.cassandra.db.rows.*;
 import org.apache.cassandra.db.marshal.AsciiType;
 import org.apache.cassandra.db.marshal.BytesType;
@@ -129,6 +131,21 @@ public class DataResolverTest
         MessagingService.instance().clearMessageSinks();
     }
 
+    /**
+     * Checks that the provided data resolver has the expected number of repair futures created.
+     * This method also "release" those future by faking replica responses to those repair, which is necessary or
+     * every test would timeout when closing the result of resolver.resolve(), since it waits on those futures.
+     */
+    private void assertRepairFuture(DataResolver resolver, int expectedRepairs)
+    {
+        assertEquals(expectedRepairs, resolver.repairResults.size());
+
+        // Signal all future. We pass a completely fake response message, but it doesn't matter as we just want
+        // AsyncOneResponse to signal success, and it only cares about a non-null MessageIn (it collects the payload).
+        for (AsyncOneResponse<?> future : resolver.repairResults)
+            future.response(MessageIn.create(null, null, null, null, -1, new ConstructionTime(ApproximateTime.currentTimeMillis())));
+    }
+
     @Test
     public void testResolveNewerSingleRow() throws UnknownHostException
     {
@@ -142,12 +159,15 @@ public class DataResolverTest
                                                                                                        .add("c1", "v2")
                                                                                                        .buildUpdate())));
 
-        try(PartitionIterator data = resolver.resolve();
-            RowIterator rows = Iterators.getOnlyElement(data))
+        try(PartitionIterator data = resolver.resolve())
         {
-            Row row = Iterators.getOnlyElement(rows);
-            assertColumns(row, "c1");
-            assertColumn(cfm, row, "c1", "v2", 1);
+            try (RowIterator rows = Iterators.getOnlyElement(data))
+            {
+                Row row = Iterators.getOnlyElement(rows);
+                assertColumns(row, "c1");
+                assertColumn(cfm, row, "c1", "v2", 1);
+            }
+            assertRepairFuture(resolver, 1);
         }
 
         assertEquals(1, messageRecorder.sent.size());
@@ -172,13 +192,16 @@ public class DataResolverTest
                                                                                                        .add("c2", "v2")
                                                                                                        .buildUpdate())));
 
-        try(PartitionIterator data = resolver.resolve();
-            RowIterator rows = Iterators.getOnlyElement(data))
+        try(PartitionIterator data = resolver.resolve())
         {
-            Row row = Iterators.getOnlyElement(rows);
-            assertColumns(row, "c1", "c2");
-            assertColumn(cfm, row, "c1", "v1", 0);
-            assertColumn(cfm, row, "c2", "v2", 1);
+            try (RowIterator rows = Iterators.getOnlyElement(data))
+            {
+                Row row = Iterators.getOnlyElement(rows);
+                assertColumns(row, "c1", "c2");
+                assertColumn(cfm, row, "c1", "v1", 0);
+                assertColumn(cfm, row, "c2", "v2", 1);
+            }
+            assertRepairFuture(resolver, 2);
         }
 
         assertEquals(2, messageRecorder.sent.size());
@@ -224,6 +247,7 @@ public class DataResolverTest
                 assertFalse(rows.hasNext());
                 assertFalse(data.hasNext());
             }
+            assertRepairFuture(resolver, 2);
         }
 
         assertEquals(2, messageRecorder.sent.size());
@@ -289,6 +313,7 @@ public class DataResolverTest
 
                 assertFalse(rows.hasNext());
             }
+            assertRepairFuture(resolver, 4);
         }
 
         assertEquals(4, messageRecorder.sent.size());
@@ -330,12 +355,15 @@ public class DataResolverTest
         InetAddress peer2 = peer();
         resolver.preprocess(readResponseMessage(peer2, EmptyIterators.unfilteredPartition(cfm, false)));
 
-        try(PartitionIterator data = resolver.resolve();
-            RowIterator rows = Iterators.getOnlyElement(data))
+        try(PartitionIterator data = resolver.resolve())
         {
-            Row row = Iterators.getOnlyElement(rows);
-            assertColumns(row, "c2");
-            assertColumn(cfm, row, "c2", "v2", 1);
+            try (RowIterator rows = Iterators.getOnlyElement(data))
+            {
+                Row row = Iterators.getOnlyElement(rows);
+                assertColumns(row, "c2");
+                assertColumn(cfm, row, "c2", "v2", 1);
+            }
+            assertRepairFuture(resolver, 1);
         }
 
         assertEquals(1, messageRecorder.sent.size());
@@ -356,6 +384,7 @@ public class DataResolverTest
         try(PartitionIterator data = resolver.resolve())
         {
             assertFalse(data.hasNext());
+            assertRepairFuture(resolver, 0);
         }
 
         assertTrue(messageRecorder.sent.isEmpty());
@@ -376,6 +405,7 @@ public class DataResolverTest
         try (PartitionIterator data = resolver.resolve())
         {
             assertFalse(data.hasNext());
+            assertRepairFuture(resolver, 1);
         }
 
         // peer1 should get the deletion from peer2
@@ -407,12 +437,15 @@ public class DataResolverTest
         InetAddress peer4 = peer();
         resolver.preprocess(readResponseMessage(peer4, fullPartitionDelete(cfm, dk, 2, nowInSec)));
 
-        try(PartitionIterator data = resolver.resolve();
-            RowIterator rows = Iterators.getOnlyElement(data))
+        try(PartitionIterator data = resolver.resolve())
         {
-            Row row = Iterators.getOnlyElement(rows);
-            assertColumns(row, "two");
-            assertColumn(cfm, row, "two", "B", 3);
+            try (RowIterator rows = Iterators.getOnlyElement(data))
+            {
+                Row row = Iterators.getOnlyElement(rows);
+                assertColumns(row, "two");
+                assertColumn(cfm, row, "two", "B", 3);
+            }
+            assertRepairFuture(resolver, 4);
         }
 
         // peer 1 needs to get the partition delete from peer 4 and the row from peer 3
@@ -498,6 +531,7 @@ public class DataResolverTest
         try (PartitionIterator data = resolver.resolve())
         {
             assertFalse(data.hasNext());
+            assertRepairFuture(resolver, 2);
         }
 
         assertEquals(2, messageRecorder.sent.size());
@@ -583,12 +617,16 @@ public class DataResolverTest
         InetAddress peer2 = peer();
         resolver.preprocess(readResponseMessage(peer2, iter(PartitionUpdate.singleRowUpdate(cfm2, dk, builder.build())), cmd));
 
-        try(PartitionIterator data = resolver.resolve(); RowIterator rows = Iterators.getOnlyElement(data))
+        try(PartitionIterator data = resolver.resolve())
         {
-            Row row = Iterators.getOnlyElement(rows);
-            assertColumns(row, "m");
-            Assert.assertNull(row.getCell(m, CellPath.create(bb(0))));
-            Assert.assertNotNull(row.getCell(m, CellPath.create(bb(1))));
+            try (RowIterator rows = Iterators.getOnlyElement(data))
+            {
+                Row row = Iterators.getOnlyElement(rows);
+                assertColumns(row, "m");
+                Assert.assertNull(row.getCell(m, CellPath.create(bb(0))));
+                Assert.assertNotNull(row.getCell(m, CellPath.create(bb(1))));
+            }
+            assertRepairFuture(resolver, 1);
         }
 
         MessageOut<Mutation> msg;
@@ -633,6 +671,7 @@ public class DataResolverTest
         try(PartitionIterator data = resolver.resolve())
         {
             assertFalse(data.hasNext());
+            assertRepairFuture(resolver, 1);
         }
 
         MessageOut<Mutation> msg;
@@ -673,12 +712,16 @@ public class DataResolverTest
         InetAddress peer2 = peer();
         resolver.preprocess(readResponseMessage(peer2, iter(PartitionUpdate.emptyUpdate(cfm2, dk))));
 
-        try(PartitionIterator data = resolver.resolve(); RowIterator rows = Iterators.getOnlyElement(data))
+        try(PartitionIterator data = resolver.resolve())
         {
-            Row row = Iterators.getOnlyElement(rows);
-            assertColumns(row, "m");
-            ComplexColumnData cd = row.getComplexColumnData(m);
-            assertEquals(Collections.singleton(expectedCell), Sets.newHashSet(cd));
+            try (RowIterator rows = Iterators.getOnlyElement(data))
+            {
+                Row row = Iterators.getOnlyElement(rows);
+                assertColumns(row, "m");
+                ComplexColumnData cd = row.getComplexColumnData(m);
+                assertEquals(Collections.singleton(expectedCell), Sets.newHashSet(cd));
+            }
+            assertRepairFuture(resolver, 1);
         }
 
         Assert.assertNull(messageRecorder.sent.get(peer1));
@@ -722,12 +765,16 @@ public class DataResolverTest
         InetAddress peer2 = peer();
         resolver.preprocess(readResponseMessage(peer2, iter(PartitionUpdate.singleRowUpdate(cfm2, dk, builder.build())), cmd));
 
-        try(PartitionIterator data = resolver.resolve(); RowIterator rows = Iterators.getOnlyElement(data))
+        try(PartitionIterator data = resolver.resolve())
         {
-            Row row = Iterators.getOnlyElement(rows);
-            assertColumns(row, "m");
-            ComplexColumnData cd = row.getComplexColumnData(m);
-            assertEquals(Collections.singleton(expectedCell), Sets.newHashSet(cd));
+            try (RowIterator rows = Iterators.getOnlyElement(data))
+            {
+                Row row = Iterators.getOnlyElement(rows);
+                assertColumns(row, "m");
+                ComplexColumnData cd = row.getComplexColumnData(m);
+                assertEquals(Collections.singleton(expectedCell), Sets.newHashSet(cd));
+            }
+            assertRepairFuture(resolver, 1);
         }
 
         MessageOut<Mutation> msg;
