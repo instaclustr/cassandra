@@ -121,7 +121,7 @@ public class SSTableIterator extends AbstractSSTableIterator
         {
             assert deserializer != null;
 
-            if (!deserializer.hasNext() || deserializer.compareNextTo(end) > 0)
+            if (!deserializer.hasNext() || deserializer.compareNextTo(end) >= 0)
                 return null;
 
             Unfiltered next = deserializer.readNext();
@@ -264,7 +264,7 @@ public class SSTableIterator extends AbstractSSTableIterator
             if (indexState.isDone()
                 || indexState.currentBlockIdx() > lastBlockIdx
                 || !deserializer.hasNext()
-                || (indexState.currentBlockIdx() == lastBlockIdx && deserializer.compareNextTo(end) > 0))
+                || (indexState.currentBlockIdx() == lastBlockIdx && deserializer.compareNextTo(end) >= 0))
                 return null;
 
 

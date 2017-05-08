@@ -1105,4 +1105,100 @@ public class DeleteTest extends CQLTester
         compact();
         assertRows(execute("SELECT * FROM %s"), row(0, null));
     }
+
+    @Test
+    public void testDeleteAndReverseQueries() throws Throwable
+    {
+        // This test insert rows in one sstable and a range tombstone covering some of those rows in another, and it
+        // validates we correctly get only the non-removed rows when doing reverse queries.
+
+        createTable("CREATE TABLE %s (k text, i int, PRIMARY KEY (k, i))");
+
+        for (int i = 0; i < 10; i++)
+            execute("INSERT INTO %s(k, i) values (?, ?)", "a", i);
+
+        flush();
+
+        execute("DELETE FROM %s WHERE k = ? AND i >= ? AND i <= ?", "a", 2, 7);
+
+        assertRows(execute("SELECT i FROM %s WHERE k = ? ORDER BY i DESC", "a"),
+            row(9), row(8), row(1), row(0)
+        );
+
+        flush();
+
+        assertRows(execute("SELECT i FROM %s WHERE k = ? ORDER BY i DESC", "a"),
+            row(9), row(8), row(1), row(0)
+        );
+    }
+
+    @Test
+    public void testQueryingOnRangeTombstoneBoundForward() throws Throwable
+    {
+        createTable("CREATE TABLE %s (k text, i int, PRIMARY KEY (k, i))");
+
+        execute("INSERT INTO %s (k, i) VALUES (?, ?)", "a", 0);
+
+        execute("DELETE FROM %s WHERE k = ? AND i > ? AND i <= ?", "a", 0, 1);
+        execute("DELETE FROM %s WHERE k = ? AND i > ?", "a", 1);
+
+        flush();
+
+        assertEmpty(execute("SELECT i FROM %s WHERE k = ? AND i = ?", "a", 1));
+    }
+
+    @Test
+    public void testQueryingOnRangeTombstoneBoundReverse() throws Throwable
+    {
+        createTable("CREATE TABLE %s (k text, i int, PRIMARY KEY (k, i))");
+
+        execute("INSERT INTO %s (k, i) VALUES (?, ?)", "a", 0);
+
+        execute("DELETE FROM %s WHERE k = ? AND i > ? AND i <= ?", "a", 0, 1);
+        execute("DELETE FROM %s WHERE k = ? AND i > ?", "a", 1);
+
+        flush();
+
+        assertRows(execute("SELECT i FROM %s WHERE k = ? AND i <= ? ORDER BY i DESC", "a", 1), row(0));
+    }
+
+    @Test
+    public void testReverseQueryWithRangeTombstoneOnMultipleBlocks() throws Throwable
+    {
+        createTable("CREATE TABLE %s (k text, i int, v text, PRIMARY KEY (k, i))");
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 1200; i++)
+            sb.append('a');
+        String longText = sb.toString();
+
+        for (int i = 0; i < 10; i++)
+            execute("INSERT INTO %s(k, i, v) VALUES (?, ?, ?) USING TIMESTAMP 3", "a", i*2, longText);
+
+        execute("DELETE FROM %s USING TIMESTAMP 1 WHERE k = ? AND i >= ? AND i <= ?", "a", 12, 16);
+
+        flush();
+
+        execute("INSERT INTO %s(k, i, v) VALUES (?, ?, ?) USING TIMESTAMP 0", "a", 3, longText);
+        execute("INSERT INTO %s(k, i, v) VALUES (?, ?, ?) USING TIMESTAMP 3", "a", 11, longText);
+        execute("INSERT INTO %s(k, i, v) VALUES (?, ?, ?) USING TIMESTAMP 0", "a", 15, longText);
+        execute("INSERT INTO %s(k, i, v) VALUES (?, ?, ?) USING TIMESTAMP 0", "a", 17, longText);
+
+        flush();
+
+        assertRows(execute("SELECT i FROM %s WHERE k = ? ORDER BY i DESC", "a"),
+                   row(18),
+                   row(17),
+                   row(16),
+                   row(14),
+                   row(12),
+                   row(11),
+                   row(10),
+                   row(8),
+                   row(6),
+                   row(4),
+                   row(3),
+                   row(2),
+                   row(0));
+    }
 }
