@@ -865,14 +865,6 @@ public class StorageService extends NotificationBroadcasterSupport implements IE
             }
             Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
         }
-        // if our schema hasn't matched yet, wait until it has
-        // we do this by waiting for all in-flight migration requests and responses to complete
-        // (post CASSANDRA-1391 we don't expect this to be necessary very often, but it doesn't hurt to be careful)
-        if (!MigrationManager.isReadyForBootstrap())
-        {
-            setMode(Mode.JOINING, "waiting for schema information to complete", true);
-            MigrationManager.waitUntilReadyForBootstrap();
-        }
 
         //if we don't have the same schema as the rest of the live nodes, send new schema pull requests
         while (!checkForSchemaAgreement())
@@ -880,9 +872,19 @@ public class StorageService extends NotificationBroadcasterSupport implements IE
             setMode(Mode.JOINING, "schema not yet in agreement, sending new schema pull requests", true);
             for (InetAddress remote :Gossiper.instance.getLiveTokenOwners())
             {
-                logger.debug("Resending to: {}", remote.toString());
-                MigrationManager.scheduleSchemaPull(remote, Gossiper.instance.getEndpointStateForEndpoint(remote));
-                Uninterruptibles.sleepUninterruptibly(5, TimeUnit.SECONDS);
+                if (!MigrationTask.hasInFlighSchemaRequest(remote))
+                {
+                    logger.debug("Resending schema request to: {}", remote.toString());
+                    MigrationManager.scheduleSchemaPullNoDelay(remote, Gossiper.instance.getEndpointStateForEndpoint(remote));
+                    Uninterruptibles.sleepUninterruptibly(DatabaseDescriptor.getMinRpcTimeout() +
+                                                          ((MigrationManager.instance.getMigrationTaskWaitInSeconds() * 1000)), TimeUnit.MILLISECONDS);
+                }
+                else
+                {
+                    logger.debug("Schema request already in progress with: {}", remote.toString());
+                    Uninterruptibles.sleepUninterruptibly(MigrationManager.instance.getMigrationTaskWaitInSeconds(), TimeUnit.SECONDS);
+                }
+
                 if (checkForSchemaAgreement())
                     return;
             }
