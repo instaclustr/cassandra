@@ -873,7 +873,38 @@ public class StorageService extends NotificationBroadcasterSupport implements IE
             setMode(Mode.JOINING, "waiting for schema information to complete", true);
             MigrationManager.waitUntilReadyForBootstrap();
         }
+
+        //if we don't have the same schema as the rest of the live nodes, send new schema pull requests
+        while (!checkForSchemaAgreement())
+        {
+            setMode(Mode.JOINING, "schema not yet in agreement, sending new schema pull requests", true);
+            for (InetAddress remote :Gossiper.instance.getLiveTokenOwners())
+            {
+                logger.debug("Resending to: {}", remote.toString());
+                MigrationManager.scheduleSchemaPull(remote, Gossiper.instance.getEndpointStateForEndpoint(remote));
+                Uninterruptibles.sleepUninterruptibly(5, TimeUnit.SECONDS);
+                if (checkForSchemaAgreement())
+                    return;
+            }
+            // Might want to abort startup if we still cant find an agreement
+        }
+
     }
+
+    public boolean checkForSchemaAgreement()
+    {
+        UUID localVersion = Schema.instance.getVersion();
+        logger.debug("Local schema version: {}", Schema.schemaVersionToString(localVersion));
+        for (InetAddress remote :Gossiper.instance.getLiveTokenOwners())
+        {
+            UUID remoteVersion = Gossiper.instance.getSchemaVersion(remote);
+            logger.debug("Remote node {}, schema version: {}", remote.toString(), Schema.schemaVersionToString(remoteVersion));
+            if (!localVersion.equals(remoteVersion))
+                return false;
+        }
+        return true;
+    }
+
 
     private void joinTokenRing(int delay) throws ConfigurationException
     {
