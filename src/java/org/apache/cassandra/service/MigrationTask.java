@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.db.Mutation;
 import org.apache.cassandra.db.SystemKeyspace;
 import org.apache.cassandra.db.SystemKeyspace.BootstrapState;
@@ -112,6 +113,7 @@ class MigrationTask extends WrappedRunnable
             {
                 try
                 {
+                    logger.trace("Received response to schema request from {} at {}", message.from, System.currentTimeMillis());
                     SchemaKeyspace.mergeSchemaAndAnnounceVersion(message.payload);
                 }
                 catch (ConfigurationException e)
@@ -131,10 +133,11 @@ class MigrationTask extends WrappedRunnable
 
             public void onFailure(InetAddress from, RequestFailureReason failureReason)
             {
-                logger.warn("Timed out waiting for schema response from {}", endpoint);
+                logger.warn("Timed out waiting for schema response from {} at {}", endpoint, System.currentTimeMillis());
                 completedInFlightSchemaRequest(endpoint);
             }
         };
+        logger.trace("Sending schema pull request to {} at {} with timeout {}", endpoint, System.currentTimeMillis(), message.getTimeout());
         MessagingService.instance().sendRR(message, endpoint, cb, message.getTimeout(), true);
     }
 }
