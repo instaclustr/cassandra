@@ -236,11 +236,11 @@ public class AlterTest extends CQLTester
         try
         {
             // Create a keyspace
-            execute("CREATE KEYSPACE testABC WITH replication = {'class' : 'NetworkTopologyStrategy', 'dc1' : 2}");
+            execute("CREATE KEYSPACE testABC WITH replication = {'class' : 'NetworkTopologyStrategy', '" + DATA_CENTER +"' : 2}");
 
             // try modifying the keyspace
-            assertInvalidThrow(SyntaxException.class, "ALTER KEYSPACE testABC WITH replication = {'class' : 'NetworkTopologyStrategy', 'dc1' : 2, 'dc1' : 3 }");
-            execute("ALTER KEYSPACE testABC WITH replication = {'class' : 'NetworkTopologyStrategy', 'dc1' : 3}");
+            assertInvalidThrow(SyntaxException.class, "ALTER KEYSPACE testABC WITH replication = {'class' : 'NetworkTopologyStrategy', " + DATA_CENTER + " : 2, " + DATA_CENTER + " : 3 }");
+            execute("ALTER KEYSPACE testABC WITH replication = {'class' : 'NetworkTopologyStrategy', '" + DATA_CENTER + "' : 3}");
         }
         finally
         {
