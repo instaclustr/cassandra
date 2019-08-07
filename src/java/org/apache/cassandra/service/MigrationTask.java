@@ -56,7 +56,7 @@ class MigrationTask extends WrappedRunnable
         }
     };
 
-    private static final Set<InetAddress> infFlightRequests = new ConcurrentSkipListSet<InetAddress>(inetcomparator);
+    private static final Set<InetAddress> inFlightRequests = new ConcurrentSkipListSet<InetAddress>(inetcomparator);
 
     private final InetAddress endpoint;
 
@@ -67,17 +67,17 @@ class MigrationTask extends WrappedRunnable
 
     public static boolean addInFlightSchemaRequest(InetAddress ep)
     {
-        return infFlightRequests.add(ep);
+        return inFlightRequests.add(ep);
     }
 
     public static boolean completedInFlightSchemaRequest(InetAddress ep)
     {
-        return infFlightRequests.remove(ep);
+        return inFlightRequests.remove(ep);
     }
 
     public static boolean hasInFlighSchemaRequest(InetAddress ep)
     {
-        return infFlightRequests.contains(ep);
+        return inFlightRequests.contains(ep);
     }
 
     public void runMayThrow() throws Exception
