@@ -866,6 +866,8 @@ public class StorageService extends NotificationBroadcasterSupport implements IE
             Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
         }
 
+        int retryCount = 0;
+        
         //if we don't have the same schema as the rest of the live nodes, send new schema pull requests
         while (!checkForSchemaAgreement())
         {
@@ -888,7 +890,13 @@ public class StorageService extends NotificationBroadcasterSupport implements IE
                 if (checkForSchemaAgreement())
                     return;
             }
-            // Might want to abort startup if we still cant find an agreement
+            
+            retryCount++;
+
+            // Abort startup if we still cant find an agreement after resending a request to each node
+            if (retryCount > 1)
+                throw new RuntimeException("Couldn't achieve schema agreement after waiting for, or resending schema requests to each node");
+                
         }
 
     }
