@@ -551,7 +551,7 @@ public class Instance extends IsolatedExecutor implements IInvokableInstance
 
                 if (config.has(NETWORK))
                 {
-                    MessagingService.instance().listen();
+                    MessagingService.instance().unsafeResetListen();
                 }
                 else
                 {
