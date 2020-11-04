@@ -1,3 +1,9 @@
+cassandra (3.11.8.2) unstable; urgency=medium
+
+ * New release
+
+ -- Stefan Miklosovic <stefan.miklosovic@instaclustr.com> Wed, 4 Nov 2020 16:54:00 +0200
+
 cassandra (3.11.8.1) unstable; urgency=medium
 
  * New release
