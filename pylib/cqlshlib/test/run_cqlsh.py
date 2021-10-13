@@ -89,7 +89,7 @@ class TimeoutError(Exception):
     pass
 
 @contextlib.contextmanager
-def timing_out_itimer(seconds):
+def timing_out(seconds):
     if seconds is None:
         yield
         return
@@ -103,27 +103,6 @@ def timing_out_itimer(seconds):
         finally:
             signal.setitimer(signal.ITIMER_REAL, 0)
 
-@contextlib.contextmanager
-def timing_out_alarm(seconds):
-    if seconds is None:
-        yield
-        return
-    with raising_signal(signal.SIGALRM, TimeoutError):
-        oldval = signal.alarm(int(math.ceil(seconds)))
-        if oldval != 0:
-            signal.alarm(oldval)
-            raise RuntimeError("SIGALRM already in use")
-        try:
-            yield
-        finally:
-            signal.alarm(0)
-
-# setitimer is new in 2.6, but it's still worth supporting, for potentially
-# faster tests because of sub-second resolution on timeouts.
-if hasattr(signal, 'setitimer'):
-    timing_out = timing_out_itimer
-else:
-    timing_out = timing_out_alarm
 
 def noop(*a):
     pass
@@ -132,8 +111,7 @@ class ProcRunner:
     def __init__(self, path, tty=True, env=None, args=()):
         self.exe_path = path
         self.args = args
-        self.tty = bool(tty)
-        self.realtty = self.tty
+        self.tty = tty
         if env is None:
             env = {}
         self.env = env
@@ -146,7 +124,7 @@ class ProcRunner:
         stdin = stdout = stderr = None
         cqlshlog.info("Spawning %r subprocess with args: %r and env: %r"
                       % (self.exe_path, self.args, self.env))
-        if self.realtty:
+        if self.tty:
             masterfd, slavefd = pty.openpty()
             preexec = (lambda: set_controlling_pty(masterfd, slavefd))
             self.proc = subprocess.Popen((self.exe_path,) + tuple(self.args),
@@ -164,15 +142,11 @@ class ProcRunner:
                                          env=self.env, stdin=stdin, stdout=stdout,
                                          stderr=stderr, bufsize=0, close_fds=False)
             self.send = self.send_pipe
-            if self.tty:
-                self.winpty = WinPty(self.proc.stdout)
-                self.read = self.read_winpty
-            else:
-                self.read = self.read_pipe
+            self.read = self.read_pipe
 
     def close(self):
         cqlshlog.info("Closing %r subprocess." % (self.exe_path,))
-        if self.realtty:
+        if self.tty:
             os.close(self.childpty)
         else:
             self.proc.stdin.close()
@@ -195,12 +169,6 @@ class ProcRunner:
 
     def read_pipe(self, blksize, timeout=None):
         buf = self.proc.stdout.read(blksize)
-        if isinstance(buf, bytes):
-            buf = buf.decode("utf-8")
-        return buf
-
-    def read_winpty(self, blksize, timeout=None):
-        buf = self.winpty.read(blksize, timeout)
         if isinstance(buf, bytes):
             buf = buf.decode("utf-8")
         return buf
@@ -256,8 +224,7 @@ class ProcRunner:
 
 class CqlshRunner(ProcRunner):
     def __init__(self, path=None, host=None, port=None, keyspace=None, cqlver=None,
-                 args=(), prompt=DEFAULT_CQLSH_PROMPT, env=None,
-                 win_force_colors=True, tty=True, **kwargs):
+                 args=(), prompt=DEFAULT_CQLSH_PROMPT, env=None, tty=True, **kwargs):
         if path is None:
             path = join(basecase.cqlsh_dir, 'cqlsh')
         if host is None:
@@ -305,7 +272,7 @@ class CqlshRunner(ProcRunner):
         output = output.replace(' \r', '')
         output = output.replace('\r', '')
         output = output.replace(' \b', '')
-        if self.realtty:
+        if self.tty:
             echo, output = output.split('\n', 1)
             assert echo == cmd, "unexpected echo %r instead of %r" % (echo, cmd)
         try:

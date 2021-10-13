@@ -122,8 +122,7 @@ class TestCqlshOutput(BaseTestCase):
         for termname in ('', 'dumb', 'vt100'):
             cqlshlog.debug('TERM=%r' % termname)
             env['TERM'] = termname
-            with testrun_cqlsh(tty=True, env=env,
-                               win_force_colors=False) as c:
+            with testrun_cqlsh(tty=True, env=env) as c:
                 c.send('select * from has_all_types;\n')
                 self.assertNoHasColors(c.read_to_next_prompt())
                 c.send('select count(*) from has_all_types;\n')
