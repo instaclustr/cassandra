@@ -30,15 +30,8 @@ from . import basecase
 from os.path import join, normpath
 
 
-def is_win():
-    return sys.platform in ("cygwin", "win32")
-
-if is_win():
-    from .winpty import WinPty
-    DEFAULT_PREFIX = ''
-else:
-    import pty
-    DEFAULT_PREFIX = os.linesep
+import pty
+DEFAULT_PREFIX = os.linesep
 
 DEFAULT_CQLSH_PROMPT = DEFAULT_PREFIX + '(\S+@)?cqlsh(:\S+)?> '
 DEFAULT_CQLSH_TERM = 'xterm'
@@ -56,13 +49,12 @@ def get_smm_sequence(term='xterm'):
     before each prompt.
     """
     result = ''
-    if not is_win():
-        tput_proc = subprocess.Popen(['tput', '-T{}'.format(term), 'smm'], stdout=subprocess.PIPE)
-        tput_stdout = tput_proc.communicate()[0]
-        if (tput_stdout and (tput_stdout != b'')):
-            result = tput_stdout
-            if isinstance(result, bytes):
-                result = result.decode("utf-8")
+    tput_proc = subprocess.Popen(['tput', '-T{}'.format(term), 'smm'], stdout=subprocess.PIPE)
+    tput_stdout = tput_proc.communicate()[0]
+    if (tput_stdout and (tput_stdout != b'')):
+        result = tput_stdout
+        if isinstance(result, bytes):
+            result = result.decode("utf-8")
     return result
 
 DEFAULT_SMM_SEQUENCE = get_smm_sequence()
@@ -126,21 +118,12 @@ def timing_out_alarm(seconds):
         finally:
             signal.alarm(0)
 
-if is_win():
-    try:
-        import eventlet
-    except ImportError as e:
-        sys.exit("evenlet library required to run cqlshlib tests on Windows")
-
-    def timing_out(seconds):
-        return eventlet.Timeout(seconds, TimeoutError)
+# setitimer is new in 2.6, but it's still worth supporting, for potentially
+# faster tests because of sub-second resolution on timeouts.
+if hasattr(signal, 'setitimer'):
+    timing_out = timing_out_itimer
 else:
-    # setitimer is new in 2.6, but it's still worth supporting, for potentially
-    # faster tests because of sub-second resolution on timeouts.
-    if hasattr(signal, 'setitimer'):
-        timing_out = timing_out_itimer
-    else:
-        timing_out = timing_out_alarm
+    timing_out = timing_out_alarm
 
 def noop(*a):
     pass
@@ -150,7 +133,7 @@ class ProcRunner:
         self.exe_path = path
         self.args = args
         self.tty = bool(tty)
-        self.realtty = self.tty and not is_win()
+        self.realtty = self.tty
         if env is None:
             env = {}
         self.env = env
@@ -283,9 +266,6 @@ class CqlshRunner(ProcRunner):
             port = basecase.TEST_PORT
         if env is None:
             env = {}
-        if is_win():
-            env['PYTHONUNBUFFERED'] = '1'
-            env.update(os.environ.copy())
         env.setdefault('TERM', 'xterm')
         env.setdefault('CQLSH_NO_BUNDLED', os.environ.get('CQLSH_NO_BUNDLED', ''))
         env.setdefault('PYTHONPATH', os.environ.get('PYTHONPATH', ''))
@@ -297,11 +277,6 @@ class CqlshRunner(ProcRunner):
             args += ('--cqlversion', str(cqlver))
         if keyspace is not None:
             args += ('--keyspace', keyspace.lower())
-        if tty and is_win():
-            args += ('--tty',)
-            args += ('--encoding', 'utf-8')
-            if win_force_colors:
-                args += ('--color',)
         if coverage:
             args += ('--coverage',)
         self.keyspace = keyspace

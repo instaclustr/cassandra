@@ -22,8 +22,6 @@ from __future__ import unicode_literals, with_statement
 import locale
 import os
 import re
-import subprocess
-import sys
 import six
 import unittest
 
@@ -798,7 +796,6 @@ class TestCqlshOutput(BaseTestCase):
         with testrun_cqlsh(tty=True, env=self.default_env) as c:
             self.assertNotIn('Python 2.7 support is deprecated.', c.output_header, 'cqlsh did not output expected warning.')
 
-    @unittest.skipIf(sys.platform == "win32", 'EOF signaling not supported on Windows')
     def test_eof_prints_newline(self):
         with testrun_cqlsh(tty=True, env=self.default_env) as c:
             c.send(CONTROL_D)
