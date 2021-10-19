@@ -806,6 +806,8 @@ class TestCqlshOutput(BaseTestCase):
             with testrun_cqlsh(tty=True, env=self.default_env) as c:
                 cmd = 'exit%s\n' % semicolon
                 c.send(cmd)
+                out = c.read_lines(1)[0].replace('\r', '')
+                self.assertEqual(out, cmd)
                 with self.assertRaises(BaseException) as cm:
                     c.read_lines(1)
                 self.assertIn(type(cm.exception), (EOFError, OSError))
