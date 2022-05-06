@@ -4695,4 +4695,9 @@ public class DatabaseDescriptor
             conf.dynamic_data_masking_enabled = enabled;
         }
     }
+
+    public static boolean getJmxHideNonJavaExceptions()
+    {
+        return conf.jmx_hide_non_java_exceptions;
+    }
 }

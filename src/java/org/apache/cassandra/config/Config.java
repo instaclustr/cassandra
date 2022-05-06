@@ -899,6 +899,10 @@ public class Config
     public volatile DurationSpec.LongNanosecondsBound repair_state_expires = new DurationSpec.LongNanosecondsBound("3d");
     public volatile int repair_state_size = 100_000;
 
+    /** when launching JMX, if true will rewrite exceptions to only contain java/javax types (ConfigurationException
+     * will no longer be present)*/
+    public boolean jmx_hide_non_java_exceptions = false;
+
     /**
      * The variants of paxos implementation and semantics supported by Cassandra.
      */
