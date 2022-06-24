@@ -236,7 +236,7 @@ public class Gossiper implements IFailureDetectionEventListener, GossiperMBean
         ((ExpiringMemoizingSupplier<CassandraVersion>) upgradeFromVersionMemoized).expire();
     }
 
-    private volatile boolean isShuttingDown = false;
+    private volatile boolean isShutDown = false;
 
     private static final boolean disableThreadValidation = Boolean.getBoolean(Props.DISABLE_THREAD_VALIDATION);
 
@@ -1740,6 +1740,7 @@ public class Gossiper implements IFailureDetectionEventListener, GossiperMBean
      */
     public void start(int generationNbr, Map<ApplicationState, VersionedValue> preloadLocalStates)
     {
+        isShutDown = false;
         buildSeedsList();
         /* initialize the heartbeat state for this localEndpoint */
         maybeInitializeLocalState(generationNbr);
@@ -1756,6 +1757,8 @@ public class Gossiper implements IFailureDetectionEventListener, GossiperMBean
                                                               Gossiper.intervalInMillis,
                                                               Gossiper.intervalInMillis,
                                                               TimeUnit.MILLISECONDS);
+
+        isShutDown = false;
     }
 
     public synchronized Map<InetAddressAndPort, EndpointState> doShadowRound()
@@ -2012,12 +2015,12 @@ public class Gossiper implements IFailureDetectionEventListener, GossiperMBean
 
     public synchronized void stop()
     {
-        if (isShuttingDown)
+        if (isShutDown)
         {
-            logger.info("Gossiper was already shutdown.");
+            logger.info("Gossiper was already shut down.");
             return;
         }
-        isShuttingDown = true;
+        isShutDown = true;
         EndpointState mystate = endpointStateMap.get(FBUtilities.getBroadcastAddressAndPort());
         if (mystate != null && !isSilentShutdownState(mystate) && StorageService.instance.isJoined())
         {
