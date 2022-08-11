@@ -79,15 +79,19 @@ public class SnapshotLoader extends SimpleFileVisitor<Path>
         this(directories.getCFDirectories().stream().map(File::toPath).collect(Collectors.toList()));
     }
 
-    public Set<TableSnapshot> loadSnapshots()
+    public Set<TableSnapshot> loadSnapshots(String keyspace)
     {
+        int maxDepth = keyspace == null ? 5 : 4;
         for (Path dataDir : dataDirectories)
         {
+            if (keyspace != null)
+                dataDir = dataDir.resolve(keyspace);
+
             try
             {
                 if (new File(dataDir).exists())
                 {
-                    Files.walkFileTree(dataDir, Collections.EMPTY_SET, 5, this);
+                    Files.walkFileTree(dataDir, Collections.EMPTY_SET, maxDepth, this);
                 }
                 else
                 {
@@ -100,6 +104,11 @@ public class SnapshotLoader extends SimpleFileVisitor<Path>
             }
         }
         return snapshots.values().stream().map(TableSnapshot.Builder::build).collect(Collectors.toSet());
+    }
+
+    public Set<TableSnapshot> loadSnapshots()
+    {
+        return loadSnapshots(null);
     }
 
     @Override

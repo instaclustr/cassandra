@@ -31,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -63,6 +64,7 @@ import org.apache.cassandra.schema.SchemaProvider;
 import org.apache.cassandra.schema.TableId;
 import org.apache.cassandra.schema.TableMetadata;
 import org.apache.cassandra.schema.TableMetadataRef;
+import org.apache.cassandra.service.snapshot.SnapshotLoader;
 import org.apache.cassandra.service.snapshot.TableSnapshot;
 import org.apache.cassandra.tracing.Tracing;
 import org.apache.cassandra.utils.ByteBufferUtil;
@@ -299,15 +301,34 @@ public class Keyspace
     /**
      * Clear all the snapshots for a given keyspace.
      *
-     * @param snapshotName the user supplied snapshot name. It empty or null,
+     * @param snapshotName the user supplied snapshot name. If empty or null,
      *                     all the snapshots will be cleaned
+     * @param keyspace keyspace to remove snapshots for
      */
     public static void clearSnapshot(String snapshotName, String keyspace)
     {
+        Set<TableSnapshot> snapshotsToClear = new SnapshotLoader().loadSnapshots(keyspace)
+                                                                  .stream()
+                                                                  .filter(ts -> {
+                                                                      if (snapshotName == null || snapshotName.isEmpty())
+                                                                          return true;
+                                                                      return ts.getTag().equals(snapshotName);
+                                                                  })
+                                                                  .filter(ts -> {
+                                                                      if (snapshotName != null && !snapshotName.isEmpty() && ts.isEphemeral())
+                                                                          logger.info("Skipping deletion of ephemeral snapshot '{}' in keyspace {}. " +
+                                                                                      "Ephemeral snapshots are not removable by a user.",
+                                                                                      snapshotName, keyspace);
+
+                                                                      return !ts.isEphemeral();
+                                                                  })
+                                                                  .collect(Collectors.toSet());
+
         RateLimiter clearSnapshotRateLimiter = DatabaseDescriptor.getSnapshotRateLimiter();
 
-        List<File> tableDirectories = Directories.getKSChildDirectories(keyspace);
-        Directories.clearSnapshot(snapshotName, tableDirectories, clearSnapshotRateLimiter);
+        for (TableSnapshot snapshot : snapshotsToClear)
+            for (File snapshotDirectory : snapshot.getDirectories())
+                Directories.removeSnapshotDirectory(clearSnapshotRateLimiter, snapshotDirectory);
     }
 
     /**
