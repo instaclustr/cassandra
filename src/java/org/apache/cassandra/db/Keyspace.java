@@ -299,39 +299,6 @@ public class Keyspace
     }
 
     /**
-     * Clear all the snapshots for a given keyspace.
-     *
-     * @param snapshotName the user supplied snapshot name. If empty or null,
-     *                     all the snapshots will be cleaned
-     * @param keyspace keyspace to remove snapshots for
-     */
-    public static void clearSnapshot(String snapshotName, String keyspace)
-    {
-        Set<TableSnapshot> snapshotsToClear = new SnapshotLoader().loadSnapshots(keyspace)
-                                                                  .stream()
-                                                                  .filter(ts -> {
-                                                                      if (snapshotName == null || snapshotName.isEmpty())
-                                                                          return true;
-                                                                      return ts.getTag().equals(snapshotName);
-                                                                  })
-                                                                  .filter(ts -> {
-                                                                      if (snapshotName != null && !snapshotName.isEmpty() && ts.isEphemeral())
-                                                                          logger.info("Skipping deletion of ephemeral snapshot '{}' in keyspace {}. " +
-                                                                                      "Ephemeral snapshots are not removable by a user.",
-                                                                                      snapshotName, keyspace);
-
-                                                                      return !ts.isEphemeral();
-                                                                  })
-                                                                  .collect(Collectors.toSet());
-
-        RateLimiter clearSnapshotRateLimiter = DatabaseDescriptor.getSnapshotRateLimiter();
-
-        for (TableSnapshot snapshot : snapshotsToClear)
-            for (File snapshotDirectory : snapshot.getDirectories())
-                Directories.removeSnapshotDirectory(clearSnapshotRateLimiter, snapshotDirectory);
-    }
-
-    /**
      * @return A list of open SSTableReaders
      */
     public List<SSTableReader> getAllSSTables(SSTableSet sstableSet)
