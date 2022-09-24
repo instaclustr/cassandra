@@ -1223,6 +1223,11 @@
         <artifactId>big-math</artifactId>
         <version>2.3.0</version>
       </dependency>
+      <dependency>
+        <groupId>org.passay</groupId>
+        <artifactId>passay</artifactId>
+        <version>1.6.2</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 </project>

@@ -18,7 +18,9 @@
 
 package org.apache.cassandra.db.guardrails;
 
+import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -697,6 +699,7 @@ public interface GuardrailsMBean
     void setMaximumReplicationFactorThreshold (int warn, int fail);
 
     /**
+<<<<<<< HEAD
      * Returns whether warnings will be emitted when usage of 0 default TTL on a
      * table with TimeWindowCompactionStrategy is detected.
      *
@@ -782,4 +785,17 @@ public interface GuardrailsMBean
      *                     {@code 20m}, {@code 30h} or {@code 40d}. A {@code null} value means disabled.
      */
     void setMinimumTimestampThreshold(@Nullable String warnDuration, @Nullable String failDuration);
+
+    /**
+     * @return the configuration of password validator.
+     */
+    @Nonnull
+    Map<String, Object> getPasswordValidatorConfig();
+
+    /**
+     * Reconfigures password validator. New password validator can not be more permissive than the old one.
+     *
+     * @param config configuration of new password validator
+     */
+    void reconfigurePasswordValidator(Map<String, Object> config);
 }

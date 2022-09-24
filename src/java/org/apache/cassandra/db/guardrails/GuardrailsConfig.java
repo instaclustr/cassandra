@@ -361,6 +361,7 @@ public interface GuardrailsConfig
     int getMaximumReplicationFactorFailThreshold();
 
     /**
+<<<<<<< HEAD
      * Returns whether warnings will be emitted when usage of 0 default TTL on a
      * table with TimeWindowCompactionStrategy is detected.
      *
@@ -436,4 +437,9 @@ public interface GuardrailsConfig
      */
     void setMinimumTimestampThreshold(@Nullable DurationSpec.LongMicrosecondsBound warn,
                                       @Nullable DurationSpec.LongMicrosecondsBound fail);
+
+    /**
+     * @return configuration for password validation guardrail.
+     */
+    CustomGuardrailConfig getPasswordValidatorConfig();
 }

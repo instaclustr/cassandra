@@ -19,9 +19,11 @@
 package org.apache.cassandra.db.guardrails;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -435,6 +437,12 @@ public final class Guardrails implements GuardrailsMBean
                      (isWarning, value) ->
                      isWarning ? "Replica disk usage exceeds warning threshold"
                                : "Write request failed because disk usage exceeds failure threshold");
+
+    /**
+     * Guardrail on passwords for CREATE / ALTER ROLE statements.
+     */
+    public static final CustomGuardrail<String> password =
+    new PasswordGuardrail(CONFIG_PROVIDER.getOrCreate(null).getPasswordValidatorConfig());
 
     static
     {
@@ -1110,6 +1118,19 @@ public final class Guardrails implements GuardrailsMBean
     public void setMaximumReplicationFactorThreshold (int warn, int fail)
     {
         DEFAULT_CONFIG.setMaximumReplicationFactorThreshold(warn, fail);
+    }
+
+    @Nonnull
+    @Override
+    public Map<String, Object> getPasswordValidatorConfig()
+    {
+        return password.getConfig();
+    }
+
+    @Override
+    public void reconfigurePasswordValidator(Map<String, Object> config)
+    {
+        password.reconfigure(config);
     }
 
     @Override

@@ -376,5 +376,9 @@
       <groupId>io.github.jbellis</groupId>
       <artifactId>jvector</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.passay</groupId>
+      <artifactId>passay</artifactId>
+    </dependency>
   </dependencies>
 </project>
