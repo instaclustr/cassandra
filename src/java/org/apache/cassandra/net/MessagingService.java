@@ -18,6 +18,7 @@
 package org.apache.cassandra.net;
 
 import java.io.IOException;
+import java.io.IOError;
 import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,8 +50,10 @@ import org.apache.cassandra.utils.ExecutorUtils;
 import org.apache.cassandra.utils.FBUtilities;
 
 import static java.util.Collections.synchronizedList;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.cassandra.concurrent.Stage.MUTATION;
+import static org.apache.cassandra.config.CassandraRelevantProperties.MESSAGING_SERVICE_SHUTDOWN_TIMEOUT_MS;
 import static org.apache.cassandra.config.CassandraRelevantProperties.NON_GRACEFUL_SHUTDOWN;
 import static org.apache.cassandra.utils.Clock.Global.nanoTime;
 import static org.apache.cassandra.utils.Throwables.maybeFail;
@@ -532,7 +535,47 @@ public class MessagingService extends MessagingServiceMBeanImpl
     }
 
     /**
-     * Wait for callbacks and don't allow anymore to be created (since they could require writing hints)
+     * Tries to gracefully shutdown MessagingService, if that fails, try ungracefully.
+     *
+     * Doesn't throw TimeoutException and IOError, only logs
+     */
+    public void shutdownMessagingServiceWithRetry()
+    {
+        try
+        {
+            shutdown();
+        }
+        catch (IOError ioe)
+        {
+            logger.error("Failed to shutdown message service", ioe);
+        }
+        catch (Exception e)
+        {
+            if (e.getCause() instanceof TimeoutException)
+            {
+                try
+                {
+                    logger.error("Failed shutting down MessagingService gracefully, retrying non-gracefully", e);
+                    // if we can't shut down gracefully, try hard shutdown
+                    shutdown(MESSAGING_SERVICE_SHUTDOWN_TIMEOUT_MS.getInt(), MILLISECONDS, false, true);
+                }
+                catch (Exception innerEx)
+                {
+                    if (innerEx.getCause() instanceof TimeoutException)
+                        logger.error("Timed out shutting down MessagingService non-gracefully", e);
+                    else
+                        throw innerEx;
+                }
+            }
+            else
+            {
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * Wait for callbacks and don't allow any more to be created (since they could require writing hints)
      */
     public void shutdown()
     {
@@ -540,7 +583,7 @@ public class MessagingService extends MessagingServiceMBeanImpl
             // this branch is used in unit-tests when we really never restart a node and shutting down means the end of test
             shutdownAbrubtly();
         else
-            shutdown(1L, MINUTES, true, true);
+            shutdown(MESSAGING_SERVICE_SHUTDOWN_TIMEOUT_MS.getInt(), MILLISECONDS, true, true);
     }
 
     public void shutdown(long timeout, TimeUnit units, boolean shutdownGracefully, boolean shutdownExecutors)
@@ -557,6 +600,7 @@ public class MessagingService extends MessagingServiceMBeanImpl
         // We may need to schedule hints on the mutation stage, so it's erroneous to shut down the mutation stage first
         assert !MUTATION.executor().isShutdown();
 
+        logger.info("Shutting down {}", shutdownGracefully ? "gracefully" : "non-gracefully");
         if (shutdownGracefully)
         {
             callbacks.shutdownGracefully();
@@ -567,9 +611,11 @@ public class MessagingService extends MessagingServiceMBeanImpl
             long deadline = nanoTime() + units.toNanos(timeout);
             maybeFail(() -> FutureCombiner.nettySuccessListener(closing).get(timeout, units),
                       () -> {
+                          logger.info("Gracefully shutting down inbound executors ({})...", inboundSockets.sockets().size());
                           List<ExecutorService> inboundExecutors = new ArrayList<>();
                           inboundSockets.close(synchronizedList(inboundExecutors)::add).get();
-                          ExecutorUtils.awaitTermination(timeout, units, inboundExecutors);
+                          ExecutorUtils.awaitTermination(MESSAGING_SERVICE_SHUTDOWN_TIMEOUT_MS.getInt(), MILLISECONDS, inboundExecutors);
+                          logger.info("Inbound executors shut down gracefully");
                       },
                       () -> {
                           if (shutdownExecutors)
@@ -583,7 +629,7 @@ public class MessagingService extends MessagingServiceMBeanImpl
         {
             callbacks.shutdownNow(false);
             List<Future<Void>> closing = new ArrayList<>();
-            List<ExecutorService> inboundExecutors = synchronizedList(new ArrayList<ExecutorService>());
+            List<ExecutorService> inboundExecutors = synchronizedList(new ArrayList<>());
             closing.add(inboundSockets.close(inboundExecutors::add));
             for (OutboundConnections pool : channelManagers.values())
                 closing.add(pool.close(false));
@@ -599,6 +645,7 @@ public class MessagingService extends MessagingServiceMBeanImpl
                       inboundSink::clear,
                       outboundSink::clear);
         }
+        logger.info("MessagingService successfully shut down {}", shutdownGracefully ? "gracefully" : "non-gracefully");
     }
 
     public void shutdownAbrubtly()

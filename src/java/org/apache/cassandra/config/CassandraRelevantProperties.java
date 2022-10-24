@@ -351,6 +351,7 @@ public enum CassandraRelevantProperties
      * This is an optimization used in unit tests becuase we never restart a node there. The only node is stopoped
      * when the JVM terminates. Therefore, we can use such optimization and not wait unnecessarily. */
     NON_GRACEFUL_SHUTDOWN("cassandra.test.messagingService.nonGracefulShutdown"),
+    MESSAGING_SERVICE_SHUTDOWN_TIMEOUT_MS("cassandra.messaging_service_shutdown_timeout_ms", Integer.toString(3 * 1000 * 60)),
     /** for specific tests */
     /** This property indicates whether disable_mbean_registration is true */
     ORG_APACHE_CASSANDRA_DISABLE_MBEAN_REGISTRATION("org.apache.cassandra.disable_mbean_registration"),
