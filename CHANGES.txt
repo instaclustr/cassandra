@@ -1,3 +1,7 @@
+3.11.14.1
+ * Reject empty options and invalid DC names in replication configuration while creating or altering a keyspace (CASSANDRA-12681)
+ * Bump snappy-java dependency version so that Snappy compression can be used on AWS Graviton instances.
+
 3.11.14
  * Suppress CVE-2022-42003 and CVE-2022-42004 (CASSANDRA-17966)
  * Make LongBufferPoolTest insensitive to timing (CASSANDRA-16681)
