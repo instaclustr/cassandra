@@ -74,11 +74,11 @@ public class CompactionHistoryTabularData
             long bytesIn = row.getLong(ITEM_NAMES[4]);
             long bytesOut = row.getLong(ITEM_NAMES[5]);
             Map<Integer, Long> rowMerged = row.getMap(ITEM_NAMES[6], Int32Type.instance, LongType.instance);
+
             String compactionType = OperationType.UNKNOWN.type;
             if (row.has(ITEM_NAMES[7]))
-            {
                 compactionType = row.getString(ITEM_NAMES[7]);
-            }
+
             result.put(new CompositeDataSupport(COMPOSITE_TYPE, ITEM_NAMES,
                        new Object[]{ id.toString(), ksName, cfName, compactedAt, bytesIn, bytesOut,
                                      '{' + FBUtilities.toString(rowMerged) + '}' , compactionType}));
