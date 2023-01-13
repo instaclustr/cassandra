@@ -18,6 +18,7 @@
 package org.apache.cassandra.transport;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.util.Collections;
@@ -66,7 +67,9 @@ public class MessagePayloadTest extends CQLTester
             cqlQueryHandlerField = ClientState.class.getDeclaredField("cqlQueryHandler");
             cqlQueryHandlerField.setAccessible(true);
 
-            Field modifiersField = Field.class.getDeclaredField("modifiers");
+            //Field modifiersField = Field.class.getDeclaredField("modifiers");
+            Field modifiersField = getModifiersField();
+
             modifiersAccessible = modifiersField.isAccessible();
             modifiersField.setAccessible(true);
             modifiersField.setInt(cqlQueryHandlerField, cqlQueryHandlerField.getModifiers() & ~Modifier.FINAL);
@@ -77,6 +80,31 @@ public class MessagePayloadTest extends CQLTester
         }
     }
 
+    private static Field getModifiersField() throws NoSuchFieldException
+    {
+        try
+        {
+            return Field.class.getDeclaredField("modifiers");
+        }
+        catch (NoSuchFieldException e)
+        {
+            try
+            {
+                Method getDeclaredFields0 = Class.class.getDeclaredMethod("getDeclaredFields0", boolean.class);
+                getDeclaredFields0.setAccessible(true);
+                Field[] fields = (Field[]) getDeclaredFields0.invoke(Field.class, false);
+                for (Field field : fields)
+                    if ("modifiers".equals(field.getName()))
+                        return field;
+            }
+            catch (ReflectiveOperationException ex)
+            {
+                e.addSuppressed(ex);
+            }
+            throw e;
+        }
+    }
+
     @AfterClass
     public static void resetCqlQueryHandlerField()
     {
@@ -84,7 +112,8 @@ public class MessagePayloadTest extends CQLTester
             return;
         try
         {
-            Field modifiersField = Field.class.getDeclaredField("modifiers");
+            //Field modifiersField = Field.class.getDeclaredField("modifiers");
+            Field modifiersField = getModifiersField();
             modifiersField.setAccessible(true);
             modifiersField.setInt(cqlQueryHandlerField, cqlQueryHandlerField.getModifiers() | Modifier.FINAL);
 

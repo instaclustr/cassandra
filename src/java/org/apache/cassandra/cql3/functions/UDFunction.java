@@ -266,13 +266,16 @@ public abstract class UDFunction extends UserFunction implements ScalarFunction
     {
         assertUdfsEnabled(language);
 
-        switch (language)
+        return new JavaBasedUDFunction(name, argNames, argTypes, returnType, calledOnNullInput, body);
+
+        // KATE: temporary until we decide  the future of Javascript UDFs
+        /*switch (language)
         {
             case "java":
                 return new JavaBasedUDFunction(name, argNames, argTypes, returnType, calledOnNullInput, body);
             default:
                 return new ScriptBasedUDFunction(name, argNames, argTypes, returnType, calledOnNullInput, language, body);
-        }
+        }*/
     }
 
     /**

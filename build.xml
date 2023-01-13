@@ -126,10 +126,10 @@
 
     <property name="jflex.version" value="1.8.2"/>
     <property name="jamm.version" value="0.3.2"/>
-    <property name="ecj.version" value="4.6.1"/>
     <!-- When updating ASM, please, do consider whether you might need to update also FBUtilities#ASM_BYTECODE_VERSION
       and the simulator InterceptClasses#BYTECODE_VERSION, in particular if we are looking to provide Cassandra support
       for newer JDKs (CASSANDRA-17873). -->
+    <property name="ecj.version" value="3.31.0"/>
     <property name="asm.version" value="9.3"/>
     <property name="allocation-instrumenter.version" value="3.1.0"/>
 
@@ -149,17 +149,15 @@
         </sequential>
     </macrodef>
 
-    <condition property="java.version.8">
-        <equals arg1="${ant.java.version}" arg2="1.8"/>
-    </condition>
     <condition property="java.version.11">
-      <!-- This includes every JDK other than 8; so JDK 9 is flagged as JDK 11, and JDK 17 is as well... at the moment this is desired behavior
-      and may be relooked at once JDK 8 support is dropped -->
-        <not><isset property="java.version.8"/></not>
+        <equals arg1="${ant.java.version}" arg2="11"/>
     </condition>
-    <fail message="Unsupported JDK version used: ${ant.java.version}"><condition><not><or>
-        <isset property="java.version.8"/>
+    <condition property="java.version.17">
+        <not><isset property="java.version.11"/></not>
+    </condition>
+    <fail><condition><not><or>
         <isset property="java.version.11"/>
+        <isset property="java.version.17"/>
     </or></not></condition></fail>
 
     <condition property="arch_x86">
@@ -202,11 +200,90 @@
         <string>--add-opens java.base/jdk.internal.util.jar=ALL-UNNAMED</string>
         <string>--add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED</string>
     </resources>
-    <pathconvert property="_jvm_args_concat" refid="_jvm11_arg_items" pathsep=" "/>
-    <condition property="java11-jvmargs" value="${_jvm_args_concat}" else="">
+    <pathconvert property="_jvm11_args_concat" refid="_jvm11_arg_items" pathsep=" "/>
+    <resources id="_jvm17_arg_items">
+        <string>-Djdk.attach.allowAttachSelf=true</string>
+
+        <string>-XX:+UseZGC</string>
+        <string>-XX:ConcGCThreads=4</string>
+        <string>-XX:+UseLargePages</string>
+
+        <string>--add-exports java.base/jdk.internal.misc=ALL-UNNAMED</string>
+        <string>--add-exports java.base/jdk.internal.ref=ALL-UNNAMED</string>
+        <string>--add-exports java.management.rmi/com.sun.jmx.remote.internal.rmi=ALL-UNNAMED</string>
+        <string>--add-exports java.rmi/sun.rmi.registry=ALL-UNNAMED</string>
+        <string>--add-exports java.rmi/sun.rmi.server=ALL-UNNAMED</string>
+        <string>--add-exports java.sql/java.sql=ALL-UNNAMED</string>
+        <string>--add-exports java.base/sun.nio.ch=ALL-UNNAMED</string>
+        <string>--add-exports java.base/java.io=ALL-UNNAMED</string>
+        <string>--add-exports java.base/java.util.concurrent=ALL-UNNAMED</string>
+        <string>--add-exports java.base/java.util=ALL-UNNAMED</string>
+        <string>--add-exports java.base/java.util.concurrent.atomic=ALL-UNNAMED</string>
+        <string>--add-exports java.base/java.nio=ALL-UNNAMED</string>
+        <string>--add-exports java.base/java.lang=ALL-UNNAMED</string>
+        <string>--add-exports java.base/java.lang.reflect=ALL-UNNAMED</string>
+        <string>--add-exports java.base/java.nio.channels.spi=ALL-UNNAMED</string>
+        <string>--add-exports java.base/java.math=ALL-UNNAMED</string>
+        <string>--add-exports java.base/java.security=ALL-UNNAMED</string>
+        <string>--add-exports java.base/java.lang.ref=ALL-UNNAMED</string>
+        <string>--add-exports java.base/sun.nio.fs=ALL-UNNAMED</string>
+        <string>--add-exports java.base/sun.security.util=ALL-UNNAMED</string>
+        <string>--add-exports jdk.unsupported/sun.misc=ALL-UNNAMED</string>
+        <string>--add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</string>
+        <string>--add-exports java.base/java.util.concurrent.locks=ALL-UNNAMED</string>
+        <string>--add-exports java.base/java.lang.invoke=ALL-UNNAMED</string>
+        <string>--add-exports java.base/sun.security.x509=ALL-UNNAMED</string>
+        <string>--add-exports java.base/java.util.jar=ALL-UNNAMED</string>
+        <string>--add-exports java.base/jdk.internal.reflect=ALL-UNNAMED</string>
+        <string>--add-exports jdk.attach/sun.tools.attach=ALL-UNNAMED</string>
+
+        <string>--add-opens java.base/java.lang.module=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.net=ALL-UNNAMED</string>
+        <string>--add-opens java.base/jdk.internal.loader=ALL-UNNAMED</string>
+        <string>--add-opens java.base/jdk.internal.ref=ALL-UNNAMED</string>
+        <string>--add-opens java.base/jdk.internal.reflect=ALL-UNNAMED</string>
+        <string>--add-opens java.base/jdk.internal.math=ALL-UNNAMED</string>
+        <string>--add-opens java.base/jdk.internal.module=ALL-UNNAMED</string>
+        <string>--add-opens java.base/jdk.internal.util.jar=ALL-UNNAMED</string>
+        <string>--add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED</string>
+        <string>--add-opens java.base/sun.nio.ch=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.io=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.util.concurrent=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.util=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.nio=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.lang=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.lang.reflect=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.nio.channels.spi=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.math=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.security=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.lang.ref=ALL-UNNAMED</string>
+        <string>--add-opens java.base/sun.nio.fs=ALL-UNNAMED</string>
+        <string>--add-opens java.base/sun.security.util=ALL-UNNAMED</string>
+        <string>--add-opens jdk.compiler/com.sun.tools.javac=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.util.concurrent.locks=ALL-UNNAMED</string>
+        <string>--add-opens java.base/sun.security.x509=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.util.jar=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.util.zip=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.lang.invoke=ALL-UNNAMED</string>
+        <string>--add-opens java.base/sun.reflect.generics.repository=ALL-UNNAMED</string>
+        <string>--add-opens java.base/sun.reflect.generics.tree=ALL-UNNAMED</string>
+        <string>--add-opens java.base/sun.net.www.protocol.jar=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.nio.file.attribute=ALL-UNNAMED</string>
+        <string>--add-opens java.xml/org.xml.sax.helpers=ALL-UNNAMED</string>
+        <string>--add-opens java.base/sun.nio.cs=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.nio.charset=ALL-UNNAMED</string>
+        <string>--add-opens java.base/sun.util.locale=ALL-UNNAMED</string>
+    </resources>
+    <pathconvert property="_jvm17_args_concat" refid="_jvm17_arg_items" pathsep=" "/>
+    <condition property="java17-jvmargs" value="${_jvm17_args_concat}" else="">
         <not>
-            <equals arg1="${ant.java.version}" arg2="1.8"/>
+            <equals arg1="${ant.java.version}" arg2="11"/>
         </not>
+    </condition>
+
+    <condition property="java11-jvmargs" value="${_jvm11_args_concat}" else="">
+        <equals arg1="${ant.java.version}" arg2="11"/>
     </condition>
 
     <!--
@@ -221,46 +298,45 @@
       In java 11 we also need to set a system property to enable netty to use Unsafe direct byte
       buffer construction (see CASSANDRA-16493)
     -->
-    <resources id="_jvm8_test_arg_items">
-      <!-- TODO see CASSANDRA-16212 - we seem to OOM non stop now after CASSANDRA-16212, so to have clean CI while this gets looked into, disabling limiting metaspace
-        <string>-XX:MaxMetaspaceExpansion=64M</string>
-        <string>-XX:MaxMetaspaceSize=512M</string>
-        <string>-XX:MetaspaceSize=128M</string>
-      -->
-    </resources>
-    <pathconvert property="_jvm8_test_arg_items_concat" refid="_jvm8_test_arg_items" pathsep=" "/>
     <resources id="_jvm11_test_arg_items">
         <string>-XX:-CMSClassUnloadingEnabled</string>
         <string>-Dio.netty.tryReflectionSetAccessible=true</string>
     </resources>
     <pathconvert property="_jvm11_test_arg_items_concat" refid="_jvm11_test_arg_items" pathsep=" "/>
-    <condition property="_std-test-jvmargs" value="${_jvm11_test_arg_items_concat}" else="${_jvm8_test_arg_items_concat}">
+    <resources id="_jvm17_test_arg_items">
+        <string>-Dio.netty.tryReflectionSetAccessible=true</string>
+    </resources>
+    <pathconvert property="_jvm17_test_arg_items_concat" refid="_jvm17_test_arg_items" pathsep=" "/>
+    <condition property="_std-test-jvmargs" value="${_jvm17_test_arg_items_concat}" else="${_jvm11_test_arg_items_concat}">
         <not>
-            <equals arg1="${ant.java.version}" arg2="1.8"/>
+            <equals arg1="${ant.java.version}" arg2="11"/>
         </not>
     </condition>
 
     <!-- needed to compile org.apache.cassandra.utils.JMXServerUtils -->
     <condition property="jdk11-javac-exports" value="--add-exports java.rmi/sun.rmi.registry=ALL-UNNAMED" else="">
-        <not>
-            <equals arg1="${ant.java.version}" arg2="1.8"/>
-        </not>
+            <equals arg1="${ant.java.version}" arg2="11"/>
     </condition>
     <condition property="jdk11-javadoc-exports" value="${jdk11-javac-exports} --frames" else="">
-        <not>
-            <equals arg1="${ant.java.version}" arg2="1.8"/>
-        </not>
+            <equals arg1="${ant.java.version}" arg2="11"/>
     </condition>
 
-    <condition property="build.java.11">
-        <istrue value="${use.jdk11}"/>
+    <condition property="jdk17-javac-exports" value="--add-exports java.rmi/sun.rmi.registry=ALL-UNNAMED" else="">
+        <equals arg1="${ant.java.version}" arg2="17"/>
+    </condition>
+    <condition property="jdk17-javadoc-exports" value="${jdk17-javac-exports} --frames" else="">
+        <equals arg1="${ant.java.version}" arg2="17"/>
     </condition>
 
-    <condition property="source.version" value="8" else="11">
-        <equals arg1="${java.version.8}" arg2="true"/>
+    <condition property="build.java.17">
+        <istrue value="${use.jdk17}"/>
     </condition>
-    <condition property="target.version" value="8" else="11">
-        <equals arg1="${java.version.8}" arg2="true"/>
+
+    <condition property="source.version" value="11" else="17">
+        <equals arg1="${java.version.11}" arg2="true"/>
+    </condition>
+    <condition property="target.version" value="11" else="17">
+        <equals arg1="${java.version.11}" arg2="true"/>
     </condition>
 
     <!--
@@ -304,48 +380,53 @@
     </sequential>
   </macrodef>
 
+    <target name="print-version">
+        <echo>Java/JVM version: ${ant.java.version}</echo>
+        <echo>Java/JVM detail version: ${java.version}</echo>
+    </target>
+
     <target name="validate-build-conf">
-        <condition property="use-jdk11">
+        <condition property="use-jdk17">
             <or>
-                <isset property="build.java.11"/>
-                <istrue value="${env.CASSANDRA_USE_JDK11}"/>
+                <isset property="build.java.17"/>
+                <istrue value="${env.CASSANDRA_USE_JDK17}"/>
             </or>
         </condition>
-        <fail message="Inconsistent JDK11 options set">
+        <fail message="Inconsistent JDK17 options set">
             <condition>
                     <and>
-                        <istrue value="${env.CASSANDRA_USE_JDK11}"/>
+                        <istrue value="${env.CASSANDRA_USE_JDK17}"/>
                         <isset property="use.jdk11"/>
                         <not>
-                            <istrue value="${use.jdk11}"/>
+                            <istrue value="${use.jdk17}"/>
                         </not>
                     </and>
             </condition>
                 </fail>
-        <fail message="Inconsistent JDK11 options set">
+        <fail message="Inconsistent JDK17 options set">
             <condition>
                     <and>
-                        <isset property="env.CASSANDRA_USE_JDK11"/>
+                        <isset property="env.CASSANDRA_USE_JDK17"/>
                         <not>
-                            <istrue value="${env.CASSANDRA_USE_JDK11}"/>
+                            <istrue value="${env.CASSANDRA_USE_JDK17}"/>
                         </not>
-                        <istrue value="${use.jdk11}"/>
+                        <istrue value="${use.jdk17}"/>
                     </and>
             </condition>
         </fail>
-        <fail message="-Duse.jdk11=true or $CASSANDRA_USE_JDK11=true cannot be set when building from java 8">
+        <fail message="-Duse.jdk17=true or $CASSANDRA_USE_JDK17=true cannot be set when building from java 17">
             <condition>
                 <not><or>
-                    <not><isset property="java.version.8"/></not>
-                    <not><isset property="use-jdk11"/></not>
+                    <not><isset property="java.version.11"/></not>
+                    <not><isset property="use-jdk17"/></not>
                 </or></not>
             </condition>
         </fail>
-        <fail message="-Duse.jdk11=true or $CASSANDRA_USE_JDK11=true must be set when building from java 11">
+        <fail message="-Duse.jdk17=true or $CASSANDRA_USE_JDK17=true must be set when building from java 17">
             <condition>
                 <not><or>
-                    <isset property="java.version.8"/>
-                    <isset property="use-jdk11"/>
+                    <isset property="java.version.11"/>
+                    <isset property="use-jdk17"/>
                 </or></not>
             </condition>
         </fail>
@@ -469,6 +550,7 @@
         <jvmarg value="-Dcassandra.reads.thresholds.coordinator.defensive_checks_enabled=true" /> <!-- enable defensive checks -->
         <jvmarg value="-javaagent:${build.lib}/jamm-${jamm.version}.jar" />
         <jvmarg value="-ea"/>
+        <jvmarg line="${java17-jvmargs}"/>
         <jvmarg line="${java11-jvmargs}"/>
       </java>
     </target>
@@ -491,6 +573,7 @@
             <src path="${build.src.gen-java}"/>
             <compilerarg value="-XDignore.symbol.file"/>
             <compilerarg line="${jdk11-javac-exports}"/>
+            <compilerarg line="${jdk17-javac-exports}"/>
             <classpath>
                 <path refid="cassandra.classpath"/>
             </classpath>
@@ -1109,6 +1192,7 @@
         <jvmarg value="-Dcassandra.keepBriefBrief=${cassandra.keepBriefBrief}" />
         <jvmarg value="-Dcassandra.strict.runtime.checks=true" />
         <jvmarg value="-Dcassandra.reads.thresholds.coordinator.defensive_checks_enabled=true" /> <!-- enable defensive checks -->
+        <jvmarg line="${java17-jvmargs}"/>
         <jvmarg line="${java11-jvmargs}"/>
         <!-- disable shrinks in quicktheories CASSANDRA-15554 -->
         <jvmarg value="-DQT_SHRINKS=0"/>
@@ -1759,13 +1843,13 @@
       </java>
   </target>
 
-  <target name="_maybe_update_idea_to_java11" if="java.version.11">
-    <replace file="${eclipse.project.name}.iml" token="JDK_1_8" value="JDK_11"/>
-    <replace file=".idea/misc.xml" token="JDK_1_8" value="JDK_11"/>
-    <replace file=".idea/misc.xml" token="1.8" value="11"/>
+  <target name="_maybe_update_idea_to_java17" if="java.version.17">
+    <replace file="${eclipse.project.name}.iml" token="JDK_11" value="JDK_17"/>
+    <replace file=".idea/misc.xml" token="JDK_11" value="JDK_17"/>
+    <replace file=".idea/misc.xml" token="11" value="17"/>
     <replaceregexp file=".idea/workspace.xml"
                    match="name=&quot;VM_PARAMETERS&quot; value=&quot;(.*)&quot;"
-                   replace="name=&quot;VM_PARAMETERS&quot; value=&quot;\1 ${java11-jvmargs}&quot;"
+                   replace="name=&quot;VM_PARAMETERS&quot; value=&quot;\1 ${java17-jvmargs}&quot;"
                    byline="true"/>
 
       <echo file=".idea/compiler.xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
@@ -1794,7 +1878,7 @@
     </modules>
   </component>
 </project>]]></echo>
-      <antcall target="_maybe_update_idea_to_java11"/>
+      <antcall target="_maybe_update_idea_to_java17"/>
   </target>
 
   <!-- Generate Eclipse project description files -->

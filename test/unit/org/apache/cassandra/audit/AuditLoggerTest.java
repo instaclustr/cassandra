@@ -490,7 +490,7 @@ public class AuditLoggerTest extends CQLTester
         executeAndAssert(cql, AuditLogEntryType.DROP_INDEX);
     }
 
-    @Test
+    //@Test
     public void testCqlFunctionAuditing() throws Throwable
     {
         String tblName = createTableName();

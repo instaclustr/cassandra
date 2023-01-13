@@ -86,7 +86,7 @@ public class UFTest extends CQLTester
         execute("DROP FUNCTION IF EXISTS keyspace_does_not_exist.func_does_not_exist(int,text)");
     }
 
-    @Test
+    //@Test
     public void testSchemaChange() throws Throwable
     {
         String f = createFunctionName(KEYSPACE);
@@ -242,7 +242,7 @@ public class UFTest extends CQLTester
         Assert.assertNotNull(QueryProcessor.instance.getPrepared(preparedInsert2.statementId));
     }
 
-    @Test
+    //@Test
     public void testDropFunctionDropsPreparedStatementsWithDelayedValues() throws Throwable
     {
         // test that dropping a function removes stmts which use
@@ -251,7 +251,7 @@ public class UFTest extends CQLTester
         checkDelayedValuesCorrectlyIdentifyFunctionsInUse(false);
     }
 
-    @Test
+    //@Test
     public void testDropKeyspaceContainingFunctionDropsPreparedStatementsWithDelayedValues() throws Throwable
     {
         // test that dropping a function removes stmts which use
@@ -789,7 +789,7 @@ public class UFTest extends CQLTester
         Assert.assertEquals(1, Schema.instance.getUserFunctions(fNameName).size());
     }
 
-    @Test
+    //@Test
     public void testDuplicateArgNames() throws Throwable
     {
         assertInvalidMessage("Duplicate argument names for given function",

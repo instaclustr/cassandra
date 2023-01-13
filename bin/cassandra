@@ -193,18 +193,18 @@ launch_service()
     if [ "x$foreground" != "x" ]; then
         cassandra_parms="$cassandra_parms -Dcassandra-foreground=yes"
         if [ "x$JVM_ON_OUT_OF_MEMORY_ERROR_OPT" != "x" ]; then
-            exec $NUMACTL "$JAVA" $JVM_OPTS "$JVM_ON_OUT_OF_MEMORY_ERROR_OPT" $cassandra_parms -cp "$CLASSPATH" $props "$class"
+            exec $NUMACTL "$JAVA" $JVM_OPTS "$JVM_ON_OUT_OF_MEMORY_ERROR_OPT" $cassandra_parms -cp "$CLASSPATH" $props "$class" --add-exports jdk.attach/sun.tools.attach=ALL-UNNAMED
         else
-            exec $NUMACTL "$JAVA" $JVM_OPTS $cassandra_parms -cp "$CLASSPATH" $props "$class"
+            exec $NUMACTL "$JAVA" $JVM_OPTS $cassandra_parms -cp "$CLASSPATH" $props "$class" --add-exports jdk.attach/sun.tools.attach=ALL-UNNAMED
         fi
     # Startup CassandraDaemon, background it, and write the pid.
     else
         if [ "x$JVM_ON_OUT_OF_MEMORY_ERROR_OPT" != "x" ]; then
-            exec $NUMACTL "$JAVA" $JVM_OPTS "$JVM_ON_OUT_OF_MEMORY_ERROR_OPT" $cassandra_parms -cp "$CLASSPATH" $props "$class" <&- &
+            exec $NUMACTL "$JAVA" $JVM_OPTS  --add-exports jdk.attach/sun.tools.attach=ALL-UNNAMED "$JVM_ON_OUT_OF_MEMORY_ERROR_OPT" $cassandra_parms -cp "$CLASSPATH" $props "$class" <&- &
             [ ! -z "$pidpath" ] && printf "%d" $! > "$pidpath"
             true
         else
-            exec $NUMACTL "$JAVA" $JVM_OPTS $cassandra_parms -cp "$CLASSPATH" $props "$class" <&- &
+            exec $NUMACTL "$JAVA" $JVM_OPTS  --add-exports jdk.attach/sun.tools.attach=ALL-UNNAMED $cassandra_parms -cp "$CLASSPATH" $props "$class" <&- &
             [ ! -z "$pidpath" ] && printf "%d" $! > "$pidpath"
             true
         fi

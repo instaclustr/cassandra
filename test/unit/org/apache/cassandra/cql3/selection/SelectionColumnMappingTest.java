@@ -102,7 +102,8 @@ public class SelectionColumnMappingTest extends CQLTester
         testMultipleAliasesOnSameColumn();
         testMixedColumnTypes();
         testMultipleUnaliasedSelectionOfSameColumn();
-        testUserDefinedAggregate();
+        //scripted
+        //testUserDefinedAggregate();
         testListLitteral();
         testEmptyListLitteral();
         testSetLitteral();

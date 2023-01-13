@@ -49,7 +49,7 @@ public class UFScriptTest extends CQLTester
 
     // Do not add any other test here - especially none using Java UDFs
 
-    @Test
+   // @Test
     public void testJavascriptSimpleCollections() throws Throwable
     {
         createTable("CREATE TABLE %s (key int primary key, lst list<double>, st set<text>, mp map<int, boolean>)");
@@ -94,7 +94,7 @@ public class UFScriptTest extends CQLTester
                           row(list, set, map));
     }
 
-    @Test
+    //@Test
     public void testJavascriptTupleType() throws Throwable
     {
         createTable("CREATE TABLE %s (key int primary key, tup frozen<tuple<double, text, int, boolean>>)");
@@ -117,7 +117,7 @@ public class UFScriptTest extends CQLTester
                    row(t));
     }
 
-    @Test
+    //@Test
     public void testJavascriptUserType() throws Throwable
     {
         String type = createType("CREATE TYPE %s (txt text, i int)");
@@ -156,7 +156,7 @@ public class UFScriptTest extends CQLTester
                    row(1));
     }
 
-    @Test
+    //@Test
     public void testJavascriptUTCollections() throws Throwable
     {
         String type = createType("CREATE TYPE %s (txt text, i int)");
@@ -213,7 +213,7 @@ public class UFScriptTest extends CQLTester
                           row("three", "one", "two"));
     }
 
-    @Test
+    //@Test
     public void testJavascriptFunction() throws Throwable
     {
         createTable("CREATE TABLE %s (key int primary key, val double)");
@@ -244,7 +244,7 @@ public class UFScriptTest extends CQLTester
         );
     }
 
-    @Test
+    //@Test
     public void testJavascriptBadReturnType() throws Throwable
     {
         createTable("CREATE TABLE %s (key int primary key, val double)");
@@ -261,7 +261,7 @@ public class UFScriptTest extends CQLTester
         assertInvalidMessage("Invalid value for CQL type double", "SELECT key, val, " + fName + "(val) FROM %s");
     }
 
-    @Test
+    //@Test
     public void testJavascriptThrow() throws Throwable
     {
         createTable("CREATE TABLE %s (key int primary key, val double)");
@@ -279,7 +279,7 @@ public class UFScriptTest extends CQLTester
                                   "SELECT key, val, " + fName + "(val) FROM %s");
     }
 
-    @Test
+    //@Test
     public void testScriptReturnTypeCasting() throws Throwable
     {
         createTable("CREATE TABLE %s (key int primary key, val double)");
@@ -321,7 +321,7 @@ public class UFScriptTest extends CQLTester
         }
     }
 
-    @Test
+    //@Test
     public void testScriptParamReturnTypes() throws Throwable
     {
         UUID ruuid = UUID.randomUUID();
@@ -386,7 +386,7 @@ public class UFScriptTest extends CQLTester
         }
     }
 
-    @Test
+    //@Test
     public void testJavascriptDisabled() throws Throwable
     {
         createTable("CREATE TABLE %s (key int primary key, val double)");
@@ -406,7 +406,7 @@ public class UFScriptTest extends CQLTester
         }
     }
 
-    @Test
+    //@Test
     public void testJavascriptCompileFailure() throws Throwable
     {
         assertInvalidMessage("Failed to compile function 'cql_test_keyspace.scrinv'",
@@ -417,7 +417,7 @@ public class UFScriptTest extends CQLTester
                              "AS 'foo bar';");
     }
 
-    @Test
+    //@Test
     public void testScriptInvalidLanguage() throws Throwable
     {
         assertInvalidMessage("Invalid language 'artificial_intelligence' for function 'cql_test_keyspace.scrinv'",

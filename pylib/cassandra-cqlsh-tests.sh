@@ -43,15 +43,15 @@ export NUM_TOKENS="16"
 export CASSANDRA_DIR=${WORKSPACE}
 export TESTSUITE_NAME="cqlshlib.${PYTHON_VERSION}"
 
-if [ -z "$CASSANDRA_USE_JDK11" ]; then
-    export CASSANDRA_USE_JDK11=false
+if [ -z "$CASSANDRA_USE_JDK17" ]; then
+    export CASSANDRA_USE_JDK17=false
 fi
 
-if [ "$CASSANDRA_USE_JDK11" = true ] ; then
-    TESTSUITE_NAME="${TESTSUITE_NAME}.jdk11"
+if [ "$CASSANDRA_USE_JDK17" = true ] ; then
+    TESTSUITE_NAME="${TESTSUITE_NAME}.jdk17"
 else
-    TESTSUITE_NAME="${TESTSUITE_NAME}.jdk8"
-    unset JAVA11_HOME
+    TESTSUITE_NAME="${TESTSUITE_NAME}.jdk11"
+    unset JAVA17_HOME
 fi
 
 ant -buildfile ${CASSANDRA_DIR}/build.xml realclean
@@ -91,7 +91,7 @@ fi
 # Main
 #
 ################################
-
+ant -buildfile ../build.xml print-version
 ccm remove test || true # in case an old ccm cluster is left behind
 ccm create test -n 1 --install-dir=${CASSANDRA_DIR}
 ccm updateconf "user_defined_functions_enabled: true"

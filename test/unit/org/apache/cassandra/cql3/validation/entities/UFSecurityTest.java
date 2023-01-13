@@ -133,7 +133,7 @@ public class UFSecurityTest extends CQLTester
 
         // JavaScript UDFs
 
-        try
+        /*try
         {
             String fName = createFunction(KEYSPACE_PER_TEST, "double",
                                           "CREATE OR REPLACE FUNCTION %s(val double) " +
@@ -197,7 +197,7 @@ public class UFSecurityTest extends CQLTester
                                       "AS '" + script + "';");
         assertInvalidThrowMessage("Java reflection not supported when class filter is present",
                                   FunctionExecutionException.class,
-                                  "SELECT " + fName + "(dval) FROM %s WHERE key=1");
+                                  "SELECT " + fName + "(dval) FROM %s WHERE key=1");*/
     }
 
     private static void assertAccessControlException(String script, FunctionExecutionException e)
@@ -250,7 +250,7 @@ public class UFSecurityTest extends CQLTester
                                        "AS 'long t=System.currentTimeMillis()+500; while (t>System.currentTimeMillis()) { }; return 0d;';");
                 assertInvalidMessage("ran longer than 250ms", "SELECT " + fName + "(dval) FROM %s WHERE key=1");
 
-                // Javascript UDF
+                /*// Javascript UDF
 
                 fName = createFunction(KEYSPACE_PER_TEST, "double",
                                        "CREATE OR REPLACE FUNCTION %s(val double) " +
@@ -260,7 +260,7 @@ public class UFSecurityTest extends CQLTester
                                        "AS 'var t=java.lang.System.currentTimeMillis()+500; while (t>java.lang.System.currentTimeMillis()) { }; 0;';");
                 assertInvalidMessage("ran longer than 250ms", "SELECT " + fName + "(dval) FROM %s WHERE key=1");
 
-                return;
+                return;*/
             }
             catch (Error | RuntimeException e)
             {

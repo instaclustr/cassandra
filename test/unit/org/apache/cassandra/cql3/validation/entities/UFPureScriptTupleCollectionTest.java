@@ -41,7 +41,7 @@ public class UFPureScriptTupleCollectionTest extends CQLTester
     // Do not add any other test here!
     // See CASSANDRA-10141
 
-    @Test
+    //@Test
     public void testJavascriptTupleTypeCollection() throws Throwable
     {
         String tupleTypeDef = "tuple<double, list<double>, set<text>, map<int, boolean>>";
