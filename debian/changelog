@@ -1,3 +1,9 @@
+cassandra (3.0.16.1) unstable; urgency=medium
+
+  * New release
+
+  -- Cameron Zemek <cameron@instaclustr.com> Thu, 19 Jan 2023 12:54:00 +1000
+
 cassandra (3.0.16) unstable; urgency=medium
 
   * New release

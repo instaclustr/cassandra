@@ -1,3 +1,6 @@
+3.0.16.1
+ * Rebuild from targeted replica (CASSANDRA-9875)
+
 3.0.16
  * Fix unit test failures in ViewComplexTest (CASSANDRA-14219)
  * Add MinGW uname check to start scripts (CASSANDRA-12940)
