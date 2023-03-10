@@ -1043,8 +1043,11 @@ public abstract class AbstractCluster<I extends IInstance> implements ICluster<I
         instanceMap.clear();
         PathUtils.setDeletionListener(ignore -> {});
         // Make sure to only delete directory when threads are stopped
+        boolean original = CassandraRelevantProperties.USE_NIX_RECURSIVE_DELETE.getBoolean();
+        CassandraRelevantProperties.USE_NIX_RECURSIVE_DELETE.setBoolean(true);
         if (Files.exists(root))
             PathUtils.deleteRecursive(root);
+        CassandraRelevantProperties.USE_NIX_RECURSIVE_DELETE.setBoolean(original);
         Thread.setDefaultUncaughtExceptionHandler(previousHandler);
         previousHandler = null;
         checkAndResetUncaughtExceptions();
