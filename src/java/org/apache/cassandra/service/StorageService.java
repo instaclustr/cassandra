@@ -191,6 +191,7 @@ import org.apache.cassandra.schema.TableMetadata;
 import org.apache.cassandra.schema.TableMetadataRef;
 import org.apache.cassandra.schema.ViewMetadata;
 import org.apache.cassandra.service.disk.usage.DiskUsageBroadcaster;
+import org.apache.cassandra.service.metadata.MetadataService;
 import org.apache.cassandra.service.paxos.Paxos;
 import org.apache.cassandra.service.paxos.PaxosCommit;
 import org.apache.cassandra.service.paxos.PaxosRepair;
@@ -1140,6 +1141,7 @@ public class StorageService extends NotificationBroadcasterSupport implements IE
 
             // gossip snitch infos (local DC and rack)
             gossipSnitchInfo();
+            gossipMetadata();
             Schema.instance.startSync();
             LoadBroadcaster.instance.startBroadcasting();
             DiskUsageBroadcaster.instance.startBroadcasting();
@@ -1271,6 +1273,13 @@ public class StorageService extends NotificationBroadcasterSupport implements IE
         String rack = snitch.getLocalRack();
         Gossiper.instance.addLocalApplicationState(ApplicationState.DC, StorageService.instance.valueFactory.datacenter(dc));
         Gossiper.instance.addLocalApplicationState(ApplicationState.RACK, StorageService.instance.valueFactory.rack(rack));
+    }
+
+    public void gossipMetadata()
+    {
+        MetadataService.instance.addMetadata(FBUtilities.getBroadcastAddressAndPort(),
+                                             MetadataService.instance.loadLocalMetadata(),
+                                             true);
     }
 
     public void joinRing() throws IOException
@@ -2715,6 +2724,9 @@ public class StorageService extends NotificationBroadcasterSupport implements IE
                     case NET_VERSION:
                         updateNetVersion(endpoint, value);
                         break;
+                    case METADATA:
+                        MetadataService.instance.addMetadata(endpoint, value.value);
+                        break;
                 }
             }
             else
@@ -2801,6 +2813,9 @@ public class StorageService extends NotificationBroadcasterSupport implements IE
                     break;
                 case HOST_ID:
                     SystemKeyspace.updatePeerInfo(endpoint, "host_id", UUID.fromString(entry.getValue().value));
+                    break;
+                case METADATA:
+                    MetadataService.instance.addMetadata(endpoint, entry.getValue().value);
                     break;
             }
         }
