@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import com.google.common.util.concurrent.Uninterruptibles;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -66,6 +67,7 @@ import org.apache.cassandra.io.sstable.format.ForwardingSSTableReader;
 import org.apache.cassandra.io.sstable.format.SSTableReader;
 import org.apache.cassandra.io.sstable.format.SSTableReadsListener;
 import org.apache.cassandra.io.util.ChannelProxy;
+import org.apache.cassandra.net.MessagingService;
 import org.apache.cassandra.net.Verb;
 import org.apache.cassandra.repair.RepairParallelism;
 import org.apache.cassandra.repair.messages.RepairOption;
@@ -162,7 +164,24 @@ public class FailingRepairTest extends TestBaseImpl implements Serializable
     public void cleanupState()
     {
         for (int i = 1; i <= CLUSTER.size(); i++)
+        {
+            if (CLUSTER.get(i).isShutdown())
+                CLUSTER.get(i).startup();
             CLUSTER.get(i).runOnInstance(InstanceKiller::clear);
+        }
+    }
+
+    @After
+    public void afterTest()
+    {
+        for (int i = 1; i <= CLUSTER.size(); i++)
+        {
+            CLUSTER.get(i).runOnInstance(() -> {
+                MessagingService.instance().shutdown(1, TimeUnit.MINUTES, true, true);
+            });
+
+            CLUSTER.get(i).shutdown(true);
+        }
     }
 
     @Test(timeout = 10 * 60 * 1000)

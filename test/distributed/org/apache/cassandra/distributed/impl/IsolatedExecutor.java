@@ -217,7 +217,11 @@ public class IsolatedExecutor implements IIsolatedExecutor
         }
         catch (ExecutionException e)
         {
-            throw Throwables.throwAsUncheckedException(e.getCause());
+            if (!(e.getCause() instanceof InstanceKiller.InstanceShutdown))
+            {
+                throw Throwables.throwAsUncheckedException(e.getCause());
+            }
+            return null;
         }
     }
 
