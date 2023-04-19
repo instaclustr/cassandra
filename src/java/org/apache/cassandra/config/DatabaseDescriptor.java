@@ -192,7 +192,7 @@ public class DatabaseDescriptor
     private static Map<String, Supplier<SSTableFormat<?, ?>>> sstableFormatFactories;
 
     /** The sstable compression options */
-    private static SSTableCompressionOptions sstableCompression;
+    private static ParameterizedClass sstableCompression;
 
     private static Function<CommitLog, AbstractCommitLogSegmentManager> commitLogSegmentMgrProvider = c -> DatabaseDescriptor.isCDCEnabled()
                                        ? new CommitLogSegmentManagerCDC(c, DatabaseDescriptor.getCommitLogLocation())
@@ -4701,6 +4701,6 @@ public class DatabaseDescriptor
         }
     }
 
-    public static SSTableCompressionOptions getSSTableCompressionOptions() { return sstableCompression; }
+    public static ParameterizedClass getSSTableCompressionOptions() { return sstableCompression; }
 
 }
