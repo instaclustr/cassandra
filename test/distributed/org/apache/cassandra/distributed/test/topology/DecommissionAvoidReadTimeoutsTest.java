@@ -16,28 +16,13 @@
  * limitations under the License.
  */
 
-package org.apache.cassandra.anttasks;
+package org.apache.cassandra.distributed.test.topology;
 
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.Task;
-
-public class KeepBriefBrief extends Task
+public class DecommissionAvoidReadTimeoutsTest extends DecommissionAvoidTimeouts
 {
-    private String property;
-
-    public void setProperty(String property)
+    @Override
+    protected String getQuery(String table)
     {
-        this.property = property;
-    }
-
-    public void execute()
-    {
-        Project project = getProject();
-
-        if (project.getUserProperty(property) == null)
-            if (project.getProperty("test.name").equals("*Test"))
-                project.setProperty(property, "true");
-            else
-                project.setProperty(property, "false");
+        return "SELECT * FROM " + table + " WHERE pk=?";
     }
 }
