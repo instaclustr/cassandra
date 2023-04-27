@@ -1088,7 +1088,7 @@ public class Config
     public volatile boolean top_partitions_enabled = true;
 
     @Nullable
-    public ParameterizedClass sstable_compressor;
+    public ParameterizedClass sstable_compression;
 
     public static Supplier<Config> getOverrideLoadConfig()
     {

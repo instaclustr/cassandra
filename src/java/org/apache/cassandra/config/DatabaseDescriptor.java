@@ -191,7 +191,6 @@ public class DatabaseDescriptor
 
     private static Map<String, Supplier<SSTableFormat<?, ?>>> sstableFormatFactories;
 
-    /** The sstable compression options */
     private static ParameterizedClass sstableCompression;
 
     private static Function<CommitLog, AbstractCommitLogSegmentManager> commitLogSegmentMgrProvider = c -> DatabaseDescriptor.isCDCEnabled()
@@ -934,7 +933,7 @@ public class DatabaseDescriptor
         if (conf.paxos_state_purging == null)
             conf.paxos_state_purging = PaxosStatePurging.legacy;
 
-        sstableCompression = conf.sstable_compressor;
+        sstableCompression = conf.sstable_compression;
 
         logInitializationOutcome(logger);
 
