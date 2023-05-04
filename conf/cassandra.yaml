@@ -603,13 +603,11 @@ commitlog_segment_size: 32MiB
 # Only one of chunk_length or chunk_length_in_kb may be specified.
 #
 sstable_compression:
-#   - class_name: lz4
-#     parameters:
-#       - enable: true
-#         chunk_length: 16KiB
-#         min_compress_ratio: 0.0
-#         max_comrpessed_length: 16KiB
-#         class_specific_parameter: value
+  - class_name: LZ4Compressor
+    parameters:
+      - enabled: "true"
+        chunk_length_in_kb: "16"
+        max_compressed_length: "16KiB"
 
 
 # any class that implements the SeedProvider interface and has a
