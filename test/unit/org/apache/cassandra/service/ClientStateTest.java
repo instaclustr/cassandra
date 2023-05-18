@@ -63,7 +63,7 @@ public class ClientStateTest
     @AfterClass
     public static void afterClass()
     {
-        ORG_APACHE_CASSANDRA_DISABLE_MBEAN_REGISTRATION.clearValue();
+        ORG_APACHE_CASSANDRA_DISABLE_MBEAN_REGISTRATION.clearValue(); // checkstyle: suppress nearby 'clearValueSystemPropertyUsage'
     }
 
     @Test

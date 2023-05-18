@@ -76,7 +76,7 @@ public class StandaloneVerifierOnSSTablesTest extends OfflineToolUtils
     public static void teardown() throws Exception
     {
         SchemaLoader.cleanupAndLeaveDirs();
-        TEST_UTIL_ALLOW_TOOL_REINIT_FOR_TEST.clearValue();
+        TEST_UTIL_ALLOW_TOOL_REINIT_FOR_TEST.clearValue(); // checkstyle: suppress nearby 'clearValueSystemPropertyUsage'
     }
 
     @Test

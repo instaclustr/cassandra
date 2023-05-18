@@ -43,8 +43,8 @@ public class PEMBasedSslContextFactoryConfigWithUnencryptedKeysTest
     @AfterClass
     public static void tearDownDatabaseDescriptor()
     {
-        CASSANDRA_CONFIG.clearValue();
-        DISABLE_TCACTIVE_OPENSSL.clearValue();
+        CASSANDRA_CONFIG.clearValue(); // checkstyle: suppress nearby 'clearValueSystemPropertyUsage'
+        DISABLE_TCACTIVE_OPENSSL.clearValue(); // checkstyle: suppress nearby 'clearValueSystemPropertyUsage'
     }
 
     @Test

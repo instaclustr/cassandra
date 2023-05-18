@@ -59,7 +59,7 @@ public class RangeCommandsTest extends CQLTester
     @AfterClass
     public static void cleanup()
     {
-        MAX_CONCURRENT_RANGE_REQUESTS.clearValue();
+        MAX_CONCURRENT_RANGE_REQUESTS.clearValue(); // checkstyle: suppress nearby 'clearValueSystemPropertyUsage'
     }
 
     @Test

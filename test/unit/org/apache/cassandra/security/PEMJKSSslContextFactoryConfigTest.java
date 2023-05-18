@@ -40,7 +40,7 @@ public class PEMJKSSslContextFactoryConfigTest
 
     @AfterClass
     public static void tearDownDatabaseDescriptor() {
-        CASSANDRA_CONFIG.clearValue();
+        CASSANDRA_CONFIG.clearValue(); // checkstyle: suppress nearby 'clearValueSystemPropertyUsage'
     }
 
     @Test

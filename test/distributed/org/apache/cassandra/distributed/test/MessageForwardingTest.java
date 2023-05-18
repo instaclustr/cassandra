@@ -122,7 +122,7 @@ public class MessageForwardingTest extends TestBaseImpl
         finally
         {
             if (originalTraceTimeout == null)
-                WAIT_FOR_TRACING_EVENTS_TIMEOUT_SECS.clearValue();
+                WAIT_FOR_TRACING_EVENTS_TIMEOUT_SECS.clearValue(); // checkstyle: suppress nearby 'clearValueSystemPropertyUsage'
             else
                 WAIT_FOR_TRACING_EVENTS_TIMEOUT_SECS.setInt(originalTraceTimeout);
         }

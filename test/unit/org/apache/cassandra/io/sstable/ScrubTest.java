@@ -166,7 +166,7 @@ public class ScrubTest
     @AfterClass
     public static void clearClassEnv()
     {
-        TEST_UTIL_ALLOW_TOOL_REINIT_FOR_TEST.clearValue();
+        TEST_UTIL_ALLOW_TOOL_REINIT_FOR_TEST.clearValue(); // checkstyle: suppress nearby 'clearValueSystemPropertyUsage'
     }
 
     @Test

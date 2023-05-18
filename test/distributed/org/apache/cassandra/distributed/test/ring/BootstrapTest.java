@@ -84,7 +84,7 @@ public class BootstrapTest extends TestBaseImpl
     {
         CassandraRelevantProperties.MIGRATION_DELAY.setLong(savedMigrationDelay);
         if (originalResetBootstrapProgress == null)
-            RESET_BOOTSTRAP_PROGRESS.clearValue();
+            RESET_BOOTSTRAP_PROGRESS.clearValue(); // checkstyle: suppress nearby 'clearValueSystemPropertyUsage'
         else
             RESET_BOOTSTRAP_PROGRESS.setBoolean(originalResetBootstrapProgress);
     }
@@ -110,7 +110,7 @@ public class BootstrapTest extends TestBaseImpl
     @Test
     public void bootstrapUnspecifiedResumeTest() throws Throwable
     {
-        RESET_BOOTSTRAP_PROGRESS.clearValue();
+        RESET_BOOTSTRAP_PROGRESS.clearValue(); // checkstyle: suppress nearby 'clearValueSystemPropertyUsage'
         bootstrapTest();
     }
 
@@ -126,7 +126,7 @@ public class BootstrapTest extends TestBaseImpl
     @Test
     public void bootstrapUnspecifiedFailsOnResumeTest() throws Throwable
     {
-        RESET_BOOTSTRAP_PROGRESS.clearValue();
+        RESET_BOOTSTRAP_PROGRESS.clearValue(); // checkstyle: suppress nearby 'clearValueSystemPropertyUsage'
 
         // Need our partitioner active for rangeToBytes conversion below
         Config c = DatabaseDescriptor.loadConfig();
