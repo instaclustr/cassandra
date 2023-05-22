@@ -232,7 +232,7 @@ public final class CompressionParams
         {
             ICompressor compressor = cp.sstableCompressor;
             if (compressor == null)
-                throw new ConfigurationException(format("'%s' is not a valid compressor class name for the 'sstable_compression' option.", sstableCompressionClass));
+                throw new ConfigurationException(format("'%s' is not a valid compressor class name for the 'class' option.", sstableCompressionClass));
             else
                 checkCompressorOptions(compressor, options.keySet());
         }

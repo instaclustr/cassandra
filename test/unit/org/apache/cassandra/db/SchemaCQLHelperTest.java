@@ -301,7 +301,7 @@ public class SchemaCQLHelperTest extends CQLTester
                             "    AND cdc = false\n" +
                             "    AND comment = 'comment'\n" +
                             "    AND compaction = {'class': 'org.apache.cassandra.db.compaction.LeveledCompactionStrategy', 'max_threshold': '32', 'min_threshold': '4', 'sstable_size_in_mb': '1'}\n" +
-                            "    AND compression = {'chunk_length_in_kb': '64', 'class': 'org.apache.cassandra.io.compress.LZ4Compressor', 'min_compress_ratio': '2.0'}\n" +
+                            "    AND compression = {'chunk_length': '64KiB', 'class': 'org.apache.cassandra.io.compress.LZ4Compressor', 'min_compress_ratio': '2.0'}\n" +
                             "    AND memtable = 'default'\n" +
                             "    AND crc_check_chance = 0.3\n" +
                             "    AND default_time_to_live = 4\n" +

@@ -66,7 +66,7 @@ public class AlterTest extends TestBaseImpl
                 i.acceptsOnInstance((IIsolatedExecutor.SerializableConsumer<String>) (ks) -> {
                     Keyspace.open(ks)
                             .getColumnFamilyStore("tbl")
-                            .setCompressionParametersJson("{\"chunk_length_in_kb\": \"128\"," +
+                            .setCompressionParametersJson("{\"chunk_length\": \"128KiB\"," +
                                                           "  \"class\": \"org.apache.cassandra.io.compress.LZ4Compressor\"}");
                     Assert.assertTrue(Keyspace.open(ks)
                                               .getColumnFamilyStore("tbl")

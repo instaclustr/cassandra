@@ -111,10 +111,10 @@ public class GuardrailAlterTableTest extends GuardrailTester
     public void testAlterViaMapAlwaysWorks() throws Throwable
     {
         setGuardrail(false);
-        assertValid("ALTER TABLE %s WITH compression = { 'class' : 'SnappyCompressor', 'chunk_length_in_kb' : 32 };");
+        assertValid("ALTER TABLE %s WITH compression = { 'class' : 'SnappyCompressor', 'chunk_length' : '32KiB' };");
 
         setGuardrail(true);
-        assertValid("ALTER TABLE %s WITH compression = { 'class' : 'SnappyCompressor', 'chunk_length_in_kb' : 32 };");
+        assertValid("ALTER TABLE %s WITH compression = { 'class' : 'SnappyCompressor', 'chunk_length' : '32KiB' };");
     }
 
     /**

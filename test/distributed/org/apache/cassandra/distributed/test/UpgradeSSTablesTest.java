@@ -226,7 +226,7 @@ public class UpgradeSSTablesTest extends TestBaseImpl
     {
         try (ICluster<IInvokableInstance> cluster = builder().withNodes(1).withDataDirCount(1).start())
         {
-            for (String compressionBefore : new String[]{ "{'class' : 'LZ4Compressor', 'chunk_length_in_kb' : 32}", "{'enabled': 'false'}" })
+            for (String compressionBefore : new String[]{ "{'class' : 'LZ4Compressor', 'chunk_length' : '32KiB'}", "{'enabled': 'false'}" })
             {
                 for (String command : new String[]{ "upgradesstables", "recompress_sstables" })
                 {
@@ -251,7 +251,7 @@ public class UpgradeSSTablesTest extends TestBaseImpl
                     cluster.get(1).nodetool("flush", KEYSPACE, "tbl");
 
                     Assert.assertEquals(0, cluster.get(1).nodetool("upgradesstables", "-a", KEYSPACE, "tbl"));
-                    cluster.schemaChange(withKeyspace("ALTER TABLE %s.tbl WITH compression = {'class' : 'LZ4Compressor', 'chunk_length_in_kb' : 128};"));
+                    cluster.schemaChange(withKeyspace("ALTER TABLE %s.tbl WITH compression = {'class' : 'LZ4Compressor', 'chunk_length' : '128KiB'};"));
 
                     Thread.sleep(2000); // Make sure timestamp will be different even with 1-second resolution.
 
