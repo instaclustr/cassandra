@@ -1,3 +1,7 @@
+3.11.15.1
+ * Reject empty options and invalid DC names in replication configuration while creating or altering a keyspace (CASSANDRA-12681)
+ * Bump snappy-java dependency version so that Snappy compression can be used on AWS Graviton instances.
+
 3.11.15
  * Fix the capital P usage in the CQL parser (CASSANDRA-17919)
  * Fix sstable_count metric missing from tablestats json/yaml output (CASSANDRA-18448)
