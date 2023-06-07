@@ -43,8 +43,10 @@ import org.apache.cassandra.utils.ExecutorUtils;
 import org.apache.cassandra.utils.FBUtilities;
 
 import static java.util.Collections.synchronizedList;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.cassandra.concurrent.Stage.MUTATION;
+import static org.apache.cassandra.config.CassandraRelevantProperties.MESSAGING_SERVICE_SHUTDOWN_TIMEOUT_MS;
 import static org.apache.cassandra.config.CassandraRelevantProperties.NON_GRACEFUL_SHUTDOWN;
 import static org.apache.cassandra.utils.Throwables.maybeFail;
 
@@ -208,9 +210,6 @@ public final class MessagingService extends MessagingServiceMBeanImpl
     public static final int current_version = VERSION_40;
     static AcceptVersions accept_messaging = new AcceptVersions(minimum_version, current_version);
     static AcceptVersions accept_streaming = new AcceptVersions(current_version, current_version);
-
-    @VisibleForTesting
-    public static long shutdownTimeoutMinutes = 3;
 
     public enum Version
     {
@@ -456,7 +455,7 @@ public final class MessagingService extends MessagingServiceMBeanImpl
                 {
                     logger.error("Failed shutting down MessagingService gracefully, retrying non-gracefully", e);
                     // if we can't shut down gracefully, try hard shutdown
-                    shutdown(MessagingService.shutdownTimeoutMinutes, MINUTES, false, true);
+                    shutdown(MESSAGING_SERVICE_SHUTDOWN_TIMEOUT_MS.getInt(), MILLISECONDS, false, true);
                 }
                 catch (Exception innerEx)
                 {
@@ -482,7 +481,7 @@ public final class MessagingService extends MessagingServiceMBeanImpl
             // this branch is used in unit-tests when we really never restart a node and shutting down means the end of test
             shutdownAbrubtly();
         else
-            shutdown(shutdownTimeoutMinutes, MINUTES, true, true);
+            shutdown(MESSAGING_SERVICE_SHUTDOWN_TIMEOUT_MS.getInt(), MILLISECONDS, true, true);
     }
 
     public void shutdown(long timeout, TimeUnit units, boolean shutdownGracefully, boolean shutdownExecutors)
@@ -513,7 +512,7 @@ public final class MessagingService extends MessagingServiceMBeanImpl
                           logger.info("Gracefully shutting down inbound executors ({})...", inboundSockets.sockets().size());
                           List<ExecutorService> inboundExecutors = new ArrayList<>();
                           inboundSockets.close(synchronizedList(inboundExecutors)::add).get();
-                          ExecutorUtils.awaitTermination(shutdownTimeoutMinutes, TimeUnit.MINUTES, inboundExecutors);
+                          ExecutorUtils.awaitTermination(MESSAGING_SERVICE_SHUTDOWN_TIMEOUT_MS.getInt(), MILLISECONDS, inboundExecutors);
                           logger.info("Inbound executors shut down gracefully");
                       },
                       () -> {
