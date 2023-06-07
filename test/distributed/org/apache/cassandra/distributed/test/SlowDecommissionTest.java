@@ -19,13 +19,14 @@
 package org.apache.cassandra.distributed.test;
 
 import java.io.IOException;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.junit.Test;
 
 import org.apache.cassandra.distributed.Cluster;
-import org.apache.cassandra.net.MessagingService;
 import org.apache.cassandra.service.StorageService;
 
+import static org.apache.cassandra.config.CassandraRelevantProperties.MESSAGING_SERVICE_SHUTDOWN_TIMEOUT_MS;
 import static org.apache.cassandra.distributed.api.Feature.GOSSIP;
 import static org.apache.cassandra.distributed.api.Feature.NETWORK;
 import static org.junit.Assert.assertEquals;
@@ -39,11 +40,12 @@ public class SlowDecommissionTest extends TestBaseImpl
                                         .withConfig(config -> config.with(NETWORK, GOSSIP))
                                         .start())
         {
-            cluster.get(4).runOnInstance(() -> MessagingService.shutdownTimeoutMinutes = 0);
+            cluster.setUncaughtExceptionsFilter(throwable -> throwable instanceof RejectedExecutionException
+                                                             && "Messaging-SynchronousWork has shut down".equals(throwable.getMessage()));
+
+            cluster.get(4).runOnInstance(() -> MESSAGING_SERVICE_SHUTDOWN_TIMEOUT_MS.setInt(0));
             cluster.get(4).nodetoolResult("decommission");
-            cluster.get(4).runOnInstance(() -> {
-                assertEquals("DECOMMISSIONED", StorageService.instance.getOperationMode());
-            });
+            cluster.get(4).runOnInstance(() -> assertEquals("DECOMMISSIONED", StorageService.instance.getOperationMode()));
         }
     }
 }

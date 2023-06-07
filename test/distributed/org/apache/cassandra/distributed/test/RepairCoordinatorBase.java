@@ -80,7 +80,8 @@ public class RepairCoordinatorBase extends TestBaseImpl
                                                 .with(Feature.GOSSIP))
                               .start());
 
-        CLUSTER.setUncaughtExceptionsFilter(throwable -> throwable instanceof RejectedExecutionException && "RepairJobTask has shut down".equals(throwable.getMessage()));
+        CLUSTER.setUncaughtExceptionsFilter(throwable -> (throwable instanceof RejectedExecutionException && "RepairJobTask has shut down".equals(throwable.getMessage()))
+                                                         || (throwable instanceof RejectedExecutionException && "Messaging-SynchronousWork has shut down".equals(throwable.getMessage())));
     }
 
     @AfterClass

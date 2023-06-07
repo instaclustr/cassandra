@@ -323,6 +323,8 @@ public enum CassandraRelevantProperties
      * when the JVM terminates. Therefore, we can use such optimization and not wait unnecessarily. */
     NON_GRACEFUL_SHUTDOWN("cassandra.test.messagingService.nonGracefulShutdown"),
 
+    MESSAGING_SERVICE_SHUTDOWN_TIMEOUT_MS("cassandra.messaging_service_shutdown_timeout_ms", Integer.toString(3 * 1000 * 60)),
+
     /** Flush changes of {@link org.apache.cassandra.schema.SchemaKeyspace} after each schema modification. In production,
      * we always do that. However, tests which do not restart nodes may disable this functionality in order to run
      * faster. Note that this is disabled for unit tests but if an individual test requires schema to be flushed, it
