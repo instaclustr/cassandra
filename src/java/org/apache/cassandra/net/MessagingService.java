@@ -590,7 +590,7 @@ public class MessagingService extends MessagingServiceMBeanImpl
                           logger.info("Gracefully shutting down inbound executors ({})...", inboundSockets.sockets().size());
                           List<ExecutorService> inboundExecutors = new ArrayList<>();
                           inboundSockets.close(synchronizedList(inboundExecutors)::add).get();
-                          ExecutorUtils.awaitTermination(timeout, units, inboundExecutors);
+                          ExecutorUtils.awaitTermination(units.toMillis(MESSAGING_SERVICE_SHUTDOWN_TIMEOUT_MS.getInt()), MILLISECONDS, inboundExecutors);
                           logger.info("Inbound executors shut down gracefully");
                       },
                       () -> {
