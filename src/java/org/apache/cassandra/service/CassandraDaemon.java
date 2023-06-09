@@ -740,6 +740,8 @@ public class CassandraDaemon
 
             start();
 
+            Systemd.instance.ifPresent(Systemd.Api::notifyReady);
+
             logger.info("Startup complete");
         }
         catch (Throwable e)
