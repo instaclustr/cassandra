@@ -23,7 +23,9 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
@@ -206,12 +208,19 @@ public class IsolatedJmx
         }
         // The TCPEndpoint class holds references to a class in the in-jvm dtest framework
         // which transitively has a reference to the InstanceClassLoader, so we need to
-        // make sure to remove the reference to them when the instance is shutting down
-        clearMapField(TCPEndpoint.class, null, "localEndpoints");
+        // make sure to remove the reference to them when the instance is shutting down.
+        // Additionally, we must make sure to only clear endpoints created by this instance
+        // As clearning the entire map can cause issues with starting and stopping nodes mid-test.
+        clearMapField(TCPEndpoint.class, null, "localEndpoints", this::endpointCreateByThisInstance);
         Thread.sleep(2 * RMI_KEEPALIVE_TIME); // Double the keep-alive time to give Distributed GC some time to clean up
     }
 
-    private <K, V> void clearMapField(Class<?> clazz, Object instance, String mapName)
+    private boolean endpointCreateByThisInstance(Map.Entry<Object, LinkedList<TCPEndpoint>> entry)
+    {
+        return entry.getValue().stream().anyMatch(ep -> ep.getServerSocketFactory() == this.serverSocketFactory && ep.getClientSocketFactory() == this.clientSocketFactory);
+    }
+
+    private <K, V> void clearMapField(Class<?> clazz, Object instance, String mapName, Predicate<Map.Entry<K, V>> shouldRemove)
     throws IllegalAccessException, NoSuchFieldException {
         Field mapField = ReflectionUtils.getField(clazz, mapName);
         mapField.setAccessible(true);
@@ -222,8 +231,11 @@ public class IsolatedJmx
         {
             for (Iterator<Map.Entry<K, V>> it = map.entrySet().iterator(); it.hasNext(); )
             {
-                it.next();
-                it.remove();
+                Map.Entry<K, V> entry = it.next();
+                if (shouldRemove.test(entry))
+                {
+                    it.remove();
+                }
             }
         }
     }
