@@ -21,9 +21,13 @@ package org.apache.cassandra.distributed.test.jmx;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
 
+import com.google.common.util.concurrent.Uninterruptibles;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -31,10 +35,14 @@ import org.apache.cassandra.distributed.Cluster;
 import org.apache.cassandra.distributed.api.Feature;
 import org.apache.cassandra.distributed.api.IInstanceConfig;
 import org.apache.cassandra.distributed.api.IInvokableInstance;
+import org.apache.cassandra.distributed.api.NodeToolResult;
 import org.apache.cassandra.distributed.impl.INodeProvisionStrategy;
+import org.apache.cassandra.distributed.shared.ClusterUtils;
 import org.apache.cassandra.distributed.shared.JMXUtil;
 import org.apache.cassandra.distributed.test.TestBaseImpl;
 
+import static org.hamcrest.Matchers.blankOrNullString;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 
 public class JMXFeatureTest extends TestBaseImpl
@@ -92,6 +100,51 @@ public class JMXFeatureTest extends TestBaseImpl
             }
         }
         Assert.assertEquals("Each instance from each cluster should have been unique", iterations * 2, allInstances.size());
+    }
+
+    @Test
+    public void testShutDownAndRestartInstances() throws Throwable
+    {
+        try (Cluster cluster = Cluster.build(2).withConfig(c -> c.with(Feature.values())).start())
+        {
+            IInvokableInstance instanceToStop = cluster.get(1);
+            ClusterUtils.stopUnchecked(instanceToStop);
+            // NOTE: This would previously fail because we cleared everything from the TCPEndpoint map in IsolatedJmx.
+            // Now, we only clear the endpoints related to that instance, which prevents this code from
+            // breaking with a `java.net.BindException: Address already in use (Bind failed)`
+            NodeToolResult statusResult = cluster.get(2).nodetoolResult("status");
+            Assert.assertEquals(0, statusResult.getRc());
+            Assert.assertThat(statusResult.getStderr(), is(blankOrNullString()));
+            waitUntil(() -> cluster.get(2).nodetoolResult("status").getStdout(),
+                      (i) -> i.contains("DN  127.0.0.1"));
+
+            instanceToStop.startup();
+            statusResult = cluster.get(1).nodetoolResult("status");
+            Assert.assertEquals(0, statusResult.getRc());
+            Assert.assertThat(statusResult.getStderr(), is(blankOrNullString()));
+            waitUntil(statusResult::getStdout,
+                      (i) -> i.contains("UN  127.0.0.1"));
+
+            statusResult = cluster.get(2).nodetoolResult("status");
+            Assert.assertEquals(0, statusResult.getRc());
+            Assert.assertThat(statusResult.getStderr(), is(blankOrNullString()));
+            waitUntil(() -> cluster.get(2).nodetoolResult("status").getStdout(),
+                      (i) -> i.contains("UN  127.0.0.1"));
+
+        }
+    }
+
+    public void waitUntil(Supplier<String> inputSupplier, Predicate<String> test) throws Throwable
+    {
+        for (int i = 0; i < 60; i++)
+        {
+            if (test.test(inputSupplier.get()))
+                return;
+
+            Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+        }
+
+        Assert.fail();
     }
 
     private void testInstance(Set<String> instancesContacted, IInvokableInstance instance) throws IOException
