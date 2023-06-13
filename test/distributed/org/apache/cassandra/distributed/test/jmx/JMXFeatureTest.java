@@ -82,7 +82,7 @@ public class JMXFeatureTest extends TestBaseImpl
                                           .withNodeProvisionStrategy(INodeProvisionStrategy.Strategy.OneNetworkInterface)
                                           .withConfig(c -> c.with(Feature.values())).start())
             {
-                Set<String> instancesContacted = new HashSet<>();
+                Set<String>   instancesContacted = new HashSet<>();
                 for (IInvokableInstance instance : cluster.get(1, 2))
                 {
                     testInstance(instancesContacted, instance);
