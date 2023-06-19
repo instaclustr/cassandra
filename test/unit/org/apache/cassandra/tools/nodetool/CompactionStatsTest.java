@@ -19,6 +19,7 @@
 package org.apache.cassandra.tools.nodetool;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -36,8 +37,10 @@ import org.apache.cassandra.tools.ToolRunner;
 import org.apache.cassandra.utils.TimeUUID;
 import org.assertj.core.api.Assertions;
 
+import static java.lang.String.format;
 import static org.apache.cassandra.utils.TimeUUID.Generator.nextTimeUUID;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 public class CompactionStatsTest extends CQLTester
 {
@@ -105,8 +108,8 @@ public class CompactionStatsTest extends CQLTester
         long bytesTotal = 123456;
         TimeUUID compactionId = nextTimeUUID();
         List<SSTableReader> sstables = IntStream.range(0, 10)
-                .mapToObj(i -> MockSchema.sstable(i, i * 10L, i * 10L + 9, cfs))
-                .collect(Collectors.toList());
+                                                .mapToObj(i -> MockSchema.sstable(i, i * 10L, i * 10L + 9, cfs))
+                                                .collect(Collectors.toList());
         CompactionInfo.Holder compactionHolder = new CompactionInfo.Holder()
         {
             public CompactionInfo getCompactionInfo()
@@ -121,23 +124,21 @@ public class CompactionStatsTest extends CQLTester
         };
 
         CompactionManager.instance.active.beginCompaction(compactionHolder);
-        ToolRunner.ToolResult tool = ToolRunner.invokeNodetool("compactionstats");
-        tool.assertOnCleanExit();
-        String stdout = tool.getStdout();
-        assertThat(stdout).containsPattern("pending compaction tasks\\s+1");
-        Assertions.assertThat(stdout).containsPattern("id\\s+compaction type\\s+keyspace\\s+table\\s+completed\\s+total\\s+unit\\s+progress");
-        String expectedStatsPattern = String.format("%s\\s+%s\\s+%s\\s+%s\\s+%s\\s+%s\\s+%s\\s+%.2f%%",
-            compactionId, OperationType.COMPACTION, CQLTester.KEYSPACE, currentTable(), bytesCompacted, bytesTotal,
-            CompactionInfo.Unit.BYTES, (double) bytesCompacted / bytesTotal * 100);
-        Assertions.assertThat(stdout).containsPattern(expectedStatsPattern);
+        String stdout = waitForNumberOfPendingTasks(1, "compactionstats");
+        assertThat(stdout).containsPattern("id\\s+compaction type\\s+keyspace\\s+table\\s+completed\\s+total\\s+unit\\s+progress");
+        String expectedStatsPattern = format("%s\\s+%s\\s+%s\\s+%s\\s+%s\\s+%s\\s+%s\\s+%.2f%%",
+                                             compactionId, OperationType.COMPACTION, CQLTester.KEYSPACE, currentTable(), bytesCompacted, bytesTotal,
+                                             CompactionInfo.Unit.BYTES, (double) bytesCompacted / bytesTotal * 100);
+
+        assertThat(stdout).containsPattern(expectedStatsPattern);
         assertThat(stdout).containsPattern("concurrent compactors\\s+[0-9]*");
-        assertThat(stdout).containsPattern("pending compaction tasks\\s+[0-9]*");
+        assertThat(stdout).containsPattern("pending tasks\\s+[0-9]*");
         assertThat(stdout).containsPattern("compactions completed\\s+[0-9]*");
         assertThat(stdout).containsPattern("minute rate\\s+[0-9]*.[0-9]*[0-9]*/second");
         assertThat(stdout).containsPattern("5 minute rate\\s+[0-9]*.[0-9]*[0-9]*/second");
         assertThat(stdout).containsPattern("15 minute rate\\s+[0-9]*.[0-9]*[0-9]*/second");
         assertThat(stdout).containsPattern("mean rate\\s+[0-9]*.[0-9]*[0-9]*/second");
-        assertThat(stdout).containsPattern("compaction throughput \\(MBps\\)     throttling disabled \\(0\\)");
+        assertThat(stdout).containsPattern("compaction throughput \\(MBps\\)\\s+throttling disabled \\(0\\)");
         assertThat(stdout).containsPattern("compactions completed\\s+[0-9]*");
         assertThat(stdout).containsPattern("data compacted\\s+[0-9]*");
         assertThat(stdout).containsPattern("compactions aborted\\s+[0-9]*");
@@ -145,10 +146,7 @@ public class CompactionStatsTest extends CQLTester
         assertThat(stdout).containsPattern("sstables dropped from compaction\\s+[0-9]*");
 
         CompactionManager.instance.active.finishCompaction(compactionHolder);
-        tool = ToolRunner.invokeNodetool("compactionstats");
-        tool.assertOnCleanExit();
-        stdout = tool.getStdout();
-        assertThat(stdout).containsPattern("pending compaction tasks\\s+0");
+        waitForNumberOfPendingTasks(0, "compactionstats");
     }
 
     @Test
@@ -180,7 +178,7 @@ public class CompactionStatsTest extends CQLTester
         ToolRunner.ToolResult tool = ToolRunner.invokeNodetool("compactionstats", "-V");
         tool.assertOnCleanExit();
         String stdout = tool.getStdout();
-        assertThat(stdout).containsPattern("pending compaction tasks\\s+1");
+        assertThat(stdout).containsPattern("pending tasks\\s+1");
         Assertions.assertThat(stdout).containsPattern("keyspace\\s+table\\s+task id\\s+completion ratio\\s+kind\\s+progress\\s+sstables\\s+total\\s+unit");
         String expectedStatsPattern = String.format("%s\\s+%s\\s+%s\\s+%.2f%%\\s+%s\\s+%s\\s+%s\\s+%s\\s+%s",
             CQLTester.KEYSPACE, currentTable(), compactionId, (double) bytesCompacted / bytesTotal * 100,
@@ -191,7 +189,7 @@ public class CompactionStatsTest extends CQLTester
         tool = ToolRunner.invokeNodetool("compactionstats", "-V");
         tool.assertOnCleanExit();
         stdout = tool.getStdout();
-        assertThat(stdout).containsPattern("pending compaction tasks\\s+0");
+        assertThat(stdout).containsPattern("pending tasks\\s+0");
     }
 
     @Test
@@ -223,7 +221,7 @@ public class CompactionStatsTest extends CQLTester
         ToolRunner.ToolResult tool = ToolRunner.invokeNodetool("compactionstats", "--human-readable");
         tool.assertOnCleanExit();
         String stdout = tool.getStdout();
-        assertThat(stdout).containsPattern("pending compaction tasks\\s+1");
+        assertThat(stdout).containsPattern("pending tasks\\s+1");
         Assertions.assertThat(stdout).containsPattern("id\\s+compaction type\\s+keyspace\\s+table\\s+completed\\s+total\\s+unit\\s+progress");
         String expectedStatsPattern = String.format("%s\\s+%s\\s+%s\\s+%s\\s+%s\\s+%s\\s+%s\\s+%.2f%%",
             compactionId, OperationType.COMPACTION, CQLTester.KEYSPACE, currentTable(), "123 bytes", "120.56 KiB",
@@ -234,7 +232,7 @@ public class CompactionStatsTest extends CQLTester
         tool = ToolRunner.invokeNodetool("compactionstats", "--human-readable");
         tool.assertOnCleanExit();
         stdout = tool.getStdout();
-        assertThat(stdout).containsPattern("pending compaction tasks\\s+0");
+        assertThat(stdout).containsPattern("pending tasks\\s+0");
     }
 
     @Test
@@ -266,7 +264,7 @@ public class CompactionStatsTest extends CQLTester
         ToolRunner.ToolResult tool = ToolRunner.invokeNodetool("compactionstats", "--vtable", "--human-readable");
         tool.assertOnCleanExit();
         String stdout = tool.getStdout();
-        assertThat(stdout).containsPattern("pending compaction tasks\\s+1");
+        assertThat(stdout).containsPattern("pending tasks\\s+1");
         Assertions.assertThat(stdout).containsPattern("keyspace\\s+table\\s+task id\\s+completion ratio\\s+kind\\s+progress\\s+sstables\\s+total\\s+unit");
         String expectedStatsPattern = String.format("%s\\s+%s\\s+%s\\s+%.2f%%\\s+%s\\s+%s\\s+%s\\s+%s\\s+%s",
             CQLTester.KEYSPACE, currentTable(), compactionId, (double) bytesCompacted / bytesTotal * 100,
@@ -277,6 +275,29 @@ public class CompactionStatsTest extends CQLTester
         tool = ToolRunner.invokeNodetool("compactionstats", "--vtable", "--human-readable");
         tool.assertOnCleanExit();
         stdout = tool.getStdout();
-        assertThat(stdout).containsPattern("pending compaction tasks\\s+0");
+        assertThat(stdout).containsPattern("pending tasks\\s+0");
+    }
+
+    private String waitForNumberOfPendingTasks(int pendingTasksToWaitFor, String... args)
+    {
+        AtomicReference<String> stdout = new AtomicReference<>();
+        await().until(() -> {
+            ToolRunner.ToolResult tool = ToolRunner.invokeNodetool(args);
+            tool.assertOnCleanExit();
+            String output = tool.getStdout();
+            stdout.set(output);
+
+            try
+            {
+                assertThat(output).containsPattern("pending tasks\\s+" + pendingTasksToWaitFor);
+                return true;
+            }
+            catch (AssertionError e)
+            {
+                return false;
+            }
+        });
+
+        return stdout.get();
     }
 }

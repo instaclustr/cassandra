@@ -58,7 +58,6 @@ public class CompactionStats extends NodeToolCmd
         TableBuilder tableBuilder = new TableBuilder();
         pendingTasksAndConcurrentCompactorsStats(probe, tableBuilder);
         compactionsStats(probe, tableBuilder);
-        tableBuilder.printTo(out);
         CompactionManagerMBean cm = probe.getCompactionManagerProxy();
         reportCompactionTable(cm.getCompactions(), probe.getCompactionThroughput(), humanReadable, vtableOutput, out, tableBuilder);
     }
@@ -69,7 +68,7 @@ public class CompactionStats extends NodeToolCmd
         (Map<String, Map<String, Integer>>) probe.getCompactionMetric("PendingTasksByTableName");
 
         tableBuilder.add("concurrent compactors", Integer.toString(probe.getConcurrentCompactors()));
-        tableBuilder.add("pending compaction tasks", Integer.toString(numPendingTasks(pendingTaskNumberByTable)));
+        tableBuilder.add("pending tasks", Integer.toString(numPendingTasks(pendingTaskNumberByTable)));
 
         for (Entry<String, Map<String, Integer>> ksEntry : pendingTaskNumberByTable.entrySet())
             for (Entry<String, Integer> tableEntry : ksEntry.getValue().entrySet())
@@ -96,7 +95,10 @@ public class CompactionStats extends NodeToolCmd
 
         CassandraMetricsRegistry.JmxCounterMBean bytesCompacted =
         (CassandraMetricsRegistry.JmxCounterMBean)probe.getCompactionMetric("BytesCompacted");
-        tableBuilder.add("data compacted", FileUtils.stringifyFileSize(Double.parseDouble(Long.toString(bytesCompacted.getCount()))));
+        if (humanReadable)
+            tableBuilder.add("data compacted", FileUtils.stringifyFileSize(Double.parseDouble(Long.toString(bytesCompacted.getCount()))));
+        else
+            tableBuilder.add("data compacted", Long.toString(bytesCompacted.getCount()));
 
         CassandraMetricsRegistry.JmxCounterMBean compactionsAborted =
         (CassandraMetricsRegistry.JmxCounterMBean)probe.getCompactionMetric("CompactionsAborted");
@@ -128,46 +130,50 @@ public class CompactionStats extends NodeToolCmd
 
     public static void reportCompactionTable(List<Map<String,String>> compactions, long compactionThroughputInBytes, boolean humanReadable, boolean vtableOutput, PrintStream out, TableBuilder table)
     {
-        if (!compactions.isEmpty())
+        if (compactions.isEmpty())
         {
-            long remainingBytes = 0;
-
-            if (vtableOutput)
-                table.add("keyspace", "table", "task id", "completion ratio", "kind", "progress", "sstables", "total", "unit");
-            else
-                table.add("id", "compaction type", "keyspace", "table", "completed", "total", "unit", "progress");
-
-            for (Map<String, String> c : compactions)
-            {
-                long total = Long.parseLong(c.get(CompactionInfo.TOTAL));
-                long completed = Long.parseLong(c.get(CompactionInfo.COMPLETED));
-                String taskType = c.get(CompactionInfo.TASK_TYPE);
-                String keyspace = c.get(CompactionInfo.KEYSPACE);
-                String columnFamily = c.get(CompactionInfo.COLUMNFAMILY);
-                String unit = c.get(CompactionInfo.UNIT);
-                boolean toFileSize = humanReadable && Unit.isFileSize(unit);
-                String[] tables = c.get(CompactionInfo.SSTABLES).split(",");
-                String progressStr = toFileSize ? FileUtils.stringifyFileSize(completed) : Long.toString(completed);
-                String totalStr = toFileSize ? FileUtils.stringifyFileSize(total) : Long.toString(total);
-                String percentComplete = total == 0 ? "n/a" : new DecimalFormat("0.00").format((double) completed / total * 100) + "%";
-                String id = c.get(CompactionInfo.COMPACTION_ID);
-                if (vtableOutput)
-                    table.add(keyspace, columnFamily, id, percentComplete, taskType, progressStr, String.valueOf(tables.length), totalStr, unit);
-                else
-                    table.add(id, taskType, keyspace, columnFamily, progressStr, totalStr, unit, percentComplete);
-
-                remainingBytes += total - completed;
-            }
             table.printTo(out);
-
-            String remainingTime = "n/a";
-            if (compactionThroughputInBytes != 0)
-            {
-                long remainingTimeInSecs = remainingBytes / compactionThroughputInBytes;
-                remainingTime = format("%dh%02dm%02ds", remainingTimeInSecs / 3600, (remainingTimeInSecs % 3600) / 60, (remainingTimeInSecs % 60));
-            }
-            out.printf("%25s%10s%n", "Active compaction remaining time : ", remainingTime);
+            return;
         }
+
+        long remainingBytes = 0;
+
+        if (vtableOutput)
+            table.add("keyspace", "table", "task id", "completion ratio", "kind", "progress", "sstables", "total", "unit");
+        else
+            table.add("id", "compaction type", "keyspace", "table", "completed", "total", "unit", "progress");
+
+        for (Map<String, String> c : compactions)
+        {
+            long total = Long.parseLong(c.get(CompactionInfo.TOTAL));
+            long completed = Long.parseLong(c.get(CompactionInfo.COMPLETED));
+            String taskType = c.get(CompactionInfo.TASK_TYPE);
+            String keyspace = c.get(CompactionInfo.KEYSPACE);
+            String columnFamily = c.get(CompactionInfo.COLUMNFAMILY);
+            String unit = c.get(CompactionInfo.UNIT);
+            boolean toFileSize = humanReadable && Unit.isFileSize(unit);
+            String[] tables = c.get(CompactionInfo.SSTABLES).split(",");
+            String progressStr = toFileSize ? FileUtils.stringifyFileSize(completed) : Long.toString(completed);
+            String totalStr = toFileSize ? FileUtils.stringifyFileSize(total) : Long.toString(total);
+            String percentComplete = total == 0 ? "n/a" : new DecimalFormat("0.00").format((double) completed / total * 100) + "%";
+            String id = c.get(CompactionInfo.COMPACTION_ID);
+            if (vtableOutput)
+                table.add(keyspace, columnFamily, id, percentComplete, taskType, progressStr, String.valueOf(tables.length), totalStr, unit);
+            else
+                table.add(id, taskType, keyspace, columnFamily, progressStr, totalStr, unit, percentComplete);
+
+            remainingBytes += total - completed;
+        }
+
+        String remainingTime = "n/a";
+        if (compactionThroughputInBytes != 0)
+        {
+            long remainingTimeInSecs = remainingBytes / compactionThroughputInBytes;
+            remainingTime = format("%dh%02dm%02ds", remainingTimeInSecs / 3600, (remainingTimeInSecs % 3600) / 60, (remainingTimeInSecs % 60));
+        }
+        table.add("active compaction remaining time", remainingTime);
+
+        table.printTo(out);
     }
 
 }
