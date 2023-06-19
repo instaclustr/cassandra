@@ -1,3 +1,6 @@
+3.11.13.3
+ * Backport  Waiting for gossip to settle does not wait for live endpoints (CASSANDRA-18543:)
+
 3.11.13.2
  * Bump snappy-java dependency version so that Snappy compression can be used on AWS Graviton instances.
 
