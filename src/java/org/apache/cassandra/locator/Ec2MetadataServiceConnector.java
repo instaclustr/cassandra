@@ -45,7 +45,7 @@ abstract class Ec2MetadataServiceConnector extends AbstractCloudMetadataServiceC
 
     Ec2MetadataServiceConnector(SnitchProperties properties)
     {
-        super(properties.get(EC2_METADATA_URL_PROPERTY, DEFAULT_EC2_METADATA_URL));
+        super(properties.putIfAbsent(METADATA_URL_PROPERTY, properties.get(EC2_METADATA_URL_PROPERTY, DEFAULT_EC2_METADATA_URL)));
     }
 
     enum EC2MetadataType

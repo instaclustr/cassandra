@@ -34,19 +34,22 @@ import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.cassandra.gms.ApplicationState;
 import org.apache.cassandra.gms.Gossiper;
 import org.apache.cassandra.gms.VersionedValue;
+import org.apache.cassandra.locator.AbstractCloudMetadataServiceConnector.DefaultCloudMetadataServiceConnector;
 import org.apache.cassandra.service.StorageService;
 
 import static org.apache.cassandra.ServerTestUtils.cleanup;
 import static org.apache.cassandra.ServerTestUtils.mkdirs;
 import static org.apache.cassandra.config.CassandraRelevantProperties.GOSSIP_DISABLE_THREAD_VALIDATION;
+import static org.apache.cassandra.locator.AbstractCloudMetadataServiceConnector.METADATA_URL_PROPERTY;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class CloudstackSnitchTest
+public class GenericCloudMetadataServiceSnitchTest
 {
-    private static String az;
+    static String az;
 
     @BeforeClass
     public static void setup() throws Exception
@@ -62,41 +65,46 @@ public class CloudstackSnitchTest
     }
 
     @Test
-    public void testRacks() throws IOException, ConfigurationException
+    public void testRac() throws IOException, ConfigurationException
     {
-        az = "ch-gva-1";
-        CloudstackSnitch.CloudstackConnector mock = mock(CloudstackSnitch.CloudstackConnector.class);
-        when(mock.apiCall(any())).thenReturn(az);
+        az = "cn-hangzhou-f";
 
-        CloudstackSnitch snitch = new CloudstackSnitch(new SnitchProperties(new Properties()), mock);
+        DefaultCloudMetadataServiceConnector mock = mock(DefaultCloudMetadataServiceConnector.class);
+        when(mock.apiCall(any(), anyMap())).thenReturn(az);
+
+        GenericCloudMetadataServiceSnitch snitch = new GenericCloudMetadataServiceSnitch(new SnitchProperties(new Properties()), mock);
         InetAddressAndPort local = InetAddressAndPort.getByName("127.0.0.1");
         InetAddressAndPort nonlocal = InetAddressAndPort.getByName("127.0.0.7");
 
         Gossiper.instance.addSavedEndpoint(nonlocal);
         Map<ApplicationState, VersionedValue> stateMap = new EnumMap<>(ApplicationState.class);
-        stateMap.put(ApplicationState.DC, StorageService.instance.valueFactory.datacenter("ch-zrh"));
-        stateMap.put(ApplicationState.RACK, StorageService.instance.valueFactory.rack("2"));
+        stateMap.put(ApplicationState.DC, StorageService.instance.valueFactory.datacenter("cn-shanghai"));
+        stateMap.put(ApplicationState.RACK, StorageService.instance.valueFactory.datacenter("a"));
         Gossiper.instance.getEndpointStateForEndpoint(nonlocal).addApplicationStates(stateMap);
 
-        assertEquals("ch-zrh", snitch.getDatacenter(nonlocal));
-        assertEquals("2", snitch.getRack(nonlocal));
+        assertEquals("cn-shanghai", snitch.getDatacenter(nonlocal));
+        assertEquals("a", snitch.getRack(nonlocal));
 
-        assertEquals("ch-gva", snitch.getDatacenter(local));
-        assertEquals("1", snitch.getRack(local));
+        assertEquals("cn-hangzhou", snitch.getDatacenter(local));
+        assertEquals("f", snitch.getRack(local));
     }
 
     @Test
     public void testNewRegions() throws IOException, ConfigurationException
     {
-        az = "ch-gva-1";
-        CloudstackSnitch.CloudstackConnector mock = mock(CloudstackSnitch.CloudstackConnector.class);
-        when(mock.apiCall(any())).thenReturn(az);
-        CloudstackSnitch snitch = new CloudstackSnitch(new SnitchProperties(new Properties()), mock);
+        az = "us-east-1a";
+
+        Properties p = new Properties();
+        p.setProperty(METADATA_URL_PROPERTY, "http://127.0.0.1/some/endpoint");
+
+        DefaultCloudMetadataServiceConnector mock = mock(DefaultCloudMetadataServiceConnector.class);
+        when(mock.apiCall(any(), anyMap())).thenReturn(az);
+
+        GenericCloudMetadataServiceSnitch snitch = new GenericCloudMetadataServiceSnitch(new SnitchProperties(p), mock);
 
         InetAddressAndPort local = InetAddressAndPort.getByName("127.0.0.1");
-
-        assertEquals("ch-gva", snitch.getDatacenter(local));
-        assertEquals("1", snitch.getRack(local));
+        assertEquals("us-east", snitch.getDatacenter(local));
+        assertEquals("1a", snitch.getRack(local));
     }
 
     @AfterClass
