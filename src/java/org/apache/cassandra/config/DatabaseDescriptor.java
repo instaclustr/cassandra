@@ -98,6 +98,8 @@ import org.apache.cassandra.locator.IEndpointSnitch;
 import org.apache.cassandra.locator.InetAddressAndPort;
 import org.apache.cassandra.locator.Replica;
 import org.apache.cassandra.locator.SeedProvider;
+import org.apache.cassandra.security.AbstractCryptoProvider;
+import org.apache.cassandra.security.DefaultCryptoProvider;
 import org.apache.cassandra.security.EncryptionContext;
 import org.apache.cassandra.security.SSLFactory;
 import org.apache.cassandra.service.CacheService.CacheType;
@@ -123,10 +125,10 @@ import static org.apache.cassandra.config.CassandraRelevantProperties.SEARCH_CON
 import static org.apache.cassandra.config.CassandraRelevantProperties.SSL_STORAGE_PORT;
 import static org.apache.cassandra.config.CassandraRelevantProperties.STORAGE_DIR;
 import static org.apache.cassandra.config.CassandraRelevantProperties.STORAGE_PORT;
-import static org.apache.cassandra.config.CassandraRelevantProperties.TEST_STRICT_RUNTIME_CHECKS;
 import static org.apache.cassandra.config.CassandraRelevantProperties.SUN_ARCH_DATA_MODEL;
 import static org.apache.cassandra.config.CassandraRelevantProperties.TEST_FAIL_MV_LOCKS_COUNT;
 import static org.apache.cassandra.config.CassandraRelevantProperties.TEST_JVM_DTEST_DISABLE_SSL;
+import static org.apache.cassandra.config.CassandraRelevantProperties.TEST_STRICT_RUNTIME_CHECKS;
 import static org.apache.cassandra.config.CassandraRelevantProperties.UNSAFE_SYSTEM;
 import static org.apache.cassandra.config.DataRateSpec.DataRateUnit.BYTES_PER_SECOND;
 import static org.apache.cassandra.config.DataRateSpec.DataRateUnit.MEBIBYTES_PER_SECOND;
@@ -174,6 +176,7 @@ public class DatabaseDescriptor
 
     private static Config.DiskAccessMode indexAccessMode;
 
+    private static AbstractCryptoProvider cryptoProvider;
     private static IAuthenticator authenticator;
     private static IAuthorizer authorizer;
     private static INetworkAuthorizer networkAuthorizer;
@@ -425,6 +428,8 @@ public class DatabaseDescriptor
     {
         //InetAddressAndPort cares that applySimpleConfig runs first
         applySSTableFormats();
+
+        applyCryptoProvider();
 
         applySimpleConfig();
 
@@ -1217,6 +1222,40 @@ public class DatabaseDescriptor
         }
     }
 
+    public static void applyCryptoProvider()
+    {
+        if (conf.crypto_provider == null)
+            conf.crypto_provider = new ParameterizedClass(DefaultCryptoProvider.class.getName(), null);
+
+        if (conf.crypto_provider.parameters == null)
+            conf.crypto_provider.parameters = new HashMap<>();
+
+        // properties beat configuration
+        String classNameFromSystemProperties = CassandraRelevantProperties.CRYPTO_PROVIDER_CLASS_NAME.getString();
+        if (classNameFromSystemProperties != null)
+            conf.crypto_provider.class_name = classNameFromSystemProperties;
+
+        if (conf.crypto_provider.class_name == null)
+            throw new ConfigurationException("Failed to initialize crypto provider, class_name cannot be null");
+
+        conf.crypto_provider.parameters.putIfAbsent(AbstractCryptoProvider.FAIL_ON_MISSING_PROVIDER_KEY, "false");
+
+        try
+        {
+            Class<?> cryptoProviderClass = FBUtilities.classForName(conf.crypto_provider.class_name, "crypto provider class");
+            cryptoProvider = (AbstractCryptoProvider) cryptoProviderClass.getConstructor(Map.class).newInstance(conf.crypto_provider.parameters);
+            cryptoProvider.install();
+        }
+        catch (Exception e)
+        {
+            // no need to wrap it in another ConfgurationException if FBUtilities.classForName might throw it
+            if (e instanceof ConfigurationException)
+                throw (ConfigurationException) e;
+            else
+                throw new ConfigurationException(String.format("Failed to initialize crypto provider %s", conf.crypto_provider.class_name), e);
+        }
+    }
+
     public static void applySeedProvider()
     {
         // load the seeds for node contact points
@@ -1500,6 +1539,15 @@ public class DatabaseDescriptor
         return detector;
     }
 
+    public static AbstractCryptoProvider getCryptoProvider()
+    {
+        return cryptoProvider;
+    }
+
+    public static void setCryptoProvider(AbstractCryptoProvider cryptoProvider)
+    {
+        DatabaseDescriptor.cryptoProvider = cryptoProvider;
+    }
     public static IAuthenticator getAuthenticator()
     {
         return authenticator;
