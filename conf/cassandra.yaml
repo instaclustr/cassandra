@@ -1328,13 +1328,6 @@ slow_query_log_timeout: 500ms
 #    Snitch for getting dc and rack of a node from metadata service of Google cloud.
 #    This snitch that assumes an GCE region is a DC and an GCE availability_zone is a rack.
 #
-# GenericCloudMetadataServiceSnitch:
-#    This snitch is parsing dc and rack of a node from
-#    a response after GET HTTP request is executed against a URL
-#    under key 'metadata_url' in cassandra-rackdc.properties and it
-#    expects HTTP return code 200. It does not send any headers to
-#    metadata server.
-#
 # RackInferringSnitch:
 #    Proximity is determined by rack and data center, which are
 #    assumed to correspond to the 3rd and 2nd octet of each node's IP

@@ -19,7 +19,9 @@ package org.apache.cassandra.locator;
 
 import java.io.IOException;
 
-import org.apache.cassandra.utils.Pair;
+import com.google.common.collect.ImmutableMap;
+
+import org.apache.cassandra.locator.AbstractCloudMetadataServiceConnector.DefaultCloudMetadataServiceConnector;
 
 import static org.apache.cassandra.locator.AbstractCloudMetadataServiceConnector.METADATA_URL_PROPERTY;
 
@@ -30,20 +32,26 @@ import static org.apache.cassandra.locator.AbstractCloudMetadataServiceConnector
  * means the hangzhou region, a means the az id. We use 'cn-hangzhou' as the dc,
  * and 'a' as the zone-id.
  */
-public class AlibabaCloudSnitch extends GenericCloudMetadataServiceSnitch
+public class AlibabaCloudSnitch extends AbstractCloudMetadataServiceSnitch
 {
+    static final String DEFAULT_METADATA_SERVICE_URL = "http://100.100.100.200";
+    static final String ZONE_NAME_QUERY_URL = "/latest/meta-data/zone-id";
+
     public AlibabaCloudSnitch() throws IOException
     {
-        super(new SnitchProperties(Pair.create(METADATA_URL_PROPERTY, "http://100.100.100.200/latest/meta-data/zone-id")));
+        this(new SnitchProperties());
     }
 
     public AlibabaCloudSnitch(SnitchProperties properties) throws IOException
     {
-        super(properties);
+        this(properties, new DefaultCloudMetadataServiceConnector(properties.putIfAbsent(METADATA_URL_PROPERTY,
+                                                                                         DEFAULT_METADATA_SERVICE_URL)));
     }
 
     public AlibabaCloudSnitch(SnitchProperties properties, AbstractCloudMetadataServiceConnector connector) throws IOException
     {
-        super(properties, connector);
+        super(connector, properties, SnitchUtils.parseDcAndRack(connector.apiCall(ZONE_NAME_QUERY_URL,
+                                                                                  ImmutableMap.of()),
+                                                                properties.getDcSuffix()));
     }
 }

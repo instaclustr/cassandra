@@ -56,7 +56,7 @@ public class CloudstackSnitch extends AbstractCloudMetadataServiceSnitch
 
     public CloudstackSnitch(SnitchProperties snitchProperties) throws IOException
     {
-        this(snitchProperties, new CloudstackConnector(snitchProperties.add(METADATA_URL_PROPERTY, csMetadataEndpoint())));
+        this(snitchProperties, new CloudstackConnector(snitchProperties.putIfAbsent(METADATA_URL_PROPERTY, csMetadataEndpoint())));
     }
 
     public CloudstackSnitch(SnitchProperties properties, AbstractCloudMetadataServiceConnector connector) throws IOException

@@ -19,7 +19,6 @@ package org.apache.cassandra.locator;
 
 import java.io.IOException;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 
 import org.apache.cassandra.locator.AbstractCloudMetadataServiceConnector.DefaultCloudMetadataServiceConnector;
@@ -46,7 +45,6 @@ public class GoogleCloudSnitch extends AbstractCloudMetadataServiceSnitch
                                                                                          DEFAULT_METADATA_SERVICE_URL)));
     }
 
-    @VisibleForTesting
     public GoogleCloudSnitch(SnitchProperties properties, AbstractCloudMetadataServiceConnector connector) throws IOException
     {
         super(connector, properties, SnitchUtils.parseDcAndRack(connector.apiCall(ZONE_NAME_QUERY_URL,
