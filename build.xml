@@ -716,6 +716,7 @@
             <filter token="asm.version" value="${asm.version}"/>
             <filter token="jacoco.version" value="${jacoco.version}"/>
             <filter token="jflex.version" value="${jflex.version}"/>
+            <filter token="detected.architecture" value="x86_64"/>
         </filterset>
 
         <copy file=".build/cassandra-deps-template.xml" tofile="${build.dir}/${final.name}.pom">
