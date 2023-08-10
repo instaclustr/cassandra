@@ -41,7 +41,7 @@ public final class UDFContextImpl implements UDFContext
     private final TypeCodec<Object>[] argCodecs;
     private final TypeCodec<Object> returnCodec;
 
-    private KeyspaceMetadata metadata = null;
+    private volatile KeyspaceMetadata metadata = null;
 
     UDFContextImpl(List<ColumnIdentifier> argNames, TypeCodec<Object>[] argCodecs, TypeCodec<Object> returnCodec,
                    String keyspace)
@@ -68,12 +68,20 @@ public final class UDFContextImpl implements UDFContext
         return newUDTValue(returnCodec);
     }
 
-    private KeyspaceMetadata getMetadata() {
-        KeyspaceMetadata result = metadata;
-        if (result == null) {
-            metadata = result = Schema.instance.getKeyspaceMetadata(keyspace);
+    private KeyspaceMetadata getMetadata()
+    {
+        if (metadata == null)
+        {
+            synchronized (this)
+            {
+                if (metadata == null)
+                {
+                    metadata = Schema.instance.getKeyspaceMetadata(keyspace);
+                }
+            }
         }
-        return result;
+
+        return metadata;
     }
 
     public UDTValue newUDTValue(String udtName)
