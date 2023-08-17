@@ -22,6 +22,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
+
+import com.google.common.base.Suppliers;
 
 import org.apache.cassandra.cql3.functions.types.DataType;
 import org.apache.cassandra.cql3.functions.types.TupleType;
@@ -47,7 +50,11 @@ public final class UDFContextImpl implements UDFContext
     private final UDFDataType returnType;
     private final String keyspace;
 
-    private volatile KeyspaceMetadata metadata;
+    /*
+        metadata can not be retrieved within the constructor as the keyspace itself may be being
+        constructed and an NPE will result.
+     */
+    private final Supplier<KeyspaceMetadata> metadata;
 
     UDFContextImpl(List<ColumnIdentifier> argNames,
                    List<UDFDataType> argTypes,
@@ -59,6 +66,7 @@ public final class UDFContextImpl implements UDFContext
         this.argTypes = argTypes;
         this.returnType = returnType;
         this.keyspace = keyspace;
+        this.metadata = Suppliers.memoize(() -> Schema.instance.getKeyspaceMetadata(keyspace));
     }
 
     public UDTValue newArgUDTValue(String argName)
@@ -76,25 +84,9 @@ public final class UDFContextImpl implements UDFContext
         return newUDTValue(returnType.toDataType());
     }
 
-    private KeyspaceMetadata getMetadata()
-    {
-        if (metadata == null)
-        {
-            synchronized (this)
-            {
-                if (metadata == null)
-                {
-                    metadata = Schema.instance.getKeyspaceMetadata(keyspace);
-                }
-            }
-        }
-
-        return metadata;
-    }
-
     public UDTValue newUDTValue(String udtName)
     {
-        Optional<org.apache.cassandra.db.marshal.UserType> udtType = getMetadata().types.get(ByteBufferUtil.bytes(udtName));
+        Optional<org.apache.cassandra.db.marshal.UserType> udtType = metadata.get().types.get(ByteBufferUtil.bytes(udtName));
         DataType dataType = JavaDriverUtils.driverType(udtType.orElseThrow(
                 () -> new IllegalArgumentException("No UDT named " + udtName + " in keyspace " + keyspace)
         ));
@@ -118,7 +110,7 @@ public final class UDFContextImpl implements UDFContext
 
     public TupleValue newTupleValue(String cqlDefinition)
     {
-        AbstractType<?> abstractType = CQLTypeParser.parse(keyspace, cqlDefinition, getMetadata().types);
+        AbstractType<?> abstractType = CQLTypeParser.parse(keyspace, cqlDefinition, metadata.get().types);
         DataType dataType = JavaDriverUtils.driverType(abstractType);
         return newTupleValue(dataType);
     }
