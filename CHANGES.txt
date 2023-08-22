@@ -1,3 +1,7 @@
+3.11.16.1
+ * Reject empty options and invalid DC names in replication configuration while creating or altering a keyspace (CASSANDRA-12681)
+ * Bump snappy-java dependency version so that Snappy compression can be used on AWS Graviton instances.
+
 3.11.16
  * Moved jflex from runtime to build dependencies (CASSANDRA-18664)
  * Fix CAST function for float to decimal (CASSANDRA-18647)
