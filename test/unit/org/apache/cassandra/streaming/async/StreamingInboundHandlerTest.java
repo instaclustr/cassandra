@@ -112,6 +112,31 @@ public class StreamingInboundHandlerTest
         task.deriveSession(msg);
     }
 
+    @Test
+    public void StreamDeserializingTask_deriveSession_BulkLoad_Disabled()
+    {
+        DatabaseDescriptor.setBulkLoadEnabled(false);
+        StreamInitMessage msg = new StreamInitMessage(REMOTE_ADDR, 0, nextTimeUUID(), StreamOperation.BULK_LOAD, nextTimeUUID(), PreviewKind.ALL);
+        StreamDeserializingTask task = new StreamDeserializingTask(null, streamingChannel, MessagingService.current_version);
+        try
+        {
+            task.deriveSession(msg);
+            Assert.fail("Derive seesion should fail");
+        }
+        catch (RuntimeException e)
+        {
+            Assert.assertEquals("Bulk Load is disabled", e.getMessage());
+        }
+
+        // verify that other operation is not affected
+        msg = new StreamInitMessage(REMOTE_ADDR, 0, nextTimeUUID(), StreamOperation.REPAIR, nextTimeUUID(), PreviewKind.ALL);
+        task = new StreamDeserializingTask(null, streamingChannel, MessagingService.current_version);
+        StreamSession session = task.deriveSession(msg);
+        Assert.assertNotNull(session);
+
+        DatabaseDescriptor.setBulkLoadEnabled(true);
+    }
+
     @Test (expected = IllegalStateException.class)
     public void StreamDeserializingTask_deserialize_ISM_NoSession() throws IOException
     {

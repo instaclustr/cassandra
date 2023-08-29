@@ -3974,6 +3974,17 @@ public class DatabaseDescriptor
         conf.gc_warn_threshold = new DurationSpec.IntMillisecondsBound(threshold);
     }
 
+    public static boolean isBulkLoadEnabled()
+    {
+        return conf.bulk_load_enabled;
+    }
+
+    @VisibleForTesting
+    public static void setBulkLoadEnabled(boolean bulk_load_enabled)
+    {
+        conf.bulk_load_enabled = bulk_load_enabled;
+    }
+
     public static boolean isCDCEnabled()
     {
         return conf.cdc_enabled;

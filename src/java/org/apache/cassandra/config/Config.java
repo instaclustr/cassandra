@@ -397,6 +397,8 @@ public class Config
     @Replaces(oldName = "max_mutation_size_in_kb", converter = Converters.KIBIBYTES_DATASTORAGE, deprecated = true)
     public DataStorageSpec.IntKibibytesBound max_mutation_size;
 
+    public boolean bulk_load_enabled = true;
+
     // Change-data-capture logs
     public boolean cdc_enabled = false;
     // When true, new CDC mutations are rejected/blocked when reaching max CDC storage.

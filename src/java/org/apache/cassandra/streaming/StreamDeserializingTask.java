@@ -22,6 +22,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.locator.InetAddressAndPort;
 import org.apache.cassandra.streaming.messages.KeepAliveMessage;
 import org.apache.cassandra.streaming.messages.StreamMessage;
@@ -105,6 +106,11 @@ public class StreamDeserializingTask implements Runnable
         // StreamInitMessage starts a new channel here, but IncomingStreamMessage needs a session
         // to be established a priori
         StreamSession streamSession = message.getOrCreateAndAttachInboundSession(channel, messagingVersion);
+
+        if (streamSession.getStreamOperation() == StreamOperation.BULK_LOAD && !DatabaseDescriptor.isBulkLoadEnabled())
+        {
+            throw new RuntimeException("Bulk Load is disabled");
+        }
 
         // Attach this channel to the session: this only happens upon receiving the first init message as a follower;
         // in all other cases, no new control channel will be added, as the proper control channel will be already attached.
