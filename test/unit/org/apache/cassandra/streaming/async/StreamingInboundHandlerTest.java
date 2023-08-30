@@ -41,6 +41,7 @@ import org.apache.cassandra.streaming.PreviewKind;
 import org.apache.cassandra.streaming.StreamDeserializingTask;
 import org.apache.cassandra.streaming.StreamManager;
 import org.apache.cassandra.streaming.StreamOperation;
+import org.apache.cassandra.streaming.StreamReceiveException;
 import org.apache.cassandra.streaming.StreamResultFuture;
 import org.apache.cassandra.streaming.StreamSession;
 import org.apache.cassandra.streaming.StreamingChannel;
@@ -49,6 +50,7 @@ import org.apache.cassandra.streaming.messages.IncomingStreamMessage;
 import org.apache.cassandra.streaming.messages.StreamInitMessage;
 import org.apache.cassandra.streaming.messages.StreamMessageHeader;
 import org.apache.cassandra.utils.TimeUUID;
+import org.assertj.core.api.Assertions;
 
 import static org.apache.cassandra.utils.TimeUUID.Generator.nextTimeUUID;
 
@@ -96,7 +98,7 @@ public class StreamingInboundHandlerTest
     }
 
     @Test
-    public void StreamDeserializingTask_deriveSession_StreamInitMessage()
+    public void StreamDeserializingTask_deriveSession_StreamInitMessage() throws Exception
     {
         StreamInitMessage msg = new StreamInitMessage(REMOTE_ADDR, 0, nextTimeUUID(), StreamOperation.REPAIR, nextTimeUUID(), PreviewKind.ALL);
         StreamDeserializingTask task = new StreamDeserializingTask(null, streamingChannel, MessagingService.current_version);
@@ -104,8 +106,8 @@ public class StreamingInboundHandlerTest
         Assert.assertNotNull(session);
     }
 
-    @Test (expected = UnsupportedOperationException.class)
-    public void StreamDeserializingTask_deriveSession_NoSession()
+    @Test(expected = UnsupportedOperationException.class)
+    public void StreamDeserializingTask_deriveSession_NoSession() throws Exception
     {
         CompleteMessage msg = new CompleteMessage();
         StreamDeserializingTask task = new StreamDeserializingTask(null, streamingChannel, MessagingService.current_version);
@@ -115,26 +117,41 @@ public class StreamingInboundHandlerTest
     @Test
     public void StreamDeserializingTask_deriveSession_BulkLoad_Disabled()
     {
-        DatabaseDescriptor.setBulkLoadEnabled(false);
-        StreamInitMessage msg = new StreamInitMessage(REMOTE_ADDR, 0, nextTimeUUID(), StreamOperation.BULK_LOAD, nextTimeUUID(), PreviewKind.ALL);
-        StreamDeserializingTask task = new StreamDeserializingTask(null, streamingChannel, MessagingService.current_version);
         try
         {
-            task.deriveSession(msg);
-            Assert.fail("Derive seesion should fail");
+            DatabaseDescriptor.setBulkLoadEnabled(false);
+            final StreamInitMessage msg = new StreamInitMessage(REMOTE_ADDR, 0, nextTimeUUID(), StreamOperation.BULK_LOAD, nextTimeUUID(), PreviewKind.ALL);
+            final StreamDeserializingTask task = new StreamDeserializingTask(null, streamingChannel, MessagingService.current_version);
+
+            Assertions.assertThatThrownBy(() -> task.deriveSession(msg))
+                      .isInstanceOf(StreamReceiveException.class)
+                      .hasNoCause()
+                      .hasMessage("Bulk Load is disabled")
+                      .as("Derive session should fail");
         }
-        catch (RuntimeException e)
+        finally
         {
-            Assert.assertEquals("Bulk Load is disabled", e.getMessage());
+            DatabaseDescriptor.setBulkLoadEnabled(true);
         }
+    }
 
-        // verify that other operation is not affected
-        msg = new StreamInitMessage(REMOTE_ADDR, 0, nextTimeUUID(), StreamOperation.REPAIR, nextTimeUUID(), PreviewKind.ALL);
-        task = new StreamDeserializingTask(null, streamingChannel, MessagingService.current_version);
-        StreamSession session = task.deriveSession(msg);
-        Assert.assertNotNull(session);
+    @Test
+    public void StreamDeserializingTask_deriveSession_BulkLoad_Disabled_Do_Not_Affect_Non_Bulk_Streaming() throws Exception
+    {
+        try
+        {
+            DatabaseDescriptor.setBulkLoadEnabled(false);
 
-        DatabaseDescriptor.setBulkLoadEnabled(true);
+            // verify that other operation is not affected
+            StreamInitMessage msg = new StreamInitMessage(REMOTE_ADDR, 0, nextTimeUUID(), StreamOperation.REPAIR, nextTimeUUID(), PreviewKind.ALL);
+            StreamDeserializingTask task = new StreamDeserializingTask(null, streamingChannel, MessagingService.current_version);
+            StreamSession session = task.deriveSession(msg);
+            Assert.assertNotNull(session);
+        }
+        finally
+        {
+            DatabaseDescriptor.setBulkLoadEnabled(true);
+        }
     }
 
     @Test (expected = IllegalStateException.class)

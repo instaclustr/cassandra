@@ -101,7 +101,7 @@ public class StreamDeserializingTask implements Runnable
     }
 
     @VisibleForTesting
-    public StreamSession deriveSession(StreamMessage message)
+    public StreamSession deriveSession(StreamMessage message) throws StreamReceiveException
     {
         // StreamInitMessage starts a new channel here, but IncomingStreamMessage needs a session
         // to be established a priori
@@ -109,7 +109,7 @@ public class StreamDeserializingTask implements Runnable
 
         if (streamSession.getStreamOperation() == StreamOperation.BULK_LOAD && !DatabaseDescriptor.isBulkLoadEnabled())
         {
-            throw new RuntimeException("Bulk Load is disabled");
+            throw new StreamReceiveException(streamSession, "Bulk Load is disabled");
         }
 
         // Attach this channel to the session: this only happens upon receiving the first init message as a follower;
