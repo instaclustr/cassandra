@@ -109,14 +109,19 @@ public class BootstrapTest extends TestBaseImpl
         }
     }
 
-    public void populate(ICluster cluster, int from, int to)
+    public static void populate(ICluster cluster, int from, int to)
     {
-        cluster.schemaChange("CREATE KEYSPACE " + KEYSPACE + " WITH replication = {'class': 'SimpleStrategy', 'replication_factor': " + 3 + "};");
+        populate(cluster, from, to, 1, 3, ConsistencyLevel.QUORUM);
+    }
+
+    public static void populate(ICluster cluster, int from, int to, int coord, int rf, ConsistencyLevel cl)
+    {
+        cluster.schemaChange("CREATE KEYSPACE " + KEYSPACE + " WITH replication = {'class': 'SimpleStrategy', 'replication_factor': " + rf + "};");
         cluster.schemaChange("CREATE TABLE " + KEYSPACE + ".tbl (pk int, ck int, v int, PRIMARY KEY (pk, ck))");
 
         for (int i = from; i < to; i++)
-            cluster.coordinator(1).execute("INSERT INTO " + KEYSPACE + ".tbl (pk, ck, v) VALUES (?, ?, ?)",
-                                           ConsistencyLevel.QUORUM,
+            cluster.coordinator(coord).execute("INSERT INTO " + KEYSPACE + ".tbl (pk, ck, v) VALUES (?, ?, ?)",
+                                           cl,
                                            i, i, i);
     }
 

@@ -1,6 +1,7 @@
 3.11.17
  * Fix NPE when using udfContext in UDF after a restart of a node (CASSANDRA-18739)
 Merged from 3.0:
+ * Backport CASSANDRA-16418 - add safeguard so cleanup fails when node has pending ranges (CASSANDRA-18824)
  * Add cqlshrc.sample and credentials.sample into Debian package (CASSANDRA-18818)
  * Refactor validation logic in StorageService.rebuild (CASSANDRA-18803)
  * Make alternation of a user type validate the same way as creation of a user type does (CASSANDRA-18585)
