@@ -63,7 +63,6 @@ import static org.hamcrest.Matchers.startsWith;
  * the final hprof and check that the class loaders are not reachable from a GC root),
  * but it shows that the file handles for Data/Index files are being leaked.
  */
-@Ignore
 public class ResourceLeakTest extends TestBaseImpl
 {
     // Parameters to adjust while hunting for leaks
@@ -209,6 +208,7 @@ public class ResourceLeakTest extends TestBaseImpl
     }
 
     @Test
+    @Ignore
     public void looperTest() throws Throwable
     {
         doTest(1, config -> {});
@@ -235,6 +235,7 @@ public class ResourceLeakTest extends TestBaseImpl
     }
 
     @Test
+    @Ignore
     public void looperNativeTest() throws Throwable
     {
         doTest(2, config -> config.with(NATIVE_PROTOCOL));
@@ -248,6 +249,7 @@ public class ResourceLeakTest extends TestBaseImpl
     }
 
     @Test
+    @Ignore
     public void looperJmxTest() throws Throwable
     {
         doTest(2, config -> config.with(JMX), ResourceLeakTest::testJmx);
@@ -261,6 +263,7 @@ public class ResourceLeakTest extends TestBaseImpl
     }
 
     @Test
+    @Ignore
     public void looperEverythingTest() throws Throwable
     {
         doTest(2, config -> config.with(Feature.values()),
