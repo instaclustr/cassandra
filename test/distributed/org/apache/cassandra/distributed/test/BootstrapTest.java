@@ -46,6 +46,7 @@ public class BootstrapTest extends TestBaseImpl
     public void bootstrapTest() throws Throwable
     {
         int originalNodeCount = 2;
+
         int expandedNodeCount = originalNodeCount + 1;
         Cluster.Builder builder = builder().withNodes(originalNodeCount)
                                            .withTokenSupplier(TokenSupplier.evenlyDistributedTokens(expandedNodeCount))
