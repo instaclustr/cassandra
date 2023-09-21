@@ -253,6 +253,16 @@ public enum CassandraRelevantProperties
      */
     GOSSIP_SETTLE_POLL_SUCCESSES_REQUIRED("cassandra.gossip_settle_poll_success_required", "3"),
 
+    /**
+     * Whether to wait for live endpoint state to consider gossip as settled.
+     */
+    GOSSIP_SETTLE_WAIT_LIVE_CHECK("cassandra.gossip_settle_wait_live_check", "false"),
+
+    /**
+     * Number of polls without live endpoint state change to abort waiting for live endpoints.
+     */
+    GOSSIP_SETTLE_WAIT_LIVE_MAX("cassandra.gossip_settle_wait_live_max", "300"),
+
     IGNORED_SCHEMA_CHECK_ENDPOINTS("cassandra.skip_schema_check_for_endpoints"),
     IGNORED_SCHEMA_CHECK_VERSIONS("cassandra.skip_schema_check_for_versions"),
     IGNORE_CORRUPTED_SCHEMA_TABLES("cassandra.ignore_corrupted_schema_tables"),

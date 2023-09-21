@@ -2364,6 +2364,8 @@ public class Gossiper implements IFailureDetectionEventListener, GossiperMBean
         final int GOSSIP_SETTLE_MIN_WAIT_MS = CassandraRelevantProperties.GOSSIP_SETTLE_MIN_WAIT_MS.getInt();
         final int GOSSIP_SETTLE_POLL_INTERVAL_MS = CassandraRelevantProperties.GOSSIP_SETTLE_POLL_INTERVAL_MS.getInt();
         final int GOSSIP_SETTLE_POLL_SUCCESSES_REQUIRED = CassandraRelevantProperties.GOSSIP_SETTLE_POLL_SUCCESSES_REQUIRED.getInt();
+        final boolean GOSSIP_SETTLE_WAIT_LIVE_CHECK = CassandraRelevantProperties.GOSSIP_SETTLE_WAIT_LIVE_CHECK.getBoolean();
+        final int GOSSIP_SETTLE_WAIT_LIVE_MAX = CassandraRelevantProperties.GOSSIP_SETTLE_WAIT_LIVE_MAX.getInt();
 
         logger.info("Waiting for gossip to settle...");
         Uninterruptibles.sleepUninterruptibly(GOSSIP_SETTLE_MIN_WAIT_MS, TimeUnit.MILLISECONDS);
@@ -2391,6 +2393,35 @@ public class Gossiper implements IFailureDetectionEventListener, GossiperMBean
                 logger.warn("Gossip not settled but startup forced by cassandra.skip_wait_for_gossip_to_settle. Gossip total polls: {}",
                             totalPolls);
                 break;
+            }
+        }
+        if (GOSSIP_SETTLE_WAIT_LIVE_CHECK)
+        {
+            int liveSize = Gossiper.instance.getLiveMembers().size();
+            int livePolls = 0;
+            while (liveSize < epSize)
+            {
+                Uninterruptibles.sleepUninterruptibly(GOSSIP_SETTLE_POLL_INTERVAL_MS, TimeUnit.MILLISECONDS);
+                epSize = Gossiper.instance.getEndpointCount();
+                int currentLive = Gossiper.instance.getLiveMembers().size();
+                totalPolls++;
+                if (currentLive == liveSize)
+                {
+                    logger.debug("Live members looks settled.");
+                    livePolls++;
+                }
+                else
+                {
+                    logger.info("Live members not settled after {} polls.", totalPolls);
+                    livePolls = 0;
+                }
+                liveSize = currentLive;
+                if (livePolls > GOSSIP_SETTLE_WAIT_LIVE_MAX)
+                {
+                    logger.warn("Endpoints are still down but startup forced by cassandra.gossip_settle_wait_live_max. Gossip total polls: {}",
+                                totalPolls);
+                    break;
+                }
             }
         }
         if (totalPolls > GOSSIP_SETTLE_POLL_SUCCESSES_REQUIRED)
