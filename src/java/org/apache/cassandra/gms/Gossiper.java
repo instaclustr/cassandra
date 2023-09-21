@@ -1352,13 +1352,14 @@ public class Gossiper implements IFailureDetectionEventListener, GossiperMBean
     {
         if (!inflightEcho.add(addr))
         {
+            logger.debug("Skip ECHO_REQ to {}", addr);
             return;
         }
 
         localState.markDead();
 
         Message<NoPayload> echoMessage = Message.out(ECHO_REQ, noPayload);
-        logger.trace("Sending ECHO_REQ to {}", addr);
+        logger.info("Sending ECHO_REQ to {}", addr);
         RequestCallback echoHandler = new RequestCallback()
         {
             @Override
@@ -1386,6 +1387,7 @@ public class Gossiper implements IFailureDetectionEventListener, GossiperMBean
             @Override
             public void onFailure(InetAddressAndPort from, RequestFailureReason failureReason)
             {
+                logger.debug("Resending ECHO_REQ to {}", addr);
                 Message<NoPayload> echoMessage = Message.out(ECHO_REQ, noPayload);
                 MessagingService.instance().sendWithCallback(echoMessage, addr, this);
             }
