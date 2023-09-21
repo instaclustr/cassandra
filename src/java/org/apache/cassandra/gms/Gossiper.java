@@ -1350,11 +1350,10 @@ public class Gossiper implements IFailureDetectionEventListener, GossiperMBean
 
     private void markAlive(final InetAddressAndPort addr, final EndpointState localState)
     {
-        if (inflightEcho.contains(addr))
+        if (!inflightEcho.add(addr))
         {
             return;
         }
-        inflightEcho.add(addr);
 
         localState.markDead();
 
@@ -1387,6 +1386,7 @@ public class Gossiper implements IFailureDetectionEventListener, GossiperMBean
             @Override
             public void onFailure(InetAddressAndPort from, RequestFailureReason failureReason)
             {
+                Message<NoPayload> echoMessage = Message.out(ECHO_REQ, noPayload);
                 MessagingService.instance().sendWithCallback(echoMessage, addr, this);
             }
         };
