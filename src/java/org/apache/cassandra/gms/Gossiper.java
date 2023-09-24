@@ -1396,6 +1396,7 @@ public class Gossiper implements IFailureDetectionEventListener, GossiperMBean
                 else
                 {
                     logger.debug("Failed ECHO_REQ to {}, aborting due to disabled gossip", addr);
+                    inflightEcho.remove(addr);
                 }
             }
         };
