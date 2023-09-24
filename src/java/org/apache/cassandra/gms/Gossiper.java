@@ -1387,9 +1387,16 @@ public class Gossiper implements IFailureDetectionEventListener, GossiperMBean
             @Override
             public void onFailure(InetAddressAndPort from, RequestFailureReason failureReason)
             {
-                logger.debug("Resending ECHO_REQ to {}", addr);
-                Message<NoPayload> echoMessage = Message.out(ECHO_REQ, noPayload);
-                MessagingService.instance().sendWithCallback(echoMessage, addr, this);
+                if (isEnabled())
+                {
+                    logger.debug("Resending ECHO_REQ to {}", addr);
+                    Message<NoPayload> echoMessage = Message.out(ECHO_REQ, noPayload);
+                    MessagingService.instance().sendWithCallback(echoMessage, addr, this);
+                }
+                else
+                {
+                    logger.debug("Failed ECHO_REQ to {}, aborting due to disabled gossip", addr);
+                }
             }
         };
 
