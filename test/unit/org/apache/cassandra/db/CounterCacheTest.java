@@ -49,6 +49,8 @@ public class CounterCacheTest
     private static final String KEYSPACE1 = "CounterCacheTest";
     private static final String COUNTER1 = "Counter1";
 
+    private static final String TEST_STR = "";
+
     @BeforeClass
     public static void defineSchema() throws ConfigurationException
     {
