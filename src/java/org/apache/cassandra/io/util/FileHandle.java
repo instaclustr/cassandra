@@ -258,6 +258,7 @@ public class FileHandle extends SharedCloseableImpl
         private boolean mmapped = false;
         private long lengthOverride = -1;
         private MmappedRegionsCache mmappedRegionsCache;
+        private double crcCheckChance = 0.0;
 
         public Builder(File file)
         {
@@ -288,6 +289,12 @@ public class FileHandle extends SharedCloseableImpl
         public Builder withCompressionMetadata(CompressionMetadata metadata)
         {
             this.compressionMetadata = metadata;
+            return this;
+        }
+
+        public Builder withCrcCheckChance(double crcCheckChance)
+        {
+            this.crcCheckChance = crcCheckChance;
             return this;
         }
 
@@ -386,7 +393,7 @@ public class FileHandle extends SharedCloseableImpl
                     {
                         regions = mmappedRegionsCache != null ? mmappedRegionsCache.getOrCreate(channel, compressionMetadata)
                                                               : MmappedRegions.map(channel, compressionMetadata);
-                        rebuffererFactory = maybeCached(new CompressedChunkReader.Mmap(channel, compressionMetadata, regions));
+                        rebuffererFactory = maybeCached(new CompressedChunkReader.Mmap(channel, compressionMetadata, regions, crcCheckChance));
                     }
                     else
                     {
@@ -399,7 +406,7 @@ public class FileHandle extends SharedCloseableImpl
                 {
                     if (compressionMetadata != null)
                     {
-                        rebuffererFactory = maybeCached(new CompressedChunkReader.Standard(channel, compressionMetadata));
+                        rebuffererFactory = maybeCached(new CompressedChunkReader.Standard(channel, compressionMetadata, crcCheckChance));
                     }
                     else
                     {

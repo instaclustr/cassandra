@@ -872,13 +872,11 @@ public abstract class SSTableReader extends SSTable implements UnfilteredSource,
     }
 
     /**
-     * Set the value of CRC check chance. The argument supplied is obtained from the property of the owning CFS.
-     * Called when either the SSTR is initialized, or the CFS's property is updated via JMX
+     * Set the value of CRC check chance.
      */
     public void setCrcCheckChance(double crcCheckChance)
     {
         this.crcCheckChance = crcCheckChance;
-        dfile.compressionMetadata().ifPresent(metadata -> metadata.parameters.setCrcCheckChance(crcCheckChance));
     }
 
     /**
