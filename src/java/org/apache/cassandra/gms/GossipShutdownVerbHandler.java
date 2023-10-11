@@ -29,6 +29,9 @@ public class GossipShutdownVerbHandler implements IVerbHandler<GossipShutdown>
 
     private static final Logger logger = LoggerFactory.getLogger(GossipShutdownVerbHandler.class);
 
+    /**
+     * @see <a href="https://issues.apache.org/jira/browse/CASSANDRA-123">CASSANDRA-123</a>
+     */
     public void doVerb(Message<GossipShutdown> message)
     {
         if (!Gossiper.instance.isEnabled())
