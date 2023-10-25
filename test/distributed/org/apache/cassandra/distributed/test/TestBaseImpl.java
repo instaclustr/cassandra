@@ -79,7 +79,6 @@ public class TestBaseImpl extends DistributedTestBase
     {
         ICluster.setup();
         SKIP_GC_INSPECTOR.setBoolean(true);
-        System.setProperty("sigar.nativeLogging", "false");
     }
 
     @Override
