@@ -563,6 +563,10 @@ public enum CassandraRelevantProperties
      * faster. Note that this is disabled for unit tests but if an individual test requires schema to be flushed, it
      * can be also done manually for that particular case: {@code flush(SchemaConstants.SCHEMA_KEYSPACE_NAME);}. */
     TEST_FLUSH_LOCAL_SCHEMA_CHANGES("cassandra.test.flush_local_schema_changes", "true"),
+    /**
+     * @deprecated use SystemInfo to retrieve relevant info
+     */
+    @Deprecated(since="5.0")
     TEST_IGNORE_SIGAR("cassandra.test.ignore_sigar"),
     TEST_INVALID_LEGACY_SSTABLE_ROOT("invalid-legacy-sstable-root"),
     TEST_JVM_DTEST_DISABLE_SSL("cassandra.test.disable_ssl"),

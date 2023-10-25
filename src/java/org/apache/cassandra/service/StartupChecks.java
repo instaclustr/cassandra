@@ -71,7 +71,7 @@ import org.apache.cassandra.schema.TableMetadata;
 import org.apache.cassandra.utils.FBUtilities;
 import org.apache.cassandra.utils.JavaUtils;
 import org.apache.cassandra.utils.NativeLibrary;
-import org.apache.cassandra.utils.SigarLibrary;
+import org.apache.cassandra.utils.SystemInfo;
 
 import static org.apache.cassandra.config.CassandraRelevantProperties.CASSANDRA_JMX_LOCAL_PORT;
 import static org.apache.cassandra.config.CassandraRelevantProperties.COM_SUN_MANAGEMENT_JMXREMOTE_PORT;
@@ -134,7 +134,7 @@ public class StartupChecks
                                                                       checkJMXProperties,
                                                                       inspectJvmOptions,
                                                                       checkNativeLibraryInitialization,
-                                                                      initSigarLibrary,
+                                                                      checkProcessEnvironment,
                                                                       checkMaxMapCount,
                                                                       checkReadAheadKbSetting,
                                                                       checkDataDirs,
@@ -355,14 +355,20 @@ public class StartupChecks
         }
     };
 
-    public static final StartupCheck initSigarLibrary = new StartupCheck()
+    public static final StartupCheck checkProcessEnvironment = new StartupCheck()
     {
         @Override
         public void execute(StartupChecksOptions options)
         {
             if (options.isDisabled(getStartupCheckType()))
                 return;
-            SigarLibrary.instance.warnIfRunningInDegradedMode();
+
+            Optional<String> degradations = new SystemInfo().isDegraded();
+
+            if (degradations.isPresent())
+                logger.warn("Cassandra server running in degraded mode. " + degradations.get());
+            else
+                logger.info("Checked OS settings and found them configured for optimal performance.");
         }
     };
 
