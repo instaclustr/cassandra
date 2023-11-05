@@ -765,12 +765,11 @@ public class Verifier
                         assert m.is(ENQUEUE);
                         m.serialize = e.at;
                         m.messagingVersion = e.messagingVersion;
-                        assert m.messagingVersion >= VERSION_40;
                         if (current_version != e.messagingVersion)
                             controller.adjust(m.message.serializedSize(current_version), m.message.serializedSize(e.messagingVersion));
 
                         m.processOnEventLoop = willProcessOnEventLoop(outbound.type(), m.message, e.messagingVersion);
-                        m.expiresAtNanos = expiresAtNanos(m.message);
+                        m.expiresAtNanos = expiresAtNanos(m.message, e.messagingVersion);
                         int mi = enqueueing.indexOf(m);
                         for (int i = 0 ; i < mi ; ++i)
                         {
@@ -1622,15 +1621,18 @@ public class Verifier
     private static boolean willProcessOnEventLoop(ConnectionType type, Message<?> message, int messagingVersion)
     {
         int size = message.serializedSize(messagingVersion);
-        if (type == ConnectionType.SMALL_MESSAGES)
+        if (type == ConnectionType.SMALL_MESSAGES && messagingVersion >= VERSION_40)
             return size <= LARGE_MESSAGE_THRESHOLD;
-        else
+        else if (messagingVersion >= VERSION_40)
             return size <= DEFAULT_BUFFER_SIZE;
+        else
+            return size <= LARGE_MESSAGE_THRESHOLD;
     }
 
-    private static long expiresAtNanos(Message<?> message)
+    private static long expiresAtNanos(Message<?> message, int messagingVersion)
     {
-        return message.expiresAtNanos();
+        return messagingVersion < VERSION_40 ? message.verb().expiresAtNanos(message.createdAtNanos())
+                                             : message.expiresAtNanos();
     }
 
 }

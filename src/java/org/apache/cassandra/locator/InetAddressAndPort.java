@@ -55,6 +55,7 @@ import org.apache.cassandra.utils.FastByteOperations;
  * need to sometimes return a port and sometimes not.
  *
  */
+@SuppressWarnings("UnstableApiUsage")
 public final class InetAddressAndPort extends InetSocketAddress implements Comparable<InetAddressAndPort>, Serializable
 {
     private static final long serialVersionUID = 0;
@@ -318,6 +319,8 @@ public final class InetAddressAndPort extends InetSocketAddress implements Compa
 
     /**
      * As of version 4.0 the endpoint description includes a port number as an unsigned short
+     * This serializer matches the 3.0 CompactEndpointSerializationHelper, encoding the number of address bytes
+     * in a single byte before the address itself.
      */
     public static final class Serializer implements IVersionedSerializer<InetAddressAndPort>
     {
@@ -344,10 +347,17 @@ public final class InetAddressAndPort extends InetSocketAddress implements Compa
 
         void serialize(byte[] address, int port, DataOutputPlus out, int version) throws IOException
         {
-            assert version >= MessagingService.VERSION_40;
-            out.writeByte(address.length + 2);
-            out.write(address);
-            out.writeShort(port);
+            if (version >= MessagingService.VERSION_40)
+            {
+                out.writeByte(address.length + 2);
+                out.write(address);
+                out.writeShort(port);
+            }
+            else
+            {
+                out.writeByte(address.length);
+                out.write(address);
+            }
         }
 
         public InetAddressAndPort deserialize(DataInputPlus in, int version) throws IOException
@@ -358,7 +368,11 @@ public final class InetAddressAndPort extends InetSocketAddress implements Compa
                 //The original pre-4.0 serialiation of just an address
                 case 4:
                 case 16:
-                    throw new AssertionError("pre-4.0 serialization size " + size);
+                {
+                    byte[] bytes = new byte[size];
+                    in.readFully(bytes, 0, bytes.length);
+                    return getByAddress(bytes);
+                }
                 //Address and one port
                 case 6:
                 case 18:
@@ -381,7 +395,13 @@ public final class InetAddressAndPort extends InetSocketAddress implements Compa
         public InetAddressAndPort extract(ByteBuffer buf, int position) throws IOException
         {
             int size = buf.get(position++) & 0xFF;
-            if (size == 6 || size == 18)
+            if (size == 4 || size == 16)
+            {
+                byte[] bytes = new byte[size];
+                ByteBufferUtil.copyBytes(buf, position, bytes, 0, size);
+                return getByAddress(bytes);
+            }
+            else if (size == 6 || size == 18)
             {
                 byte[] bytes = new byte[size - 2];
                 ByteBufferUtil.copyBytes(buf, position, bytes, 0, size - 2);
@@ -400,15 +420,26 @@ public final class InetAddressAndPort extends InetSocketAddress implements Compa
 
         public long serializedSize(InetSocketAddress from, int version)
         {
-            assert version >= MessagingService.VERSION_40;
-            if (from.getAddress() instanceof Inet4Address)
-                return 1 + 4 + 2;
-            assert from.getAddress() instanceof Inet6Address;
-            return 1 + 16 + 2;
+            //4.0 includes a port number
+            if (version >= MessagingService.VERSION_40)
+            {
+                if (from.getAddress() instanceof Inet4Address)
+                    return 1 + 4 + 2;
+                assert from.getAddress() instanceof Inet6Address;
+                return 1 + 16 + 2;
+            }
+            else
+            {
+                if (from.getAddress() instanceof Inet4Address)
+                    return 1 + 4;
+                assert from.getAddress() instanceof Inet6Address;
+                return 1 + 16;
+            }
         }
     }
 
-    /** Serializer for handling FWD_FRM message parameters. 
+    /** Serializer for handling FWD_FRM message parameters. Pre-4.0 deserialization is a special
+     * case in the message
      */
     public static final class FwdFrmSerializer implements IVersionedSerializer<InetAddressAndPort>
     {
@@ -417,43 +448,73 @@ public final class InetAddressAndPort extends InetSocketAddress implements Compa
 
         public void serialize(InetAddressAndPort endpoint, DataOutputPlus out, int version) throws IOException
         {
-            assert version >= MessagingService.VERSION_40;
             byte[] buf = endpoint.addressBytes;
-            out.writeByte(buf.length + 2);
-            out.write(buf);
-            out.writeShort(endpoint.getPort());
+
+            if (version >= MessagingService.VERSION_40)
+            {
+                out.writeByte(buf.length + 2);
+                out.write(buf);
+                out.writeShort(endpoint.getPort());
+            }
+            else
+            {
+                out.write(buf);
+            }
         }
 
         public long serializedSize(InetAddressAndPort from, int version)
         {
-            assert version >= MessagingService.VERSION_40;
-            if (from.getAddress() instanceof Inet4Address)
-                return 1 + 4 + 2;
-            assert from.getAddress() instanceof Inet6Address;
-            return 1 + 16 + 2;
+            //4.0 includes a port number
+            if (version >= MessagingService.VERSION_40)
+            {
+                if (from.getAddress() instanceof Inet4Address)
+                    return 1 + 4 + 2;
+                assert from.getAddress() instanceof Inet6Address;
+                return 1 + 16 + 2;
+            }
+            else
+            {
+                if (from.getAddress() instanceof Inet4Address)
+                    return 4;
+                assert from.getAddress() instanceof Inet6Address;
+                return 16;
+            }
         }
 
         @Override
         public InetAddressAndPort deserialize(DataInputPlus in, int version) throws IOException
         {
-            assert version >= MessagingService.VERSION_40 : "FWD_FRM deserializations should be special-cased pre-4.0";
-            int size = in.readByte() & 0xFF;
-            switch (size)
+            if (version >= MessagingService.VERSION_40)
             {
-                //Address and one port
-                case 6:
-                case 18:
+                int size = in.readByte() & 0xFF;
+                switch (size)
                 {
-                    byte[] bytes = new byte[size - 2];
-                    in.readFully(bytes);
+                    //Address and one port
+                    case 6:
+                    case 18:
+                    {
+                        byte[] bytes = new byte[size - 2];
+                        in.readFully(bytes);
 
-                    int port = in.readShort() & 0xFFFF;
-                    return getByAddressOverrideDefaults(InetAddress.getByAddress(bytes), bytes, port);
+                        int port = in.readShort() & 0xFFFF;
+                        return getByAddressOverrideDefaults(InetAddress.getByAddress(bytes), bytes, port);
+                    }
+                    default:
+                        throw new AssertionError("Unexpected size " + size);
                 }
-                default:
-                    throw new AssertionError("Unexpected size " + size);
+            }
+            else
+            {
+                throw new IllegalStateException("FWD_FRM deserializations should be special-cased pre-4.0");
             }
         }
 
+        public InetAddressAndPort pre40DeserializeWithLength(DataInputPlus in, int version, int length) throws IOException
+        {
+            assert length == 4 || length == 16 : "unexpected length " + length;
+            byte[] from = new byte[length];
+            in.readFully(from, 0, length);
+            return InetAddressAndPort.getByAddress(from);
+        }
     }
 }

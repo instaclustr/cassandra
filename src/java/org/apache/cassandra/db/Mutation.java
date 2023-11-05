@@ -48,6 +48,8 @@ import org.apache.cassandra.service.AbstractWriteResponseHandler;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.apache.cassandra.utils.concurrent.Future;
 
+import static org.apache.cassandra.net.MessagingService.VERSION_30;
+import static org.apache.cassandra.net.MessagingService.VERSION_3014;
 import static org.apache.cassandra.net.MessagingService.VERSION_40;
 import static org.apache.cassandra.net.MessagingService.VERSION_50;
 import static org.apache.cassandra.utils.MonotonicClock.Global.approxTime;
@@ -315,6 +317,8 @@ public class Mutation implements IMutation, Supplier<Mutation>
         return buff.append("])").toString();
     }
 
+    private int serializedSize30;
+    private int serializedSize3014;
     private int serializedSize40;
     private int serializedSize50;
 
@@ -322,6 +326,14 @@ public class Mutation implements IMutation, Supplier<Mutation>
     {
         switch (version)
         {
+            case VERSION_30:
+                if (serializedSize30 == 0)
+                    serializedSize30 = (int) serializer.serializedSize(this, VERSION_30);
+                return serializedSize30;
+            case VERSION_3014:
+                if (serializedSize3014 == 0)
+                    serializedSize3014 = (int) serializer.serializedSize(this, VERSION_3014);
+                return serializedSize3014;
             case VERSION_40:
                 if (serializedSize40 == 0)
                     serializedSize40 = (int) serializer.serializedSize(this, VERSION_40);

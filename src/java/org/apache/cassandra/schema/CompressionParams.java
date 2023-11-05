@@ -42,6 +42,7 @@ import org.apache.cassandra.net.MessagingService;
 
 import static java.lang.String.format;
 
+@SuppressWarnings("deprecation")
 public final class CompressionParams
 {
     public static final int DEFAULT_CHUNK_LENGTH = 1024 * 16;
@@ -505,7 +506,6 @@ public final class CompressionParams
     {
         public void serialize(CompressionParams parameters, DataOutputPlus out, int version) throws IOException
         {
-            assert version >= MessagingService.VERSION_40;
             out.writeUTF(parameters.sstableCompressor.getClass().getSimpleName());
             out.writeInt(parameters.otherOptions.size());
             for (Map.Entry<String, String> entry : parameters.otherOptions.entrySet())
@@ -514,12 +514,15 @@ public final class CompressionParams
                 out.writeUTF(entry.getValue());
             }
             out.writeInt(parameters.chunkLength());
-            out.writeInt(parameters.maxCompressedLength);
+            if (version >= MessagingService.VERSION_40)
+                out.writeInt(parameters.maxCompressedLength);
+            else
+                if (parameters.maxCompressedLength != Integer.MAX_VALUE)
+                    throw new UnsupportedOperationException("Cannot stream SSTables with uncompressed chunks to pre-4.0 nodes.");
         }
 
         public CompressionParams deserialize(DataInputPlus in, int version) throws IOException
         {
-            assert version >= MessagingService.VERSION_40;
             String compressorName = in.readUTF();
             int optionCount = in.readInt();
             Map<String, String> options = new HashMap<>();
@@ -530,7 +533,9 @@ public final class CompressionParams
                 options.put(key, value);
             }
             int chunkLength = in.readInt();
-            int minCompressRatio = in.readInt();
+            int minCompressRatio = Integer.MAX_VALUE;   // Earlier Cassandra cannot use uncompressed chunks.
+            if (version >= MessagingService.VERSION_40)
+                minCompressRatio = in.readInt();
 
             CompressionParams parameters;
             try
@@ -546,7 +551,6 @@ public final class CompressionParams
 
         public long serializedSize(CompressionParams parameters, int version)
         {
-            assert version >= MessagingService.VERSION_40;
             long size = TypeSizes.sizeof(parameters.sstableCompressor.getClass().getSimpleName());
             size += TypeSizes.sizeof(parameters.otherOptions.size());
             for (Map.Entry<String, String> entry : parameters.otherOptions.entrySet())
@@ -555,7 +559,8 @@ public final class CompressionParams
                 size += TypeSizes.sizeof(entry.getValue());
             }
             size += TypeSizes.sizeof(parameters.chunkLength());
-            size += TypeSizes.sizeof(parameters.maxCompressedLength());
+            if (version >= MessagingService.VERSION_40)
+                size += TypeSizes.sizeof(parameters.maxCompressedLength());
             return size;
         }
     }

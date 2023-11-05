@@ -18,6 +18,8 @@
 package org.apache.cassandra.net;
 
 import com.google.common.base.Preconditions;
+import com.google.common.primitives.Ints;
+import org.apache.cassandra.db.TypeSizes;
 import org.apache.cassandra.io.IVersionedSerializer;
 import org.apache.cassandra.io.util.DataInputPlus;
 import org.apache.cassandra.io.util.DataOutputPlus;
@@ -37,6 +39,7 @@ import static org.apache.cassandra.utils.vint.VIntCoding.computeUnsignedVIntSize
  * A container used to store a node -> message_id map for inter-DC write forwarding.
  * We pick one node in each external DC to forward the message to its local peers.
  *
+ * TODO: in the next protocol version only serialize peers, message id will become redundant once 3.0 is out of the picture
  */
 public final class ForwardingInfo implements Serializable
 {
@@ -48,6 +51,19 @@ public final class ForwardingInfo implements Serializable
         Preconditions.checkArgument(targets.size() == messageIds.length);
         this.targets = targets;
         this.messageIds = messageIds;
+    }
+
+    /**
+     * @return {@code true} if all host are to use the same message id, {@code false} otherwise. Starting with 4.0 and
+     * above, we should be reusing the same id, always, but it won't always be true until 3.0/3.11 are phased out.
+     */
+    public boolean useSameMessageID(long id)
+    {
+        for (int i = 0; i < messageIds.length; i++)
+            if (id != messageIds[i])
+                return false;
+
+        return true;
     }
 
     /**
@@ -63,33 +79,37 @@ public final class ForwardingInfo implements Serializable
     {
         public void serialize(ForwardingInfo forwardTo, DataOutputPlus out, int version) throws IOException
         {
-            assert version >= VERSION_40;
             long[] ids = forwardTo.messageIds;
             List<InetAddressAndPort> targets = forwardTo.targets;
 
             int count = ids.length;
-            out.writeUnsignedVInt32(count);
+            if (version >= VERSION_40)
+                out.writeUnsignedVInt32(count);
+            else
+                out.writeInt(count);
 
             for (int i = 0; i < count; i++)
             {
                 inetAddressAndPortSerializer.serialize(targets.get(i), out, version);
-                out.writeUnsignedVInt(ids[i]);
+                if (version >= VERSION_40)
+                    out.writeUnsignedVInt(ids[i]);
+                else
+                    out.writeInt(Ints.checkedCast(ids[i]));
             }
         }
 
         public long serializedSize(ForwardingInfo forwardTo, int version)
         {
-            assert version >= VERSION_40;
             long[] ids = forwardTo.messageIds;
             List<InetAddressAndPort> targets = forwardTo.targets;
 
             int count = ids.length;
-            long size = computeUnsignedVIntSize(count);
+            long size = version >= VERSION_40 ? computeUnsignedVIntSize(count) : TypeSizes.sizeof(count);
 
             for (int i = 0; i < count; i++)
             {
                 size += inetAddressAndPortSerializer.serializedSize(targets.get(i), version);
-                size += computeUnsignedVIntSize(ids[i]);
+                size += version >= VERSION_40 ? computeUnsignedVIntSize(ids[i]) : 4;
             }
 
             return size;
@@ -97,8 +117,7 @@ public final class ForwardingInfo implements Serializable
 
         public ForwardingInfo deserialize(DataInputPlus in, int version) throws IOException
         {
-            assert version >= VERSION_40;
-            int count = in.readUnsignedVInt32();
+            int count = version >= VERSION_40 ? in.readUnsignedVInt32() : in.readInt();
 
             long[] ids = new long[count];
             List<InetAddressAndPort> targets = new ArrayList<>(count);
@@ -106,7 +125,7 @@ public final class ForwardingInfo implements Serializable
             for (int i = 0; i < count; i++)
             {
                 targets.add(inetAddressAndPortSerializer.deserialize(in, version));
-                ids[i] = in.readUnsignedVInt32();
+                ids[i] = version >= VERSION_40 ? in.readUnsignedVInt32() : in.readInt();
             }
 
             return new ForwardingInfo(targets, ids);

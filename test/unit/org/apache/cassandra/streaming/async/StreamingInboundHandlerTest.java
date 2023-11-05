@@ -56,6 +56,7 @@ import static org.apache.cassandra.net.TestChannel.REMOTE_ADDR;
 
 public class StreamingInboundHandlerTest
 {
+    private static final int VERSION = MessagingService.current_version;
 
     private NettyStreamingChannel streamingChannel;
     private EmbeddedChannel channel;
@@ -71,7 +72,7 @@ public class StreamingInboundHandlerTest
     public void setup()
     {
         channel = new TestChannel();
-        streamingChannel = new NettyStreamingChannel(channel, StreamingChannel.Kind.CONTROL);
+        streamingChannel = new NettyStreamingChannel(VERSION, channel, StreamingChannel.Kind.CONTROL);
         channel.pipeline().addLast("stream", streamingChannel);
     }
 
@@ -99,7 +100,7 @@ public class StreamingInboundHandlerTest
     public void StreamDeserializingTask_deriveSession_StreamInitMessage()
     {
         StreamInitMessage msg = new StreamInitMessage(REMOTE_ADDR, 0, nextTimeUUID(), StreamOperation.REPAIR, nextTimeUUID(), PreviewKind.ALL);
-        StreamDeserializingTask task = new StreamDeserializingTask(null, streamingChannel, MessagingService.current_version);
+        StreamDeserializingTask task = new StreamDeserializingTask(null, streamingChannel, streamingChannel.messagingVersion);
         StreamSession session = task.deriveSession(msg);
         Assert.assertNotNull(session);
     }
@@ -108,7 +109,7 @@ public class StreamingInboundHandlerTest
     public void StreamDeserializingTask_deriveSession_NoSession()
     {
         CompleteMessage msg = new CompleteMessage();
-        StreamDeserializingTask task = new StreamDeserializingTask(null, streamingChannel, MessagingService.current_version);
+        StreamDeserializingTask task = new StreamDeserializingTask(null, streamingChannel, streamingChannel.messagingVersion);
         task.deriveSession(msg);
     }
 
@@ -132,7 +133,7 @@ public class StreamingInboundHandlerTest
     public void StreamDeserializingTask_deserialize_ISM_HasSession()
     {
         TimeUUID planId = nextTimeUUID();
-        StreamResultFuture future = StreamResultFuture.createFollower(0, planId, StreamOperation.REPAIR, REMOTE_ADDR, streamingChannel, MessagingService.current_version, nextTimeUUID(), PreviewKind.ALL);
+        StreamResultFuture future = StreamResultFuture.createFollower(0, planId, StreamOperation.REPAIR, REMOTE_ADDR, streamingChannel, streamingChannel.messagingVersion, nextTimeUUID(), PreviewKind.ALL);
         StreamManager.instance.registerFollower(future);
         StreamMessageHeader header = new StreamMessageHeader(TableId.generate(), REMOTE_ADDR, planId, false,
                                                              0, 0, 0, nextTimeUUID());

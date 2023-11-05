@@ -61,12 +61,12 @@ public class NettyStreamingConnectionFactory implements StreamingChannel.Factory
         {
             for (int i = 0; i < MAX_CONNECT_ATTEMPTS; i++)
             {
-                Future<Result<StreamingSuccess>> result = initiateStreaming(eventLoop, settings, sslFallbackConnectionType);
+                Future<Result<StreamingSuccess>> result = initiateStreaming(eventLoop, settings, sslFallbackConnectionType, messagingVersion);
                 result.awaitUninterruptibly(); // initiate has its own timeout, so this is "guaranteed" to return relatively promptly
                 if (result.isSuccess())
                 {
                     Channel channel = result.getNow().success().channel;
-                    NettyStreamingChannel streamingChannel = new NettyStreamingChannel(channel, kind);
+                    NettyStreamingChannel streamingChannel = new NettyStreamingChannel(messagingVersion, channel, kind);
                     if (kind == StreamingChannel.Kind.CONTROL)
                     {
                         ChannelPipeline pipeline = channel.pipeline();

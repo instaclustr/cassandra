@@ -97,20 +97,20 @@ public enum RequestFailureReason
 
         public void serialize(RequestFailureReason reason, DataOutputPlus out, int version) throws IOException
         {
-            assert version >= VERSION_40;
-            out.writeUnsignedVInt32(reason.code);
+            if (version < VERSION_40)
+                out.writeShort(reason.code);
+            else
+                out.writeUnsignedVInt32(reason.code);
         }
 
         public RequestFailureReason deserialize(DataInputPlus in, int version) throws IOException
         {
-            assert version >= VERSION_40;
-            return fromCode(in.readUnsignedVInt32());
+            return fromCode(version < VERSION_40 ? in.readUnsignedShort() : in.readUnsignedVInt32());
         }
 
         public long serializedSize(RequestFailureReason reason, int version)
         {
-            assert version >= VERSION_40;
-            return VIntCoding.computeVIntSize(reason.code);
+            return version < VERSION_40 ? 2 : VIntCoding.computeVIntSize(reason.code);
         }
     }
 }

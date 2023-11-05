@@ -66,13 +66,14 @@ public class MutationVerbHandler implements IVerbHandler<Mutation>
                    .withParam(ParamType.RESPOND_TO, originalMessage.from())
                    .withoutParam(ParamType.FORWARD_TO);
 
+        boolean useSameMessageID = forwardTo.useSameMessageID(originalMessage.id());
         // reuse the same Message if all ids are identical (as they will be for 4.0+ node originated messages)
-        Message<Mutation> message = builder.build();
+        Message<Mutation> message = useSameMessageID ? builder.build() : null;
 
         forwardTo.forEach((id, target) ->
         {
             Tracing.trace("Enqueuing forwarded write to {}", target);
-            MessagingService.instance().send(message, target);
+            MessagingService.instance().send(useSameMessageID ? message : builder.withId(id).build(), target);
         });
     }
 }
