@@ -274,21 +274,6 @@ public class MessagingService extends MessagingServiceMBeanImpl implements Messa
         return ordinal;
     }
 
-    public enum Version
-    {
-        VERSION_30(10),
-        VERSION_3014(11),
-        VERSION_40(12),
-        VERSION_50(13);
-
-        public final int value;
-
-        Version(int value)
-        {
-            this.value = value;
-        }
-    }
-
     private static class MSHandle
     {
         public static final MessagingService instance = new MessagingService(false);
