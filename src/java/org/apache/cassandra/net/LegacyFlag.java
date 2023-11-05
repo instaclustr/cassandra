@@ -32,7 +32,10 @@ import org.apache.cassandra.io.util.DataOutputPlus;
  *
  * Once 3.0/3.11 compatibility is phased out, this class should be removed.
  */
-@Deprecated
+/**
+ * @deprecated since TBD
+ */
+@Deprecated(since = "TBD")
 final class LegacyFlag
 {
     static final LegacyFlag instance = new LegacyFlag();

@@ -46,17 +46,29 @@ public enum ParamType
     FORWARD_TO                  (0,  "FWD_TO",          ForwardingInfo.serializer),
     RESPOND_TO                  (1,  "FWD_FRM",         fwdFrmSerializer),
 
-    @Deprecated
+    /**
+     * @deprecated since TBD
+     */
+    @Deprecated(since = "TBD")
     FAILURE_RESPONSE            (2,  "FAIL",            LegacyFlag.serializer),
-    @Deprecated
+    /**
+     * @deprecated since TBD
+     */
+    @Deprecated(since = "TBD")
     FAILURE_REASON              (3,  "FAIL_REASON",     RequestFailureReason.serializer),
-    @Deprecated
+    /**
+     * @deprecated since TBD
+     */
+    @Deprecated(since = "TBD")
     FAILURE_CALLBACK            (4,  "CAL_BAC",         LegacyFlag.serializer),
 
     TRACE_SESSION               (5,  "TraceSession",    TimeUUID.Serializer.instance),
     TRACE_TYPE                  (6,  "TraceType",       Tracing.traceTypeSerializer),
 
-    @Deprecated
+    /**
+     * @deprecated since TBD
+     */
+    @Deprecated(since = "TBD")
     TRACK_REPAIRED_DATA         (7,  "TrackRepaired",   LegacyFlag.serializer),
 
     TOMBSTONE_FAIL              (8,  "TSF",             Int32Serializer.serializer),
@@ -69,7 +81,11 @@ public enum ParamType
     SNAPSHOT_RANGES             (15, "SNAPSHOT_RANGES", RangesSerializer.serializer);
 
     final int id;
-    @Deprecated final String legacyAlias; // pre-4.0 we used to serialize entire param name string
+    /**
+     * @deprecated since TBD
+     */
+    @Deprecated(since = "TBD")
+    final String legacyAlias; // pre-4.0 we used to serialize entire param name string
     final IVersionedSerializer serializer;
 
     ParamType(int id, String legacyAlias, IVersionedSerializer serializer)

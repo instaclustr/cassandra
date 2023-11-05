@@ -94,7 +94,10 @@ public class HandshakeProtocol
         private static final int MIN_LENGTH = 8;
         private static final int MAX_LENGTH = 12 + InetAddressAndPort.Serializer.MAXIMUM_SIZE;
 
-        @Deprecated // this is ignored by post40 nodes, i.e. if maxMessagingVersion is set
+        /**
+         * @deprecated since TBD
+         */
+        @Deprecated(since = "TBD") // this is ignored by post40 nodes, i.e. if maxMessagingVersion is set
         final int requestMessagingVersion;
         // the messagingVersion bounds the sender will accept to initiate a connection;
         // if the remote peer supports any, the newest supported version will be selected; otherwise the nearest supported version

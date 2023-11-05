@@ -243,7 +243,10 @@ public class RequestCallbacks implements OutboundMessageCallbacks
         final InetAddressAndPort peer;
         public final RequestCallback callback;
 
-        @Deprecated // for 3.0 compatibility purposes only
+        /**
+         * @deprecated since TBD
+         */
+        @Deprecated(since = "TBD")  // for 3.0 compatibility purposes only
         public final Verb responseVerb;
 
         private CallbackInfo(Message message, InetAddressAndPort peer, RequestCallback callback)
