@@ -1,0 +1,5 @@
+#CommitLog upgrade test, version 3.0.30-SNAPSHOT
+#Mon Nov 06 14:36:58 CET 2023
+cells=49359
+hash=556694810
+cfid=8d853a60-7ca9-11ee-b6df-ab48689a3923

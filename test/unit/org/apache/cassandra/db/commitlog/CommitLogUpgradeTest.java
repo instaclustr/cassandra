@@ -85,6 +85,7 @@ public class CommitLogUpgradeTest
                      .addPartitionKeyColumn("key", AsciiType.instance)
                      .addClusteringColumn("col", AsciiType.instance)
                      .addRegularColumn("val", BytesType.instance)
+                     .addRegularColumn("val0", BytesType.instance)
                      .compression(SchemaLoader.getCompressionParameters())
                      .build();
 
@@ -100,6 +101,12 @@ public class CommitLogUpgradeTest
     {
         JVMStabilityInspector.replaceKiller(originalKiller);
         Assert.assertEquals("JVM killed", shouldBeKilled, killerForTests.wasKilled());
+    }
+
+    @Test
+    public void test30_encrypted() throws Exception
+    {
+        testRestore(DATA_DIR + "3.0.30-encrypted");
     }
 
     @Test
