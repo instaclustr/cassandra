@@ -1865,6 +1865,8 @@ public class Gossiper implements IFailureDetectionEventListener, GossiperMBean
         final int GOSSIP_SETTLE_MIN_WAIT_MS = Integer.getInteger("cassandra.gossip_settle_min_wait_ms", 5000);
         final int GOSSIP_SETTLE_POLL_INTERVAL_MS = Integer.getInteger("cassandra.gossip_settle_interval_ms", 1000);
         final int GOSSIP_SETTLE_POLL_SUCCESSES_REQUIRED = Integer.getInteger("cassandra.gossip_settle_poll_success_required", 3);
+        final int GOSSIP_SETTLE_WAIT_LIVE_MAX = Integer.getInteger("cassandra.gossip_settle_wait_live_max", 300);
+        final int GOSSIP_SETTLE_WAIT_LIVE_REQUIRED = Integer.getInteger("cassandra.gossip_settle_wait_live_required", 60);
 
         logger.info("Waiting for gossip to settle...");
         Uninterruptibles.sleepUninterruptibly(GOSSIP_SETTLE_MIN_WAIT_MS, TimeUnit.MILLISECONDS);
@@ -1893,6 +1895,48 @@ public class Gossiper implements IFailureDetectionEventListener, GossiperMBean
                             totalPolls);
                 break;
             }
+        }
+        if (GOSSIP_SETTLE_WAIT_LIVE_MAX != 0)
+        {
+            int liveSize = Gossiper.instance.getLiveMembers().size();
+            int livePolls = 0;
+            int liveOkay = 0;
+            while (liveSize < epSize && liveOkay < GOSSIP_SETTLE_WAIT_LIVE_REQUIRED)
+            {
+                Uninterruptibles.sleepUninterruptibly(GOSSIP_SETTLE_POLL_INTERVAL_MS, TimeUnit.MILLISECONDS);
+                int currentSize = Gossiper.instance.getEndpointStates().size();
+                int currentLive = Gossiper.instance.getLiveMembers().size();
+                totalPolls++;
+                livePolls++;
+                if (currentSize == epSize && currentLive == liveSize && liveSize > 1)
+                {
+                    logger.debug("Live endpoints looks settled");
+                    liveOkay++;
+                }
+                else
+                {
+                    logger.info("Live endpoints not settled after {} polls.", livePolls);
+                    liveOkay = 0;
+                }
+                liveSize = currentLive;
+                epSize = currentSize;
+                if (forceAfter > 0 && totalPolls > forceAfter)
+                {
+                    logger.warn("Gossip not settled but startup forced by cassandra.skip_wait_for_gossip_to_settle. Gossip total polls: {}",
+                                totalPolls);
+                    break;
+                }
+                if (GOSSIP_SETTLE_WAIT_LIVE_MAX > 0 && livePolls > GOSSIP_SETTLE_WAIT_LIVE_MAX)
+                {
+                    logger.warn("Live endpoints are not settled but startup forced by cassandra.gossip_settle_wait_live_max. Gossip total polls: {}",
+                                totalPolls);
+                    break;
+                }
+            }
+            if (livePolls > GOSSIP_SETTLE_WAIT_LIVE_REQUIRED)
+                logger.info("Live endpoints settled after {} extra polls; proceeding", livePolls - GOSSIP_SETTLE_WAIT_LIVE_REQUIRED);
+            else
+                logger.info("No live endpoint backlog; proceeding");
         }
         if (totalPolls > GOSSIP_SETTLE_POLL_SUCCESSES_REQUIRED)
             logger.info("Gossip settled after {} extra polls; proceeding", totalPolls - GOSSIP_SETTLE_POLL_SUCCESSES_REQUIRED);
