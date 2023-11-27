@@ -793,8 +793,6 @@ public class StorageService extends NotificationBroadcasterSupport implements IE
         if (ClusterMetadataService.state() == ClusterMetadataService.State.REMOTE)
             Gossiper.instance.triggerRoundWithCMS();
 
-        Gossiper.waitToSettle();
-
         NodeId self;
         if (isReplacingSameAddress())
         {

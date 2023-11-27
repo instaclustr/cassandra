@@ -44,7 +44,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -62,7 +61,6 @@ import org.apache.cassandra.net.NoPayload;
 import org.apache.cassandra.net.Verb;
 import org.apache.cassandra.tcm.ClusterMetadataService;
 import org.apache.cassandra.tcm.compatibility.GossipHelper;
-import org.apache.cassandra.tcm.membership.Directory;
 import org.apache.cassandra.tcm.membership.Location;
 import org.apache.cassandra.tcm.membership.NodeAddresses;
 import org.apache.cassandra.tcm.membership.NodeVersion;
@@ -77,7 +75,6 @@ import org.slf4j.LoggerFactory;
 
 import org.apache.cassandra.concurrent.ScheduledExecutorPlus;
 import org.apache.cassandra.concurrent.Stage;
-import org.apache.cassandra.config.CassandraRelevantProperties;
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.db.SystemKeyspace;
 import org.apache.cassandra.dht.Token;
@@ -96,7 +93,6 @@ import org.apache.cassandra.utils.concurrent.UncheckedInterruptedException;
 import static org.apache.cassandra.concurrent.ExecutorFactory.Global.executorFactory;
 import static org.apache.cassandra.config.CassandraRelevantProperties.DISABLE_GOSSIP_ENDPOINT_REMOVAL;
 import static org.apache.cassandra.config.CassandraRelevantProperties.GOSSIPER_QUARANTINE_DELAY;
-import static org.apache.cassandra.config.CassandraRelevantProperties.GOSSIPER_SKIP_WAITING_TO_SETTLE;
 import static org.apache.cassandra.config.CassandraRelevantProperties.GOSSIP_DISABLE_THREAD_VALIDATION;
 import static org.apache.cassandra.config.CassandraRelevantProperties.SHUTDOWN_ANNOUNCE_DELAY_IN_MS;
 import static org.apache.cassandra.config.CassandraRelevantProperties.VERY_LONG_TIME_MS;
@@ -1899,113 +1895,6 @@ public class Gossiper implements IFailureDetectionEventListener, GossiperMBean, 
     {
         EndpointState state = getEndpointStateForEndpoint(ep);
         return state != null ? state.getSchemaVersion() : null;
-    }
-
-    // TODO: (TM/alexp): we do not need to wait for gossip to settle anymore, since main keys are now coming from TM
-    public static void waitToSettle()
-    {
-        int forceAfter = GOSSIPER_SKIP_WAITING_TO_SETTLE.getInt();
-        if (forceAfter == 0)
-        {
-            return;
-        }
-        // Previously gossip contained only nodes that were actually in the cluster. Now we
-        // initialize gossip with nodes that may be down. If we do not add the initial marker,
-        // they will never be marked as up.
-        Directory directory = ClusterMetadata.current().directory;
-        for (InetAddressAndPort peer : directory.allJoinedEndpoints())
-        {
-            if (!FBUtilities.getBroadcastAddressAndPort().equals(peer))
-            {
-                FailureDetector.instance.report(peer);
-                FailureDetector.instance.forceConviction(peer);
-            }
-        }
-        final int GOSSIP_SETTLE_MIN_WAIT_MS = CassandraRelevantProperties.GOSSIP_SETTLE_MIN_WAIT_MS.getInt();
-        final int GOSSIP_SETTLE_POLL_INTERVAL_MS = CassandraRelevantProperties.GOSSIP_SETTLE_POLL_INTERVAL_MS.getInt();
-        final int GOSSIP_SETTLE_POLL_SUCCESSES_REQUIRED = CassandraRelevantProperties.GOSSIP_SETTLE_POLL_SUCCESSES_REQUIRED.getInt();
-
-        logger.info("Waiting for gossip to settle...");
-        Uninterruptibles.sleepUninterruptibly(GOSSIP_SETTLE_MIN_WAIT_MS, TimeUnit.MILLISECONDS);
-        int totalPolls = 0;
-        int numOkay = 0;
-        int epSize = Gossiper.instance.getEndpointCount();
-        while (numOkay < GOSSIP_SETTLE_POLL_SUCCESSES_REQUIRED)
-        {
-            Uninterruptibles.sleepUninterruptibly(GOSSIP_SETTLE_POLL_INTERVAL_MS, TimeUnit.MILLISECONDS);
-            int currentSize = Gossiper.instance.getEndpointCount();
-            totalPolls++;
-            if (currentSize == epSize)
-            {
-                logger.debug("Gossip looks settled. {}", Gossiper.instance.endpointStateMap);
-                numOkay++;
-            }
-            else
-            {
-                logger.info("Gossip not settled after {} polls.", totalPolls);
-                numOkay = 0;
-            }
-            epSize = currentSize;
-            if (forceAfter > 0 && totalPolls > forceAfter)
-            {
-                logger.warn("Gossip not settled but startup forced by cassandra.skip_wait_for_gossip_to_settle. Gossip total polls: {}",
-                            totalPolls);
-                break;
-            }
-        }
-        if (totalPolls > GOSSIP_SETTLE_POLL_SUCCESSES_REQUIRED)
-            logger.info("Gossip settled after {} extra polls; proceeding", totalPolls - GOSSIP_SETTLE_POLL_SUCCESSES_REQUIRED);
-        else
-            logger.info("No gossip backlog; proceeding");
-    }
-
-    /**
-     * Blockingly wait for all live nodes to agree on the current schema version.
-     *
-     * @param maxWait maximum time to wait for schema agreement
-     * @param unit TimeUnit of maxWait
-     * @return true if agreement was reached, false if not
-     */
-    // TODO: (TM/alexp): we do not need to wait for schema convergence for the purpose of view building;
-    // we will rely on different mechanisms for propagating mutations correctly
-    public boolean waitForSchemaAgreement(long maxWait, TimeUnit unit, BooleanSupplier abortCondition)
-    {
-        int waited = 0;
-        int toWait = 50;
-
-        Set<InetAddressAndPort> members = getLiveTokenOwners();
-
-        while (true)
-        {
-            if (nodesAgreeOnSchema(members))
-                return true;
-
-            if (waited >= unit.toMillis(maxWait) || abortCondition.getAsBoolean())
-                return false;
-
-            Uninterruptibles.sleepUninterruptibly(toWait, TimeUnit.MILLISECONDS);
-            waited += toWait;
-            toWait = Math.min(1000, toWait * 2);
-        }
-    }
-
-    private boolean nodesAgreeOnSchema(Collection<InetAddressAndPort> nodes)
-    {
-        UUID expectedVersion = null;
-
-        for (InetAddressAndPort node : nodes)
-        {
-            EndpointState state = getEndpointStateForEndpoint(node);
-            UUID remoteVersion = state.getSchemaVersion();
-
-            if (null == expectedVersion)
-                expectedVersion = remoteVersion;
-
-            if (null == expectedVersion || !expectedVersion.equals(remoteVersion))
-                return false;
-        }
-
-        return true;
     }
 
     @VisibleForTesting

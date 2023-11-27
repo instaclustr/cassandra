@@ -127,15 +127,6 @@ public class ViewBuilderTask extends CompactionInfo.Holder implements Callable<L
         else
             logger.debug("Resuming view build for range {} from token {} with {} covered keys", range, prevToken, keysBuilt);
 
-        /*
-         * It's possible for view building to start before MV creation got propagated to other nodes. For this reason
-         * we should wait for schema to converge before attempting to send any view mutations to other nodes, or else
-         * face UnknownTableException upon Mutation deserialization on the nodes that haven't processed the schema change.
-         */
-        boolean schemaConverged = Gossiper.instance.waitForSchemaAgreement(10, TimeUnit.SECONDS, () -> this.isStopped);
-        if (!schemaConverged)
-            logger.warn("Failed to get schema to converge before building view {}.{}", baseCfs.getKeyspaceName(), view.name);
-
         Function<org.apache.cassandra.db.lifecycle.View, Iterable<SSTableReader>> function;
         function = org.apache.cassandra.db.lifecycle.View.select(SSTableSet.CANONICAL, s -> range.intersects(s.getBounds()));
 
