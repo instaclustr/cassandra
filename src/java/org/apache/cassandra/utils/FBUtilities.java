@@ -881,16 +881,6 @@ public class FBUtilities
     final static Pattern BINARY_EXPONENT = Pattern.compile("\\*2\\^([+-]?\\d+)");
 
     /**
-     * Convert the given size in bytes to a human-readable value using binary (i.e. 2^10-based) modifiers.
-     * For example, 1.000KiB, 2.100GiB etc., up to 8.000 EiB.
-     * @param size      Number to convert.
-     */
-    public static String prettyPrintMemory(long size)
-    {
-        return prettyPrintMemory(size, "");
-    }
-
-    /**
      * Formats a latency value in milliseconds for display, appending an "ms" suffix.
      * The formatted output is rounded to three decimal places.
      * For example, "5000.000 ms", "100.000 ms", "0.050 ms", "0.000 ms", "NaN ms".
@@ -919,6 +909,16 @@ public class FBUtilities
     public static String prettyPrintAverage(double average)
     {
         return String.format("%.2f", average);
+    }
+
+    /**
+     * Convert the given size in bytes to a human-readable value using binary (i.e. 2^10-based) modifiers.
+     * For example, 1.000KiB, 2.100GiB etc., up to 8.000 EiB.
+     * @param size      Number to convert.
+     */
+    public static String prettyPrintMemory(long size)
+    {
+        return prettyPrintMemory(size, "");
     }
 
     /**
