@@ -20,6 +20,7 @@ package org.apache.cassandra.service;
 import org.apache.cassandra.config.StartupChecksOptions;
 import org.apache.cassandra.exceptions.StartupException;
 import org.apache.cassandra.service.StartupChecks.StartupCheckType;
+import org.apache.cassandra.utils.SystemInfo;
 
 /**
  * A test to determine if the system is in a valid state to start up.
@@ -45,7 +46,23 @@ public interface StartupCheck
      * @throws org.apache.cassandra.exceptions.StartupException if the test determines
      * that the environement or system is not in a safe state to startup
      */
-    void execute(StartupChecksOptions startupChecksOptions) throws StartupException;
+    default void execute(StartupChecksOptions startupChecksOptions) throws StartupException
+    {
+        execute(startupChecksOptions, new SystemInfo());
+    }
+
+    /**
+     * Run some test to determine whether the system is safe to be started
+     * In the case where a test determines it is not safe to proceed, the
+     * test should log a message regarding the reason for the failure and
+     * ideally the steps required to remedy the problem.
+     *
+     * @param startupChecksOptions all options from descriptor
+     * @param systemInfo system information for further startup logic decisions
+     * @throws org.apache.cassandra.exceptions.StartupException if the test determines
+     * that the environement or system is not in a safe state to startup
+     */
+    void execute(StartupChecksOptions startupChecksOptions, SystemInfo systemInfo) throws StartupException;
 
     /**
      *

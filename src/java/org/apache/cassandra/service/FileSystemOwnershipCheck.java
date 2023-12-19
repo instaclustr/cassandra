@@ -37,6 +37,7 @@ import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.config.StartupChecksOptions;
 import org.apache.cassandra.exceptions.StartupException;
 import org.apache.cassandra.io.util.File;
+import org.apache.cassandra.utils.SystemInfo;
 
 import static org.apache.cassandra.service.StartupChecks.StartupCheckType.check_filesystem_ownership;
 
@@ -118,7 +119,7 @@ public class FileSystemOwnershipCheck implements StartupCheck
     }
 
     @Override
-    public void execute(StartupChecksOptions options) throws StartupException
+    public void execute(StartupChecksOptions options, SystemInfo systemInfo) throws StartupException
     {
         if (!isEnabled(options))
         {

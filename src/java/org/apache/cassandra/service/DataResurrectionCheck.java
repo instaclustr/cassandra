@@ -47,6 +47,7 @@ import org.apache.cassandra.schema.SchemaKeyspace;
 import org.apache.cassandra.utils.Clock;
 import org.apache.cassandra.utils.JsonUtils;
 import org.apache.cassandra.utils.Pair;
+import org.apache.cassandra.utils.SystemInfo;
 
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -151,7 +152,7 @@ public class DataResurrectionCheck implements StartupCheck
     }
 
     @Override
-    public void execute(StartupChecksOptions options) throws StartupException
+    public void execute(StartupChecksOptions options, SystemInfo systemInfo) throws StartupException
     {
         if (options.isDisabled(getStartupCheckType()))
             return;

@@ -171,8 +171,9 @@ public class StartupChecks
      */
     public void verify(StartupChecksOptions options) throws StartupException
     {
+        SystemInfo systemInfo = new SystemInfo();
         for (StartupCheck test : preFlightChecks)
-            test.execute(options);
+            test.execute(options, systemInfo);
 
         for (StartupCheck test : preFlightChecks)
         {
@@ -182,7 +183,7 @@ public class StartupChecks
             }
             catch (Throwable t)
             {
-                logger.warn("Failed to run startup check post-action on " + test.getStartupCheckType());
+                logger.warn("Failed to run startup check post-action on {}", test.getStartupCheckType());
             }
         }
     }
@@ -190,7 +191,7 @@ public class StartupChecks
     public static final StartupCheck checkJemalloc = new StartupCheck()
     {
         @Override
-        public void execute(StartupChecksOptions options)
+        public void execute(StartupChecksOptions options, SystemInfo systemInfo)
         {
             if (options.isDisabled(getStartupCheckType()))
                 return;
@@ -208,7 +209,7 @@ public class StartupChecks
     public static final StartupCheck checkLz4Native = new StartupCheck()
     {
         @Override
-        public void execute(StartupChecksOptions options)
+        public void execute(StartupChecksOptions options, SystemInfo systemInfo)
         {
             if (options.isDisabled(getStartupCheckType()))
                 return;
@@ -233,7 +234,7 @@ public class StartupChecks
         private static final long EARLIEST_LAUNCH_DATE = 1215820800000L;
 
         @Override
-        public void execute(StartupChecksOptions options) throws StartupException
+        public void execute(StartupChecksOptions options, SystemInfo systemInfo) throws StartupException
         {
             if (options.isDisabled(getStartupCheckType()))
                 return;
@@ -241,14 +242,14 @@ public class StartupChecks
             if (now < EARLIEST_LAUNCH_DATE)
                 throw new StartupException(StartupException.ERR_WRONG_MACHINE_STATE,
                                            String.format("current machine time is %s, but that is seemingly incorrect. exiting now.",
-                                                         new Date(now).toString()));
+                                                         new Date(now)));
         }
     };
 
     public static final StartupCheck checkJMXPorts = new StartupCheck()
     {
         @Override
-        public void execute(StartupChecksOptions options)
+        public void execute(StartupChecksOptions options, SystemInfo systemInfo)
         {
             if (options.isDisabled(getStartupCheckType()))
                 return;
@@ -258,7 +259,7 @@ public class StartupChecks
                 logger.warn("JMX is not enabled to receive remote connections. Please see cassandra-env.sh for more info.");
                 jmxPort = CassandraRelevantProperties.CASSANDRA_JMX_LOCAL_PORT.toString();
                 if (jmxPort == null)
-                    logger.error(CASSANDRA_JMX_LOCAL_PORT.getKey() + " missing from cassandra-env.sh, unable to start local JMX service.");
+                    logger.error("{} missing from cassandra-env.sh, unable to start local JMX service.", CASSANDRA_JMX_LOCAL_PORT.getKey());
             }
             else
             {
@@ -270,7 +271,7 @@ public class StartupChecks
     public static final StartupCheck checkJMXProperties = new StartupCheck()
     {
         @Override
-        public void execute(StartupChecksOptions options)
+        public void execute(StartupChecksOptions options, SystemInfo systemInfo)
         {
             if (options.isDisabled(getStartupCheckType()))
                 return;
@@ -285,7 +286,7 @@ public class StartupChecks
     public static final StartupCheck inspectJvmOptions = new StartupCheck()
     {
         @Override
-        public void execute(StartupChecksOptions options)
+        public void execute(StartupChecksOptions options, SystemInfo systemInfo)
         {
             if (options.isDisabled(getStartupCheckType()))
                 return;
@@ -347,7 +348,7 @@ public class StartupChecks
     public static final StartupCheck checkNativeLibraryInitialization = new StartupCheck()
     {
         @Override
-        public void execute(StartupChecksOptions options) throws StartupException
+        public void execute(StartupChecksOptions options, SystemInfo systemInfo) throws StartupException
         {
             if (options.isDisabled(getStartupCheckType()))
                 return;
@@ -360,12 +361,12 @@ public class StartupChecks
     public static final StartupCheck checkProcessEnvironment = new StartupCheck()
     {
         @Override
-        public void execute(StartupChecksOptions options)
+        public void execute(StartupChecksOptions options, SystemInfo systemInfo)
         {
             if (options.isDisabled(getStartupCheckType()))
                 return;
 
-            Optional<String> degradations = new SystemInfo().isDegraded();
+            Optional<String> degradations = systemInfo.isDegraded();
 
             if (degradations.isPresent())
             {
@@ -416,7 +417,7 @@ public class StartupChecks
         }
 
         @Override
-        public void execute(StartupChecksOptions options)
+        public void execute(StartupChecksOptions options, SystemInfo systemInfo)
         {
             if (options.isDisabled(getStartupCheckType()) || !FBUtilities.isLinux)
                 return;
@@ -491,7 +492,7 @@ public class StartupChecks
         }
 
         @Override
-        public void execute(StartupChecksOptions options)
+        public void execute(StartupChecksOptions options, SystemInfo systemInfo)
         {
             if (options.isDisabled(getStartupCheckType()) || !FBUtilities.isLinux)
                 return;
@@ -511,7 +512,7 @@ public class StartupChecks
     public static final StartupCheck checkDataDirs = new StartupCheck()
     {
         @Override
-        public void execute(StartupChecksOptions options) throws StartupException
+        public void execute(StartupChecksOptions options, SystemInfo systemInfo) throws StartupException
         {
             if (options.isDisabled(getStartupCheckType()))
                 return;
@@ -546,7 +547,7 @@ public class StartupChecks
     public static final StartupCheck checkSSTablesFormat = new StartupCheck()
     {
         @Override
-        public void execute(StartupChecksOptions options) throws StartupException
+        public void execute(StartupChecksOptions options, SystemInfo systemInfo) throws StartupException
         {
             if (options.isDisabled(getStartupCheckType()))
                 return;
@@ -661,7 +662,7 @@ public class StartupChecks
     public static final StartupCheck checkSystemKeyspaceState = new StartupCheck()
     {
         @Override
-        public void execute(StartupChecksOptions options) throws StartupException
+        public void execute(StartupChecksOptions options, SystemInfo systemInfo) throws StartupException
         {
             if (options.isDisabled(getStartupCheckType()))
                 return;
@@ -686,14 +687,14 @@ public class StartupChecks
     public static final StartupCheck checkDatacenter = new StartupCheck()
     {
         @Override
-        public void execute(StartupChecksOptions options) throws StartupException
+        public void execute(StartupChecksOptions options, SystemInfo systemInfo) throws StartupException
         {
             boolean enabled = options.isEnabled(getStartupCheckType());
             if (CassandraRelevantProperties.IGNORE_DC.isPresent())
             {
-                logger.warn(String.format("Cassandra system property flag %s is deprecated and you should " +
-                                          "use startup check configuration in cassandra.yaml",
-                                          CassandraRelevantProperties.IGNORE_DC.getKey()));
+                logger.warn("Cassandra system property flag {} is deprecated and you should " +
+                            "use startup check configuration in cassandra.yaml",
+                            CassandraRelevantProperties.IGNORE_DC.getKey());
                 enabled = !CassandraRelevantProperties.IGNORE_DC.getBoolean();
             }
             if (enabled)
@@ -723,14 +724,14 @@ public class StartupChecks
     public static final StartupCheck checkRack = new StartupCheck()
     {
         @Override
-        public void execute(StartupChecksOptions options) throws StartupException
+        public void execute(StartupChecksOptions options, SystemInfo systemInfo) throws StartupException
         {
             boolean enabled = options.isEnabled(getStartupCheckType());
             if (CassandraRelevantProperties.IGNORE_RACK.isPresent())
             {
-                logger.warn(String.format("Cassandra system property flag %s is deprecated and you should " +
-                                          "use startup check configuration in cassandra.yaml",
-                                          CassandraRelevantProperties.IGNORE_RACK.getKey()));
+                logger.warn("Cassandra system property flag {} is deprecated and you should " +
+                            "use startup check configuration in cassandra.yaml",
+                            CassandraRelevantProperties.IGNORE_RACK.getKey());
                 enabled = !CassandraRelevantProperties.IGNORE_RACK.getBoolean();
             }
             if (enabled)
@@ -760,7 +761,7 @@ public class StartupChecks
     public static final StartupCheck checkLegacyAuthTables = new StartupCheck()
     {
         @Override
-        public void execute(StartupChecksOptions options) throws StartupException
+        public void execute(StartupChecksOptions options, SystemInfo systemInfo) throws StartupException
         {
             if (options.isDisabled(getStartupCheckType()))
                 return;
