@@ -429,4 +429,40 @@ public interface GuardrailsConfig
      */
     void setMinimumTimestampThreshold(@Nullable DurationSpec.LongMicrosecondsBound warn,
                                       @Nullable DurationSpec.LongMicrosecondsBound fail);
+
+    /**
+     * @return The threshold to warn when number of referenced indexes
+     * to be searched for non-partition restricted query is greater than treshold.
+     */
+    int getSaiSSTableIndexesPerQueryWarnThreshold();
+
+    /**
+     * @return The threshold to fail when number of referenced indexes
+     * to be searched for non-partition restricted query is greater than treshold.
+     */
+    int getSaiSSTableIndexesPerQueryFailThreshold();
+
+    /**
+     * Sets warn and fail thresholds for a guardrail checking number of referenced indexes
+     * to search for non-partition restricted query.
+     * @param warn value to set for warn threshold
+     * @param fail value to set for fail threshold
+     */
+    void setSaiSSTableIndexesPerQueryThreshold(int warn, int fail);
+
+    /**
+     * Returns whether it is possible to execute a query against indexes (secondary or SAI) without specifying
+     * any partition key restrictions.
+     *
+     * @return true if it is possible to execute a query without a partition key, false otherwise
+     */
+    boolean getNonPartitionRestrictedQueryEnabled();
+
+    /**
+     * Sets whether it is possible to execute a query against indexes (secondary or SAI) without specifying
+     * any partition key restrictions.
+     *
+     * @param enabled {@code true} if a query without partition key is enabled or not
+     */
+    void setNonPartitionRestrictedQueryEnabled(boolean enabled);
 }

@@ -4989,4 +4989,14 @@ public class DatabaseDescriptor
     {
         return conf == null ? new RepairRetrySpec() : conf.repair.retries;
     }
+
+    public static int getMaximumReferencedIndexesForNonPartitionRestrictedQueryWarnThreshold()
+    {
+        return conf.sai_sstable_indexes_per_query_warn_threshold;
+    }
+
+    public static int getMaximumReferencedIndexesForNonPartitionRestrictedQueryFailThreshold()
+    {
+        return conf.sai_sstable_indexes_per_query_fail_threshold;
+    }
 }

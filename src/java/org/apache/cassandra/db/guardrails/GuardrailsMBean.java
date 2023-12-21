@@ -770,4 +770,40 @@ public interface GuardrailsMBean
      *                     {@code 20m}, {@code 30h} or {@code 40d}. A {@code null} value means disabled.
      */
     void setMinimumTimestampThreshold(@Nullable String warnDuration, @Nullable String failDuration);
+
+    /**
+     * @return The threshold to warn when number of referenced indexes SAI query is
+     * greater than treshold.
+     */
+    int getSaiSSTableIndexesPerQueryWarnThreshold();
+
+    /**
+     * @return The threshold to fail when number of referenced indexes to be searched for
+     * SAI query is greater than treshold.
+     */
+    int getSaiSSTableIndexesPerQueryFailThreshold();
+
+    /**
+     * Sets the warning and failure threshold for a guardrail checking number of referenced indexes searched
+     * for SAI queries.
+     * @param warn value to set for warn threshold
+     * @param fail value to set for fail threshold
+     */
+    void setSaiSSTableIndexesPerQueryThreshold(int warn, int fail);
+
+    /**
+     * Returns whether it is possible to execute a query against indexes without specifying
+     * any partition key restrictions.
+     *
+     * @return true if it is possible to execute a query without a partition key, false otherwise
+     */
+    boolean getNonPartitionRestrictedIndexQueryEnabled();
+
+    /**
+     * Sets whether it is possible to execute a query against indexes without specifying
+     * any partition key restrictions.
+     *
+     * @param enabled {@code true} if a query without partition key is enabled or not
+     */
+    void setNonPartitionRestrictedQueryEnabled(boolean enabled);
 }

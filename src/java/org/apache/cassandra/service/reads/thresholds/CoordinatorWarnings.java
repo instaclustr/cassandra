@@ -96,6 +96,9 @@ public class CoordinatorWarnings
 
             recordAborts(merged.rowIndexReadSize, cql, loggableTokens, cfs.metric.rowIndexSizeAborts, WarningsSnapshot::rowIndexReadSizeAbortMessage);
             recordWarnings(merged.rowIndexReadSize, cql, loggableTokens, cfs.metric.rowIndexSizeWarnings, WarningsSnapshot::rowIndexSizeWarnMessage);
+
+            recordAborts(merged.indexReadSSTablesCount, cql, loggableTokens, cfs.metric.tooManyIndexReadSSTablesAborts, WarningsSnapshot::tooManyIndexesReadAbortMessage);
+            recordWarnings(merged.indexReadSSTablesCount, cql, loggableTokens, cfs.metric.tooManyIndexReadSSTablesWarnings, WarningsSnapshot::tooManyIndexesReadWarnMessage);
         });
 
         // reset the state to block from double publishing
