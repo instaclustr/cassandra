@@ -79,8 +79,8 @@ public final class CompressionParams
                                                                        DEFAULT_MIN_COMPRESS_RATIO,
                                                                        emptyMap());
 
-    // The default compressor is generally fast (LZ4 with 16KiB block size)
-    public static final CompressionParams DEFAULT = new CompressionParams(LZ4Compressor.create(Collections.emptyMap()),
+
+    private static final CompressionParams DEFAULT = new CompressionParams(LZ4Compressor.create(Collections.emptyMap()),
                                                                            DEFAULT_CHUNK_LENGTH,
                                                                            calcMaxCompressedLength(DEFAULT_CHUNK_LENGTH, DEFAULT_MIN_COMPRESS_RATIO),
                                                                            DEFAULT_MIN_COMPRESS_RATIO,
@@ -150,8 +150,17 @@ public final class CompressionParams
         }
     }
 
-    public static CompressionParams defaultParams()
+    /**
+     * Gets the default compression params for the keyspace.
+     * This method accounts for issues when the compression params change for system keyspaces.
+     * @param keyspace the name of the keyspace to get params for. (may be null for non-System keyspaces)
+     * @return The compresson parameters for the keyspace.
+     */
+    public static CompressionParams defaultParams(String keyspace)
     {
+        if (keyspace != null && SchemaConstants.getLocalAndReplicatedSystemKeyspaceNames().contains(keyspace))
+            return DEFAULT;
+
         CompressionParams result = CALCULATED_DEFAULT;
         if (result == null)
             result = CALCULATED_DEFAULT = fromParameterizedClass(DatabaseDescriptor.getSSTableCompression());
@@ -247,7 +256,7 @@ public final class CompressionParams
             }
             else
             {
-                return FBUtilities.newCompressor(parseCompressorClass(defaultParams().klass().getName()), opt);
+                return FBUtilities.newCompressor(parseCompressorClass(defaultParams(null).klass().getName()), opt);
             }
         };
 
