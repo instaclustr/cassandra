@@ -40,11 +40,11 @@ import org.apache.cassandra.db.DecoratedKey;
 import org.apache.cassandra.db.lifecycle.LifecycleTransaction;
 import org.apache.cassandra.dht.IPartitioner;
 import org.apache.cassandra.io.sstable.Component;
+import org.apache.cassandra.io.sstable.SSTable;
 import org.apache.cassandra.io.sstable.Descriptor;
 import org.apache.cassandra.io.sstable.GaugeProvider;
 import org.apache.cassandra.io.sstable.IScrubber;
 import org.apache.cassandra.io.sstable.MetricsProviders;
-import org.apache.cassandra.io.sstable.SSTable;
 import org.apache.cassandra.io.sstable.filter.BloomFilterMetrics;
 import org.apache.cassandra.io.sstable.format.AbstractSSTableFormat;
 import org.apache.cassandra.io.sstable.format.SSTableFormat;
@@ -83,9 +83,9 @@ public class BigFormat extends AbstractSSTableFormat<BigTableReader, BigTableWri
         public static class Types extends SSTableFormat.Components.Types
         {
             // index of the row keys with pointers to their positions in the data file
-            public static final Component.Type PRIMARY_INDEX = Component.Type.createSingleton("PRIMARY_INDEX", "Index.db", BigFormat.class);
+            public static final Component.Type PRIMARY_INDEX = Component.Type.createSingleton("PRIMARY_INDEX", "Index.db", true, BigFormat.class);
             // holds SSTable Index Summary (sampling of Index component)
-            public static final Component.Type SUMMARY = Component.Type.createSingleton("SUMMARY", "Summary.db", BigFormat.class);
+            public static final Component.Type SUMMARY = Component.Type.createSingleton("SUMMARY", "Summary.db", true, BigFormat.class);
         }
 
         public final static Component PRIMARY_INDEX = Types.PRIMARY_INDEX.getSingleton();
@@ -110,16 +110,6 @@ public class BigFormat extends AbstractSSTableFormat<BigTableReader, BigTableWri
                                                                                 SUMMARY,
                                                                                 COMPRESSION_INFO,
                                                                                 STATS);
-
-        private static final Set<Component> STREAM_COMPONENTS = ImmutableSet.of(DATA,
-                                                                                PRIMARY_INDEX,
-                                                                                STATS,
-                                                                                COMPRESSION_INFO,
-                                                                                FILTER,
-                                                                                SUMMARY,
-                                                                                DIGEST,
-                                                                                CRC);
-
         private static final Set<Component> ALL_COMPONENTS = ImmutableSet.of(DATA,
                                                                              PRIMARY_INDEX,
                                                                              STATS,
@@ -179,12 +169,6 @@ public class BigFormat extends AbstractSSTableFormat<BigTableReader, BigTableWri
     public Set<Component> allComponents()
     {
         return Components.ALL_COMPONENTS;
-    }
-
-    @Override
-    public Set<Component> streamingComponents()
-    {
-        return Components.STREAM_COMPONENTS;
     }
 
     @Override

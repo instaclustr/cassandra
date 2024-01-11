@@ -170,6 +170,7 @@ public enum CassandraRelevantProperties
     CONSISTENT_DIRECTORY_LISTINGS("cassandra.consistent_directory_listings"),
     CONSISTENT_RANGE_MOVEMENT("cassandra.consistent.rangemovement", "true"),
     CONSISTENT_SIMULTANEOUS_MOVES_ALLOW("cassandra.consistent.simultaneousmoves.allow"),
+    CRYPTO_PROVIDER_CLASS_NAME("cassandra.crypto_provider_class_name"),
     CUSTOM_GUARDRAILS_CONFIG_PROVIDER_CLASS("cassandra.custom_guardrails_config_provider_class"),
     CUSTOM_QUERY_HANDLER_CLASS("cassandra.custom_query_handler_class"),
     CUSTOM_TRACING_CLASS("cassandra.custom_tracing_class"),
@@ -212,6 +213,7 @@ public enum CassandraRelevantProperties
     EXPIRATION_DATE_OVERFLOW_POLICY("cassandra.expiration_date_overflow_policy"),
     EXPIRATION_OVERFLOW_WARNING_INTERVAL_MINUTES("cassandra.expiration_overflow_warning_interval_minutes", "5"),
     FAILURE_LOGGING_INTERVAL_SECONDS("cassandra.request_failure_log_interval_seconds", "60"),
+    FAIL_ON_MISSING_CRYPTO_PROVIDER("cassandra.fail_on_missing_crypto_provider", "false"),
     FD_INITIAL_VALUE_MS("cassandra.fd_initial_value_ms"),
     FD_MAX_INTERVAL_MS("cassandra.fd_max_interval_ms"),
     FILE_CACHE_ENABLED("cassandra.file_cache_enabled"),
@@ -415,10 +417,33 @@ public enum CassandraRelevantProperties
      */
     RESET_BOOTSTRAP_PROGRESS("cassandra.reset_bootstrap_progress"),
     RING_DELAY("cassandra.ring_delay_ms"),
-    /** Defines how often schema definitions are pulled from the other nodes */
+
+    // SAI specific properties
+
+    /** Controls the maximum number of index query intersections that will take part in a query */
+    SAI_INTERSECTION_CLAUSE_LIMIT("cassandra.sai.intersection_clause_limit", "2"),
+    /** Latest version to be used for SAI index writing */
+    SAI_LATEST_VERSION("cassandra.sai.latest_version", "aa"),
+    SAI_MAX_FROZEN_TERM_SIZE("cassandra.sai.max_frozen_term_size_kb", "5"),
+    SAI_MAX_STRING_TERM_SIZE("cassandra.sai.max_string_term_size_kb", "1"),
+
+    /** Minimum number of reachable leaves for a given node to be eligible for an auxiliary posting list */
+    SAI_MINIMUM_POSTINGS_LEAVES("cassandra.sai.minimum_postings_leaves", "64"),
+
+    /**
+     * Skip, or the sampling interval, for selecting a balanced tree level that is eligible for an auxiliary posting list.
+     * Sampling starts from 0, but balanced tree root node is at level 1. For skip = 4, eligible levels are 4, 8, 12, etc. (no
+     * level 0, because there is no node at level 0).
+     */
+    SAI_POSTINGS_SKIP("cassandra.sai.postings_skip", "3"),
+
+    SAI_TEST_BALANCED_TREE_DEBUG_ENABLED("cassandra.sai.test.balanced_tree_debug_enabled", "false"),
+    SAI_TEST_DISABLE_TIMEOUT("cassandra.sai.test.disable.timeout", "false"),
+
     SCHEMA_PULL_INTERVAL_MS("cassandra.schema_pull_interval_ms", "60000"),
     SCHEMA_UPDATE_HANDLER_FACTORY_CLASS("cassandra.schema.update_handler_factory.class"),
     SEARCH_CONCURRENCY_FACTOR("cassandra.search_concurrency_factor", "1"),
+
     /**
      * The maximum number of seeds returned by a seed provider before emmitting a warning.
      * A large seed list may impact effectiveness of the third gossip round.
@@ -479,6 +504,7 @@ public enum CassandraRelevantProperties
     TEST_DEBUG_REF_COUNT("cassandra.debugrefcount"),
     TEST_DRIVER_CONNECTION_TIMEOUT_MS("cassandra.test.driver.connection_timeout_ms", "5000"),
     TEST_DRIVER_READ_TIMEOUT_MS("cassandra.test.driver.read_timeout_ms", "12000"),
+    TEST_ENCRYPTION("cassandra.test.encryption", "false"),
     TEST_FAIL_MV_LOCKS_COUNT("cassandra.test.fail_mv_locks_count", "0"),
     TEST_FAIL_WRITES_KS("cassandra.test.fail_writes_ks", ""),
     /** Flush changes of {@link org.apache.cassandra.schema.SchemaKeyspace} after each schema modification. In production,
@@ -491,6 +517,7 @@ public enum CassandraRelevantProperties
     TEST_JVM_DTEST_DISABLE_SSL("cassandra.test.disable_ssl"),
     TEST_LEGACY_SSTABLE_ROOT("legacy-sstable-root"),
     TEST_ORG_CAFFINITAS_OHC_SEGMENTCOUNT("org.caffinitas.ohc.segmentCount"),
+    TEST_RANDOM_SEED("cassandra.test.random.seed"),
     TEST_READ_ITERATION_DELAY_MS("cassandra.test.read_iteration_delay_ms", "0"),
     TEST_REUSE_PREPARED("cassandra.test.reuse_prepared", "true"),
     TEST_ROW_CACHE_SIZE("cassandra.test.row_cache_size"),
@@ -503,6 +530,7 @@ public enum CassandraRelevantProperties
     TEST_SIMULATOR_PRINT_ASM_CLASSES("cassandra.test.simulator.print_asm_classes", ""),
     TEST_SIMULATOR_PRINT_ASM_OPTS("cassandra.test.simulator.print_asm_opts", ""),
     TEST_SIMULATOR_PRINT_ASM_TYPES("cassandra.test.simulator.print_asm_types", ""),
+    TEST_SKIP_CRYPTO_PROVIDER_INSTALLATION("cassandra.test.security.skip.provider.installation", "false"),
     TEST_SSTABLE_FORMAT_DEVELOPMENT("cassandra.test.sstableformatdevelopment"),
     TEST_STRICT_LCS_CHECKS("cassandra.test.strict_lcs_checks"),
     /** Turns some warnings into exceptions for testing. */
