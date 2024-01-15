@@ -62,7 +62,6 @@ import javax.annotation.Nullable;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-import org.apache.cassandra.io.compress.ICompressor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,6 +80,7 @@ import org.apache.cassandra.dht.LocalPartitioner;
 import org.apache.cassandra.dht.Range;
 import org.apache.cassandra.dht.Token;
 import org.apache.cassandra.exceptions.ConfigurationException;
+import org.apache.cassandra.io.compress.ICompressor;
 import org.apache.cassandra.io.IVersionedSerializer;
 import org.apache.cassandra.io.sstable.Descriptor;
 import org.apache.cassandra.io.sstable.format.StatsComponent;
@@ -724,7 +724,7 @@ public class FBUtilities
             if (e instanceof ConfigurationException)
                 throw (ConfigurationException) e;
             else
-                throw new ConfigurationException(format("Unable to create an instance of crypto provider for %s", className), e);
+                throw new ConfigurationException(String.format("Unable to create an instance of crypto provider for %s", className), e);
         }
     }
 
@@ -766,7 +766,7 @@ public class FBUtilities
                               ? e
                               : e.getCause();
 
-            throw new ConfigurationException(String.format("%s.create() threw an error: %s %s",
+            throw new ConfigurationException(format("%s.create() threw an error: %s %s",
                                                     className.getSimpleName(),
                                                     cause.getClass().getName(),
                                                     cause.getMessage()),
