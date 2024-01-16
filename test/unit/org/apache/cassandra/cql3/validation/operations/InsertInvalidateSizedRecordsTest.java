@@ -28,6 +28,7 @@ import java.nio.file.Files;
 import java.util.UUID;
 
 import com.google.common.base.StandardSystemProperty;
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.datastax.driver.core.exceptions.InvalidQueryException;
@@ -78,6 +79,11 @@ public class InsertInvalidateSizedRecordsTest extends CQLTester
         Assertions.assertThatThrownBy(() -> executeNet("INSERT INTO %s (a, b) VALUES (?, ?)", MEDIUM_BLOB, LARGE_BLOB))
                   .hasRootCauseInstanceOf(InvalidQueryException.class)
                   .hasRootCauseMessage("Key length of " + (MEDIUM_BLOB.remaining() + LARGE_BLOB.remaining()) + " is longer than maximum of 65535");
+
+        // as per CASSANDRA-19270
+        ByteBuffer _2_bytes = ByteBuffer.allocate(2);
+        ByteBuffer _65433_bytes = ByteBuffer.allocate(65433);
+        Assert.assertTrue(executeNet("INSERT INTO %s (a, b) VALUES (?, ?)", _2_bytes, _65433_bytes).wasApplied());
 
         // null / empty checks
         // this is an inconsistent behavior... null is blocked by org.apache.cassandra.db.MultiCBuilder.OneClusteringBuilder.addElementToAll
