@@ -31,9 +31,12 @@ import java.util.stream.StreamSupport;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import org.apache.cassandra.index.sai.disk.format.IndexDescriptor;
+import org.apache.cassandra.index.sai.utils.IndexIdentifier;
 import org.apache.cassandra.io.sstable.format.big.BigFormat;
 import org.apache.cassandra.ServerTestUtils;
 import org.apache.cassandra.io.util.File;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -51,6 +54,7 @@ import org.apache.cassandra.db.commitlog.CommitLog;
 import org.apache.cassandra.db.marshal.UTF8Type;
 import org.apache.cassandra.dht.*;
 import org.apache.cassandra.exceptions.*;
+import org.apache.cassandra.io.util.PathUtils;
 import org.apache.cassandra.net.MessagingService;
 import org.apache.cassandra.schema.Schema;
 import org.apache.cassandra.schema.TableMetadataRef;
@@ -108,10 +112,10 @@ public class CQLSSTableWriterTest
         try (AutoCloseable switcher = Util.switchPartitioner(ByteOrderedPartitioner.instance))
         {
             String schema = "CREATE TABLE " + qualifiedTable + " ("
-                          + "  k int PRIMARY KEY,"
-                          + "  v1 text,"
-                          + "  v2 int"
-                          + ")";
+                            + "  k int PRIMARY KEY,"
+                            + "  v1 text,"
+                            + "  v2 int"
+                            + ")";
             String insert = "INSERT INTO " + qualifiedTable + " (k, v1, v2) VALUES (?, ?, ?)";
             CQLSSTableWriter writer = CQLSSTableWriter.builder()
                                                       .inDirectory(dataDir)
@@ -186,9 +190,9 @@ public class CQLSSTableWriterTest
         // To do that simply, we use a writer with a buffer of 1MiB, and write 2 rows in the same partition with a value
         // > 1MiB and validate that this created more than 1 sstable.
         String schema = "CREATE TABLE " + qualifiedTable + " ("
-                      + "  k int PRIMARY KEY,"
-                      + "  v blob"
-                      + ")";
+                        + "  k int PRIMARY KEY,"
+                        + "  v blob"
+                        + ")";
         String insert = "INSERT INTO " + qualifiedTable + " (k, v) VALUES (?, ?)";
         CQLSSTableWriter writer = CQLSSTableWriter.builder()
                                                   .inDirectory(dataDir)
@@ -225,11 +229,11 @@ public class CQLSSTableWriterTest
                                                   .withBufferSizeInMB(1)
                                                   .build();
 
-        for (int i = 0 ; i < 50000 ; i++) {
+        for (int i = 0; i < 50000; i++)
+        {
             writer.addRow(UUID.randomUUID(), 0);
         }
         writer.close();
-
     }
 
     @Test
@@ -470,11 +474,11 @@ public class CQLSSTableWriterTest
                                                         .build();
 
         CQLSSTableWriter deleteWriter = CQLSSTableWriter.builder()
-                                                  .inDirectory(dataDir)
-                                                  .forTable(schema)
-                                                  .using("DELETE v FROM " + qualifiedTable +
-                                                         " WHERE k = ? AND c1 = ? AND c2 = ?")
-                                                  .build();
+                                                        .inDirectory(dataDir)
+                                                        .forTable(schema)
+                                                        .using("DELETE v FROM " + qualifiedTable +
+                                                               " WHERE k = ? AND c1 = ? AND c2 = ?")
+                                                        .build();
 
         insertWriter.addRow("v0.2", "a", 1, 2);
         insertWriter.close();
@@ -514,6 +518,7 @@ public class CQLSSTableWriterTest
     }
 
     private static final int NUMBER_WRITES_IN_RUNNABLE = 10;
+
     private class WriterThread extends Thread
     {
         private final File dataDir;
@@ -532,15 +537,15 @@ public class CQLSSTableWriterTest
         public void run()
         {
             String schema = "CREATE TABLE " + qualifiedTable + " ("
-                    + "  k int,"
-                    + "  v int,"
-                    + "  PRIMARY KEY (k, v)"
-                    + ")";
+                            + "  k int,"
+                            + "  v int,"
+                            + "  PRIMARY KEY (k, v)"
+                            + ")";
             String insert = "INSERT INTO " + qualifiedTable + " (k, v) VALUES (?, ?)";
             CQLSSTableWriter writer = CQLSSTableWriter.builder()
-                    .inDirectory(dataDir)
-                    .forTable(schema)
-                    .using(insert).build();
+                                                      .inDirectory(dataDir)
+                                                      .forTable(schema)
+                                                      .using(insert).build();
 
             try
             {
@@ -631,7 +636,8 @@ public class CQLSSTableWriterTest
 
         assertEquals(resultSet.size(), 100);
         int cnt = 0;
-        for (UntypedResultSet.Row row: resultSet) {
+        for (UntypedResultSet.Row row : resultSet)
+        {
             assertEquals(cnt,
                          row.getInt("k"));
             List<UDTValue> values = (List<UDTValue>) collectionCodec.deserialize(row.getBytes("v1"),
@@ -693,7 +699,8 @@ public class CQLSSTableWriterTest
 
         assertEquals(resultSet.size(), 100);
         int cnt = 0;
-        for (UntypedResultSet.Row row: resultSet) {
+        for (UntypedResultSet.Row row : resultSet)
+        {
             assertEquals(cnt,
                          row.getInt("k"));
             UDTValue nestedTpl = (UDTValue) nestedTupleCodec.deserialize(row.getBytes("v1"),
@@ -937,7 +944,8 @@ public class CQLSSTableWriterTest
                                                   .build();
 
         final int ID_OFFSET = 1000;
-        for (int i = 0; i < 100 ; i++) {
+        for (int i = 0; i < 100; i++)
+        {
             // Use old-style integer as date to test backwards-compatibility
             writer.addRow(i, i - Integer.MIN_VALUE); // old-style raw integer needs to be offset
             // Use new-style `LocalDate` for date value.
@@ -949,8 +957,9 @@ public class CQLSSTableWriterTest
         UntypedResultSet rs = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + ";");
         assertEquals(200, rs.size());
         Map<Integer, LocalDate> map = StreamSupport.stream(rs.spliterator(), false)
-                                                   .collect(Collectors.toMap( r -> r.getInt("k"), r -> r.getDate("c")));
-        for (int i = 0; i < 100; i++) {
+                                                   .collect(Collectors.toMap(r -> r.getInt("k"), r -> r.getDate("c")));
+        for (int i = 0; i < 100; i++)
+        {
             final LocalDate expected = LocalDate.fromDaysSinceEpoch(i);
             assertEquals(expected, map.get(i + ID_OFFSET));
             assertEquals(expected, map.get(i));
@@ -1140,13 +1149,13 @@ public class CQLSSTableWriterTest
                                                   .inDirectory(dataDir)
                                                   .forTable(schema)
                                                   .using("INSERT INTO " + qualifiedTable +
-                                                         " (k, v1, v2, v3) VALUES (?,?,?,?) using timestamp ?" )
+                                                         " (k, v1, v2, v3) VALUES (?,?,?,?) using timestamp ?")
                                                   .build();
 
         // Note that, all other things being equal, Cassandra will sort these rows lexicographically, so we use "higher" values in the
         // row we expect to "win" so that we're sure that it isn't just accidentally picked due to the row sorting.
-        writer.addRow( 1, 4, 5, "b", now); // This write should be the one found at the end because it has a higher timestamp
-        writer.addRow( 1, 2, 3, "a", then);
+        writer.addRow(1, 4, 5, "b", now); // This write should be the one found at the end because it has a higher timestamp
+        writer.addRow(1, 2, 3, "a", then);
         writer.close();
         loadSSTables(dataDir, keyspace);
 
@@ -1161,6 +1170,7 @@ public class CQLSSTableWriterTest
         assertEquals("b", r1.getString("v3"));
         assertFalse(iter.hasNext());
     }
+
     @Test
     public void testWriteWithTtl() throws Exception
     {
@@ -1173,15 +1183,15 @@ public class CQLSSTableWriterTest
                               + ")";
 
         CQLSSTableWriter.Builder builder = CQLSSTableWriter.builder()
-                                                         .inDirectory(dataDir)
-                                                         .forTable(schema)
-                                                         .using("INSERT INTO " + qualifiedTable +
-                                                                " (k, v1, v2, v3) VALUES (?,?,?,?) using TTL ?");
+                                                           .inDirectory(dataDir)
+                                                           .forTable(schema)
+                                                           .using("INSERT INTO " + qualifiedTable +
+                                                                  " (k, v1, v2, v3) VALUES (?,?,?,?) using TTL ?");
         CQLSSTableWriter writer = builder.build();
         // add a row that _should_ show up - 1 hour TTL
-        writer.addRow( 1, 2, 3, "a", 3600);
+        writer.addRow(1, 2, 3, "a", 3600);
         // Insert a row with a TTL of 1 second - should not appear in results once we sleep
-        writer.addRow( 2, 4, 5, "b", 1);
+        writer.addRow(2, 4, 5, "b", 1);
         writer.close();
         Thread.sleep(1200); // Slightly over 1 second, just to make sure
         loadSSTables(dataDir, keyspace);
@@ -1197,6 +1207,7 @@ public class CQLSSTableWriterTest
         assertEquals("a", r1.getString("v3"));
         assertFalse(iter.hasNext());
     }
+
     @Test
     public void testWriteWithTimestampsAndTtl() throws Exception
     {
@@ -1212,7 +1223,7 @@ public class CQLSSTableWriterTest
                                                   .inDirectory(dataDir)
                                                   .forTable(schema)
                                                   .using("INSERT INTO " + qualifiedTable +
-                                                         " (k, v1, v2, v3) VALUES (?,?,?,?) using timestamp ? AND TTL ?" )
+                                                         " (k, v1, v2, v3) VALUES (?,?,?,?) using timestamp ? AND TTL ?")
                                                   .build();
         // NOTE: It would be easier to make this a timestamp in the past, but Cassandra also has a _local_ deletion time
         // which is based on the server's timestamp, so simply setting the timestamp to some time in the past
@@ -1220,9 +1231,9 @@ public class CQLSSTableWriterTest
         long oneSecondFromNow = TimeUnit.MILLISECONDS.toMicros(currentTimeMillis() + 1000);
         // Insert some rows with a timestamp of 1 second from now, and different TTLs
         // add a row that _should_ show up - 1 hour TTL
-        writer.addRow( 1, 2, 3, "a", oneSecondFromNow, 3600);
+        writer.addRow(1, 2, 3, "a", oneSecondFromNow, 3600);
         // Insert a row "two seconds ago" with a TTL of 1 second - should not appear in results
-        writer.addRow( 2, 4, 5, "b", oneSecondFromNow, 1);
+        writer.addRow(2, 4, 5, "b", oneSecondFromNow, 1);
         writer.close();
         loadSSTables(dataDir, keyspace);
         UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
@@ -1249,7 +1260,7 @@ public class CQLSSTableWriterTest
                                                   .inDirectory(dataDir)
                                                   .forTable(schema)
                                                   .using("INSERT INTO " + qualifiedTable +
-                                                         " (k, v) VALUES (?, text_as_blob(?))" )
+                                                         " (k, v) VALUES (?, text_as_blob(?))")
                                                   .sorted()
                                                   .build();
         int rowCount = 10_000;
@@ -1280,7 +1291,7 @@ public class CQLSSTableWriterTest
                                                   .inDirectory(dataDir)
                                                   .forTable(schema)
                                                   .using("INSERT INTO " + qualifiedTable +
-                                                         " (k, v) VALUES (?, text_as_blob(?))" )
+                                                         " (k, v) VALUES (?, text_as_blob(?))")
                                                   .sorted()
                                                   .withMaxSSTableSizeInMiB(1)
                                                   .build();
@@ -1311,6 +1322,95 @@ public class CQLSSTableWriterTest
             UntypedResultSet.Row row = iter.next();
             assertEquals(i, row.getInt("k"));
         }
+    }
+
+    @Test
+    public void testWriteWithSAI() throws Exception
+    {
+        writeWithSaiInternal();
+        writeWithSaiInternal();
+    }
+
+    private void writeWithSaiInternal() throws Exception
+    {
+        String schema = "CREATE TABLE " + qualifiedTable + " ("
+                        + "  k int PRIMARY KEY,"
+                        + "  v1 text,"
+                        + "  v2 int )";
+
+        String v1Index = "CREATE INDEX idx1 ON " + qualifiedTable + " (v1) USING 'sai'";
+        String v2Index = "CREATE INDEX idx2 ON " + qualifiedTable + " (v2) USING 'sai'";
+
+        String insert = "INSERT INTO " + qualifiedTable + " (k, v1, v2) VALUES (?, ?, ?)";
+
+        CQLSSTableWriter writer = CQLSSTableWriter.builder()
+                                                  .inDirectory(dataDir)
+                                                  .forTable(schema)
+                                                  .using(insert)
+                                                  .withIndexes(v1Index, v2Index)
+                                                  .withBuildIndexes(true)
+                                                  .withPartitioner(Murmur3Partitioner.instance)
+                                                  .build();
+
+        int rowCount = 30_000;
+        for (int i = 0; i < rowCount; i++)
+            writer.addRow(i, UUID.randomUUID().toString(), i);
+
+        writer.close();
+
+        File[] dataFiles = dataDir.list(f -> f.name().endsWith('-' + BigFormat.Components.DATA.type.repr));
+        assertNotNull(dataFiles);
+
+        IndexDescriptor indexDescriptor = IndexDescriptor.create(Descriptor.fromFile(dataFiles[0]),
+                                                                 Murmur3Partitioner.instance,
+                                                                 Schema.instance.getTableMetadata(keyspace, table).comparator);
+
+        assertTrue(indexDescriptor.isPerColumnIndexBuildComplete(new IndexIdentifier(keyspace, table, "idx1")));
+        assertTrue(indexDescriptor.isPerColumnIndexBuildComplete(new IndexIdentifier(keyspace, table, "idx2")));
+
+        if (PathUtils.isDirectory(dataDir.toPath()))
+            PathUtils.forEach(dataDir.toPath(), PathUtils::deleteRecursive);
+    }
+
+    @Test
+    public void testSkipBuildingIndexesWithSAI() throws Exception
+    {
+        String schema = "CREATE TABLE " + qualifiedTable + " ("
+                        + "  k int PRIMARY KEY,"
+                        + "  v1 text,"
+                        + "  v2 int )";
+
+        String v1Index = "CREATE INDEX idx1 ON " + qualifiedTable + " (v1) USING 'sai'";
+        String v2Index = "CREATE INDEX idx2 ON " + qualifiedTable + " (v2) USING 'sai'";
+
+        String insert = "INSERT INTO " + qualifiedTable + " (k, v1, v2) VALUES (?, ?, ?)";
+
+        CQLSSTableWriter writer = CQLSSTableWriter.builder()
+                                                  .inDirectory(dataDir)
+                                                  .forTable(schema)
+                                                  .using(insert)
+                                                  .withIndexes(v1Index, v2Index)
+                                                  // not building indexes here so no SAI components will be present
+                                                  .withBuildIndexes(false)
+                                                  .withPartitioner(Murmur3Partitioner.instance)
+                                                  .build();
+
+        int rowCount = 30_000;
+        for (int i = 0; i < rowCount; i++)
+            writer.addRow(i, UUID.randomUUID().toString(), i);
+
+        writer.close();
+
+        File[] dataFiles = dataDir.list(f -> f.name().endsWith('-' + BigFormat.Components.DATA.type.repr));
+        assertNotNull(dataFiles);
+
+        IndexDescriptor indexDescriptor = IndexDescriptor.create(Descriptor.fromFile(dataFiles[0]),
+                                                                 Murmur3Partitioner.instance,
+                                                                 Schema.instance.getTableMetadata(keyspace, table).comparator);
+
+        // no indexes built due to withBuildIndexes set to false
+        assertFalse(indexDescriptor.isPerColumnIndexBuildComplete(new IndexIdentifier(keyspace, table, "idx1")));
+        assertFalse(indexDescriptor.isPerColumnIndexBuildComplete(new IndexIdentifier(keyspace, table, "idx2")));
     }
 
     private static void loadSSTables(File dataDir, String ks) throws ExecutionException, InterruptedException
