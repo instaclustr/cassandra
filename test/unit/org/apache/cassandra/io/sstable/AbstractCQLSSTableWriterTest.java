@@ -20,7 +20,14 @@ package org.apache.cassandra.io.sstable;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -30,37 +37,43 @@ import java.util.stream.StreamSupport;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
-import org.apache.cassandra.index.sai.disk.format.IndexDescriptor;
-import org.apache.cassandra.index.sai.utils.IndexIdentifier;
-import org.apache.cassandra.io.sstable.format.big.BigFormat;
-import org.apache.cassandra.ServerTestUtils;
-import org.apache.cassandra.io.util.File;
-
 import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.datastax.driver.core.utils.UUIDs;
-import org.apache.cassandra.SchemaLoader;
 import org.apache.cassandra.Util;
-import org.apache.cassandra.config.*;
-import org.apache.cassandra.cql3.*;
-import org.apache.cassandra.cql3.functions.types.*;
-import org.apache.cassandra.db.Keyspace;
-import org.apache.cassandra.db.commitlog.CommitLog;
+import org.apache.cassandra.cql3.QueryProcessor;
+import org.apache.cassandra.cql3.UntypedResultSet;
+import org.apache.cassandra.cql3.functions.types.DataType;
+import org.apache.cassandra.cql3.functions.types.LocalDate;
+import org.apache.cassandra.cql3.functions.types.TypeCodec;
+import org.apache.cassandra.cql3.functions.types.UDTValue;
+import org.apache.cassandra.cql3.functions.types.UserType;
 import org.apache.cassandra.db.marshal.UTF8Type;
-import org.apache.cassandra.dht.*;
-import org.apache.cassandra.exceptions.*;
+import org.apache.cassandra.dht.ByteOrderedPartitioner;
+import org.apache.cassandra.dht.Murmur3Partitioner;
+import org.apache.cassandra.dht.Range;
+import org.apache.cassandra.dht.Token;
+import org.apache.cassandra.exceptions.InvalidRequestException;
+import org.apache.cassandra.index.sai.disk.format.IndexDescriptor;
+import org.apache.cassandra.index.sai.utils.IndexIdentifier;
+import org.apache.cassandra.io.sstable.format.big.BigFormat;
+import org.apache.cassandra.io.util.File;
 import org.apache.cassandra.io.util.PathUtils;
-import org.apache.cassandra.net.MessagingService;
+import org.apache.cassandra.locator.RangesAtEndpoint;
+import org.apache.cassandra.schema.KeyspaceMetadata;
 import org.apache.cassandra.schema.Schema;
+import org.apache.cassandra.schema.TableMetadata;
 import org.apache.cassandra.schema.TableMetadataRef;
-import org.apache.cassandra.service.StorageService;
+import org.apache.cassandra.tcm.ClusterMetadata;
 import org.apache.cassandra.transport.ProtocolVersion;
-import org.apache.cassandra.utils.*;
+import org.apache.cassandra.utils.ByteBufferUtil;
+import org.apache.cassandra.utils.FBUtilities;
+import org.apache.cassandra.utils.JavaDriverUtils;
+import org.apache.cassandra.utils.OutputHandler;
 
 import static org.apache.cassandra.utils.Clock.Global.currentTimeMillis;
 import static org.junit.Assert.assertEquals;
@@ -69,32 +82,20 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class CQLSSTableWriterTest
+@Ignore
+public abstract class AbstractCQLSSTableWriterTest
 {
     private static final AtomicInteger idGen = new AtomicInteger(0);
+    private static final int NUMBER_WRITES_IN_RUNNABLE = 10;
+
     private String keyspace;
     private String table;
     private String qualifiedTable;
     private File dataDir;
-
-    static
-    {
-        DatabaseDescriptor.daemonInitialization();
-    }
+    protected boolean verifyDataAfterLoading = true;
 
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
-
-    @BeforeClass
-    public static void setup() throws Exception
-    {
-        CommitLog.instance.start();
-        SchemaLoader.cleanupAndLeaveDirs();
-        Keyspace.setInitialized();
-        ServerTestUtils.prepareServerNoRegister();
-        MessagingService.instance().waitUntilListeningUnchecked();
-        StorageService.instance.initServer();
-    }
 
     @Before
     public void perTestSetup() throws IOException
@@ -109,7 +110,7 @@ public class CQLSSTableWriterTest
     @Test
     public void testUnsortedWriter() throws Exception
     {
-        try (AutoCloseable switcher = Util.switchPartitioner(ByteOrderedPartitioner.instance))
+        try (AutoCloseable ignored = Util.switchPartitioner(ByteOrderedPartitioner.instance))
         {
             String schema = "CREATE TABLE " + qualifiedTable + " ("
                             + "  k int PRIMARY KEY,"
@@ -129,34 +130,37 @@ public class CQLSSTableWriterTest
 
             writer.close();
 
-            loadSSTables(dataDir, keyspace);
+            loadSSTables(dataDir, keyspace, table);
 
-            UntypedResultSet rs = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
-            assertEquals(4, rs.size());
+            if (verifyDataAfterLoading)
+            {
+                UntypedResultSet rs = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
+                assertEquals(4, rs.size());
 
-            Iterator<UntypedResultSet.Row> iter = rs.iterator();
-            UntypedResultSet.Row row;
+                Iterator<UntypedResultSet.Row> iter = rs.iterator();
+                UntypedResultSet.Row row;
 
-            row = iter.next();
-            assertEquals(0, row.getInt("k"));
-            assertEquals("test1", row.getString("v1"));
-            assertEquals(24, row.getInt("v2"));
+                row = iter.next();
+                assertEquals(0, row.getInt("k"));
+                assertEquals("test1", row.getString("v1"));
+                assertEquals(24, row.getInt("v2"));
 
-            row = iter.next();
-            assertEquals(1, row.getInt("k"));
-            assertEquals("test2", row.getString("v1"));
-            //assertFalse(row.has("v2"));
-            assertEquals(44, row.getInt("v2"));
+                row = iter.next();
+                assertEquals(1, row.getInt("k"));
+                assertEquals("test2", row.getString("v1"));
+                //assertFalse(row.has("v2"));
+                assertEquals(44, row.getInt("v2"));
 
-            row = iter.next();
-            assertEquals(2, row.getInt("k"));
-            assertEquals("test3", row.getString("v1"));
-            assertEquals(42, row.getInt("v2"));
+                row = iter.next();
+                assertEquals(2, row.getInt("k"));
+                assertEquals("test3", row.getString("v1"));
+                assertEquals(42, row.getInt("v2"));
 
-            row = iter.next();
-            assertEquals(3, row.getInt("k"));
-            assertEquals(null, row.getBytes("v1")); // Using getBytes because we know it won't NPE
-            assertEquals(12, row.getInt("v2"));
+                row = iter.next();
+                assertEquals(3, row.getInt("k"));
+                assertEquals(null, row.getBytes("v1")); // Using getBytes because we know it won't NPE
+                assertEquals(12, row.getInt("v2"));
+            }
         }
     }
 
@@ -249,8 +253,12 @@ public class CQLSSTableWriterTest
                               + ")";
 
         testUpdateStatement(); // start by adding some data
-        UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
-        assertEquals(2, resultSet.size());
+
+        if (verifyDataAfterLoading)
+        {
+            UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
+            assertEquals(2, resultSet.size());
+        }
 
         CQLSSTableWriter writer = CQLSSTableWriter.builder()
                                                   .inDirectory(dataDir)
@@ -262,12 +270,15 @@ public class CQLSSTableWriterTest
         writer.addRow(1, 2, 3);
         writer.addRow(4, 5, 6);
         writer.close();
-        loadSSTables(dataDir, keyspace);
+        loadSSTables(dataDir, keyspace, table);
 
-        resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
-        assertEquals(0, resultSet.size());
-        Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
-        assertFalse(iter.hasNext());
+        if (verifyDataAfterLoading)
+        {
+            UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
+            assertEquals(0, resultSet.size());
+            Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
+            assertFalse(iter.hasNext());
+        }
     }
 
     @Test
@@ -296,32 +307,35 @@ public class CQLSSTableWriterTest
         writer.addRow(2, 8, 9, "d");
 
         writer.close();
-        loadSSTables(dataDir, keyspace);
+        loadSSTables(dataDir, keyspace, table);
 
-        UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
-        assertEquals(4, resultSet.size());
-        Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
-        UntypedResultSet.Row r1 = iter.next();
-        assertEquals(1, r1.getInt("k"));
-        assertEquals(2, r1.getInt("c1"));
-        assertEquals(3, r1.getInt("c2"));
-        assertEquals("a", r1.getString("v"));
-        UntypedResultSet.Row r2 = iter.next();
-        assertEquals(1, r2.getInt("k"));
-        assertEquals(4, r2.getInt("c1"));
-        assertEquals(5, r2.getInt("c2"));
-        assertEquals("b", r2.getString("v"));
-        UntypedResultSet.Row r3 = iter.next();
-        assertEquals(1, r3.getInt("k"));
-        assertEquals(6, r3.getInt("c1"));
-        assertEquals(7, r3.getInt("c2"));
-        assertEquals("c", r3.getString("v"));
-        UntypedResultSet.Row r4 = iter.next();
-        assertEquals(2, r4.getInt("k"));
-        assertEquals(8, r4.getInt("c1"));
-        assertEquals(9, r4.getInt("c2"));
-        assertEquals("d", r4.getString("v"));
-        assertFalse(iter.hasNext());
+        if (verifyDataAfterLoading)
+        {
+            UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
+            assertEquals(4, resultSet.size());
+            Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
+            UntypedResultSet.Row r1 = iter.next();
+            assertEquals(1, r1.getInt("k"));
+            assertEquals(2, r1.getInt("c1"));
+            assertEquals(3, r1.getInt("c2"));
+            assertEquals("a", r1.getString("v"));
+            UntypedResultSet.Row r2 = iter.next();
+            assertEquals(1, r2.getInt("k"));
+            assertEquals(4, r2.getInt("c1"));
+            assertEquals(5, r2.getInt("c2"));
+            assertEquals("b", r2.getString("v"));
+            UntypedResultSet.Row r3 = iter.next();
+            assertEquals(1, r3.getInt("k"));
+            assertEquals(6, r3.getInt("c1"));
+            assertEquals(7, r3.getInt("c2"));
+            assertEquals("c", r3.getString("v"));
+            UntypedResultSet.Row r4 = iter.next();
+            assertEquals(2, r4.getInt("k"));
+            assertEquals(8, r4.getInt("c1"));
+            assertEquals(9, r4.getInt("c2"));
+            assertEquals("d", r4.getString("v"));
+            assertFalse(iter.hasNext());
+        }
 
         writer = CQLSSTableWriter.builder()
                                  .inDirectory(dataDir)
@@ -332,17 +346,21 @@ public class CQLSSTableWriterTest
 
         writer.addRow(1);
         writer.close();
-        loadSSTables(dataDir, keyspace);
+        loadSSTables(dataDir, keyspace, table);
 
-        resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
-        assertEquals(1, resultSet.size());
-        iter = resultSet.iterator();
-        UntypedResultSet.Row r5 = iter.next();
-        assertEquals(2, r5.getInt("k"));
-        assertEquals(8, r5.getInt("c1"));
-        assertEquals(9, r5.getInt("c2"));
-        assertEquals("d", r5.getString("v"));
-        assertFalse(iter.hasNext());
+        if (verifyDataAfterLoading)
+        {
+
+            UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
+            assertEquals(1, resultSet.size());
+            Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
+            UntypedResultSet.Row r5 = iter.next();
+            assertEquals(2, r5.getInt("k"));
+            assertEquals(8, r5.getInt("c1"));
+            assertEquals(9, r5.getInt("c2"));
+            assertEquals("d", r5.getString("v"));
+            assertFalse(iter.hasNext());
+        }
     }
 
     @Test
@@ -368,41 +386,46 @@ public class CQLSSTableWriterTest
                                                         .using(String.format("DELETE FROM %s WHERE k=? AND c1=? and c2>=?", qualifiedTable))
                                                         .build();
 
-        updateWriter.addRow("v0.0", "a", 0, 0);
-        updateWriter.addRow("v0.1", "a", 0, 1);
-        updateWriter.addRow("v0.2", "a", 0, 2);
-        updateWriter.addRow("v0.0", "b", 0, 0);
-        updateWriter.addRow("v0.1", "b", 0, 1);
-        updateWriter.addRow("v0.2", "b", 0, 2);
-        updateWriter.close();
-        deleteWriter.addRow("a", 0, 1);
-        deleteWriter.addRow("b", 0, 2);
+        if (verifyDataAfterLoading)
+        {
+            updateWriter.addRow("v0.0", "a", 0, 0);
+            updateWriter.addRow("v0.1", "a", 0, 1);
+            updateWriter.addRow("v0.2", "a", 0, 2);
+            updateWriter.addRow("v0.0", "b", 0, 0);
+            updateWriter.addRow("v0.1", "b", 0, 1);
+            updateWriter.addRow("v0.2", "b", 0, 2);
+            updateWriter.close();
+            deleteWriter.addRow("a", 0, 1);
+            deleteWriter.addRow("b", 0, 2);
+        }
+
         deleteWriter.close();
-        loadSSTables(dataDir, keyspace);
+        loadSSTables(dataDir, keyspace, table);
 
-        UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
-        assertEquals(3, resultSet.size());
+        if (verifyDataAfterLoading)
+        {
+            UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
+            assertEquals(3, resultSet.size());
 
-        Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
-        UntypedResultSet.Row r1 = iter.next();
-        assertEquals("a", r1.getString("k"));
-        assertEquals(0, r1.getInt("c1"));
-        assertEquals(0, r1.getInt("c2"));
-        UntypedResultSet.Row r2 = iter.next();
-        assertEquals("b", r2.getString("k"));
-        assertEquals(0, r2.getInt("c1"));
-        assertEquals(0, r2.getInt("c2"));
-        UntypedResultSet.Row r3 = iter.next();
-        assertEquals("b", r3.getString("k"));
-        assertEquals(0, r3.getInt("c1"));
-        assertEquals(1, r3.getInt("c2"));
+            Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
+            UntypedResultSet.Row r1 = iter.next();
+            assertEquals("a", r1.getString("k"));
+            assertEquals(0, r1.getInt("c1"));
+            assertEquals(0, r1.getInt("c2"));
+            UntypedResultSet.Row r2 = iter.next();
+            assertEquals("b", r2.getString("k"));
+            assertEquals(0, r2.getInt("c1"));
+            assertEquals(0, r2.getInt("c2"));
+            UntypedResultSet.Row r3 = iter.next();
+            assertEquals("b", r3.getString("k"));
+            assertEquals(0, r3.getInt("c1"));
+            assertEquals(1, r3.getInt("c2"));
+        }
     }
 
     @Test
     public void testDeleteRangeEmptyKeyComponent() throws Exception
     {
-
-
         final String schema = "CREATE TABLE " + qualifiedTable + " ("
                               + "  k text,"
                               + "  c1 int,"
@@ -432,20 +455,23 @@ public class CQLSSTableWriterTest
         deleteWriter.addRow("a", 0);
         deleteWriter.addRow("b", 0);
         deleteWriter.close();
-        loadSSTables(dataDir, keyspace);
+        loadSSTables(dataDir, keyspace, table);
 
-        UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
-        assertEquals(2, resultSet.size());
+        if (verifyDataAfterLoading)
+        {
+            UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
+            assertEquals(2, resultSet.size());
 
-        Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
-        UntypedResultSet.Row r1 = iter.next();
-        assertEquals("a", r1.getString("k"));
-        assertEquals(1, r1.getInt("c1"));
-        assertEquals(2, r1.getInt("c2"));
-        UntypedResultSet.Row r2 = iter.next();
-        assertEquals("b", r2.getString("k"));
-        assertEquals(1, r2.getInt("c1"));
-        assertEquals(2, r2.getInt("c2"));
+            Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
+            UntypedResultSet.Row r1 = iter.next();
+            assertEquals("a", r1.getString("k"));
+            assertEquals(1, r1.getInt("c1"));
+            assertEquals(2, r1.getInt("c2"));
+            UntypedResultSet.Row r2 = iter.next();
+            assertEquals("b", r2.getString("k"));
+            assertEquals(1, r2.getInt("c1"));
+            assertEquals(2, r2.getInt("c2"));
+        }
     }
 
     @Test
@@ -486,79 +512,42 @@ public class CQLSSTableWriterTest
         updateWriter.addRow("v0.3", "b", 3, 4);
         updateWriter.close();
 
-        loadSSTables(dataDir, keyspace);
+        loadSSTables(dataDir, keyspace, table);
 
-        UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
-        assertEquals(2, resultSet.size());
-        Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
-        UntypedResultSet.Row insertedRow = iter.next();
-        assertEquals("v0.2", insertedRow.getString("v"));
-        assertEquals("a", insertedRow.getString("k"));
-        assertEquals(1, insertedRow.getInt("c1"));
-        assertEquals(2, insertedRow.getInt("c2"));
-        UntypedResultSet.Row updatedRow = iter.next();
-        assertEquals("v0.3", updatedRow.getString("v"));
-        assertEquals("b", updatedRow.getString("k"));
-        assertEquals(3, updatedRow.getInt("c1"));
-        assertEquals(4, updatedRow.getInt("c2"));
-
-        deleteWriter.addRow("a", 1, 2);
-        deleteWriter.addRow("b", 3, 4);
-        deleteWriter.close();
-        loadSSTables(dataDir, keyspace);
-
-        resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
-        assertEquals(1, resultSet.size());
-        iter = resultSet.iterator();
-        UntypedResultSet.Row modifiedRow = iter.next();
-        assertFalse(modifiedRow.has("v"));
-        assertEquals("a", modifiedRow.getString("k"));
-        assertEquals(1, modifiedRow.getInt("c1"));
-        assertEquals(2, modifiedRow.getInt("c2"));
-    }
-
-    private static final int NUMBER_WRITES_IN_RUNNABLE = 10;
-
-    private class WriterThread extends Thread
-    {
-        private final File dataDir;
-        private final int id;
-        private final String qualifiedTable;
-        public volatile Exception exception;
-
-        public WriterThread(File dataDir, int id, String qualifiedTable)
+        if (verifyDataAfterLoading)
         {
-            this.dataDir = dataDir;
-            this.id = id;
-            this.qualifiedTable = qualifiedTable;
+            UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
+            assertEquals(2, resultSet.size());
+            Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
+            UntypedResultSet.Row insertedRow = iter.next();
+            assertEquals("v0.2", insertedRow.getString("v"));
+            assertEquals("a", insertedRow.getString("k"));
+            assertEquals(1, insertedRow.getInt("c1"));
+            assertEquals(2, insertedRow.getInt("c2"));
+            UntypedResultSet.Row updatedRow = iter.next();
+            assertEquals("v0.3", updatedRow.getString("v"));
+            assertEquals("b", updatedRow.getString("k"));
+            assertEquals(3, updatedRow.getInt("c1"));
+            assertEquals(4, updatedRow.getInt("c2"));
+
+            deleteWriter.addRow("a", 1, 2);
+            deleteWriter.addRow("b", 3, 4);
+
         }
 
-        @Override
-        public void run()
-        {
-            String schema = "CREATE TABLE " + qualifiedTable + " ("
-                            + "  k int,"
-                            + "  v int,"
-                            + "  PRIMARY KEY (k, v)"
-                            + ")";
-            String insert = "INSERT INTO " + qualifiedTable + " (k, v) VALUES (?, ?)";
-            CQLSSTableWriter writer = CQLSSTableWriter.builder()
-                                                      .inDirectory(dataDir)
-                                                      .forTable(schema)
-                                                      .using(insert).build();
+        deleteWriter.close();
+        loadSSTables(dataDir, keyspace, table);
 
-            try
-            {
-                for (int i = 0; i < NUMBER_WRITES_IN_RUNNABLE; i++)
-                {
-                    writer.addRow(id, i);
-                }
-                writer.close();
-            }
-            catch (Exception e)
-            {
-                exception = e;
-            }
+        if (verifyDataAfterLoading)
+        {
+            UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
+            assertEquals(1, resultSet.size());
+            Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
+            UntypedResultSet.Row modifiedRow = iter.next();
+            assertFalse(modifiedRow.has("v"));
+            assertEquals("a", modifiedRow.getString("k"));
+            assertEquals(1, modifiedRow.getInt("c1"));
+            assertEquals(2, modifiedRow.getInt("c2"));
         }
     }
 
@@ -583,10 +572,13 @@ public class CQLSSTableWriterTest
             }
         }
 
-        loadSSTables(dataDir, keyspace);
+        loadSSTables(dataDir, keyspace, table);
 
-        UntypedResultSet rs = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + ";");
-        assertEquals(threads.length * NUMBER_WRITES_IN_RUNNABLE, rs.size());
+        if (verifyDataAfterLoading)
+        {
+            UntypedResultSet rs = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + ";");
+            assertEquals(threads.length * NUMBER_WRITES_IN_RUNNABLE, rs.size());
+        }
     }
 
     @Test
@@ -628,31 +620,34 @@ public class CQLSSTableWriterTest
         }
 
         writer.close();
-        loadSSTables(dataDir, keyspace);
+        loadSSTables(dataDir, keyspace, table);
 
-        UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + keyspace + "." + table);
-        TypeCodec collectionCodec = JavaDriverUtils.codecFor(DataType.CollectionType.list(tuple2Type));
-        TypeCodec tuple3Codec = JavaDriverUtils.codecFor(tuple3Type);
-
-        assertEquals(resultSet.size(), 100);
-        int cnt = 0;
-        for (UntypedResultSet.Row row : resultSet)
+        if (verifyDataAfterLoading)
         {
-            assertEquals(cnt,
-                         row.getInt("k"));
-            List<UDTValue> values = (List<UDTValue>) collectionCodec.deserialize(row.getBytes("v1"),
-                                                                                 ProtocolVersion.CURRENT);
-            assertEquals(values.get(0).getInt("a"), cnt * 10);
-            assertEquals(values.get(0).getInt("b"), cnt * 20);
-            assertEquals(values.get(1).getInt("a"), cnt * 30);
-            assertEquals(values.get(1).getInt("b"), cnt * 40);
+            UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + keyspace + "." + table);
+            TypeCodec collectionCodec = JavaDriverUtils.codecFor(DataType.CollectionType.list(tuple2Type));
+            TypeCodec tuple3Codec = JavaDriverUtils.codecFor(tuple3Type);
 
-            UDTValue v2 = (UDTValue) tuple3Codec.deserialize(row.getBytes("v2"), ProtocolVersion.CURRENT);
+            assertEquals(resultSet.size(), 100);
+            int cnt = 0;
+            for (UntypedResultSet.Row row : resultSet)
+            {
+                assertEquals(cnt,
+                             row.getInt("k"));
+                List<UDTValue> values = (List<UDTValue>) collectionCodec.deserialize(row.getBytes("v1"),
+                                                                                     ProtocolVersion.CURRENT);
+                assertEquals(values.get(0).getInt("a"), cnt * 10);
+                assertEquals(values.get(0).getInt("b"), cnt * 20);
+                assertEquals(values.get(1).getInt("a"), cnt * 30);
+                assertEquals(values.get(1).getInt("b"), cnt * 40);
 
-            assertEquals(v2.getInt("a"), cnt * 100);
-            assertEquals(v2.getInt("b"), cnt * 200);
-            assertEquals(v2.getInt("c"), cnt * 300);
-            cnt++;
+                UDTValue v2 = (UDTValue) tuple3Codec.deserialize(row.getBytes("v2"), ProtocolVersion.CURRENT);
+
+                assertEquals(v2.getInt("a"), cnt * 100);
+                assertEquals(v2.getInt("b"), cnt * 200);
+                assertEquals(v2.getInt("c"), cnt * 300);
+                cnt++;
+            }
         }
     }
 
@@ -693,24 +688,27 @@ public class CQLSSTableWriterTest
         }
 
         writer.close();
-        loadSSTables(dataDir, keyspace);
+        loadSSTables(dataDir, keyspace, table);
 
-        UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + keyspace + "." + table);
-
-        assertEquals(resultSet.size(), 100);
-        int cnt = 0;
-        for (UntypedResultSet.Row row : resultSet)
+        if (verifyDataAfterLoading)
         {
-            assertEquals(cnt,
-                         row.getInt("k"));
-            UDTValue nestedTpl = (UDTValue) nestedTupleCodec.deserialize(row.getBytes("v1"),
-                                                                         ProtocolVersion.CURRENT);
-            assertEquals(nestedTpl.getInt("c"), cnt * 100);
-            UDTValue tpl = nestedTpl.getUDTValue("tpl");
-            assertEquals(tpl.getInt("a"), cnt * 200);
-            assertEquals(tpl.getInt("b"), cnt * 300);
+            UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + keyspace + "." + table);
 
-            cnt++;
+            assertEquals(resultSet.size(), 100);
+            int cnt = 0;
+            for (UntypedResultSet.Row row : resultSet)
+            {
+                assertEquals(cnt,
+                             row.getInt("k"));
+                UDTValue nestedTpl = (UDTValue) nestedTupleCodec.deserialize(row.getBytes("v1"),
+                                                                             ProtocolVersion.CURRENT);
+                assertEquals(nestedTpl.getInt("c"), cnt * 100);
+                UDTValue tpl = nestedTpl.getUDTValue("tpl");
+                assertEquals(tpl.getInt("a"), cnt * 200);
+                assertEquals(tpl.getInt("b"), cnt * 300);
+
+                cnt++;
+            }
         }
     }
 
@@ -778,36 +776,39 @@ public class CQLSSTableWriterTest
         writer.addRow(5, 5, 5, "5");
 
         writer.close();
-        loadSSTables(dataDir, keyspace);
+        loadSSTables(dataDir, keyspace, table);
 
-        UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
-        Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
-        UntypedResultSet.Row r1 = iter.next();
-        assertEquals(1, r1.getInt("k"));
-        assertEquals(1, r1.getInt("c1"));
-        assertEquals(1, r1.getInt("c2"));
-        assertEquals(false, r1.has("v"));
-        UntypedResultSet.Row r2 = iter.next();
-        assertEquals(2, r2.getInt("k"));
-        assertEquals(2, r2.getInt("c1"));
-        assertEquals(2, r2.getInt("c2"));
-        assertEquals(false, r2.has("v"));
-        UntypedResultSet.Row r3 = iter.next();
-        assertEquals(3, r3.getInt("k"));
-        assertEquals(3, r3.getInt("c1"));
-        assertEquals(3, r3.getInt("c2"));
-        assertEquals(false, r3.has("v"));
-        UntypedResultSet.Row r4 = iter.next();
-        assertEquals(4, r4.getInt("k"));
-        assertEquals(4, r4.getInt("c1"));
-        assertEquals(4, r4.getInt("c2"));
-        assertEquals(false, r3.has("v"));
-        UntypedResultSet.Row r5 = iter.next();
-        assertEquals(5, r5.getInt("k"));
-        assertEquals(5, r5.getInt("c1"));
-        assertEquals(5, r5.getInt("c2"));
-        assertEquals(true, r5.has("v"));
-        assertEquals("5", r5.getString("v"));
+        if (verifyDataAfterLoading)
+        {
+            UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
+            Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
+            UntypedResultSet.Row r1 = iter.next();
+            assertEquals(1, r1.getInt("k"));
+            assertEquals(1, r1.getInt("c1"));
+            assertEquals(1, r1.getInt("c2"));
+            assertEquals(false, r1.has("v"));
+            UntypedResultSet.Row r2 = iter.next();
+            assertEquals(2, r2.getInt("k"));
+            assertEquals(2, r2.getInt("c1"));
+            assertEquals(2, r2.getInt("c2"));
+            assertEquals(false, r2.has("v"));
+            UntypedResultSet.Row r3 = iter.next();
+            assertEquals(3, r3.getInt("k"));
+            assertEquals(3, r3.getInt("c1"));
+            assertEquals(3, r3.getInt("c2"));
+            assertEquals(false, r3.has("v"));
+            UntypedResultSet.Row r4 = iter.next();
+            assertEquals(4, r4.getInt("k"));
+            assertEquals(4, r4.getInt("c1"));
+            assertEquals(4, r4.getInt("c2"));
+            assertEquals(false, r3.has("v"));
+            UntypedResultSet.Row r5 = iter.next();
+            assertEquals(5, r5.getInt("k"));
+            assertEquals(5, r5.getInt("c1"));
+            assertEquals(5, r5.getInt("c2"));
+            assertEquals(true, r5.has("v"));
+            assertEquals("5", r5.getString("v"));
+        }
     }
 
     @Test
@@ -833,23 +834,26 @@ public class CQLSSTableWriterTest
         writer.addRow(null, 7, 8, 9);
         writer.addRow(CQLSSTableWriter.UNSET_VALUE, 10, 11, 12);
         writer.close();
-        loadSSTables(dataDir, keyspace);
+        loadSSTables(dataDir, keyspace, table);
 
-        UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
-        assertEquals(2, resultSet.size());
+        if (verifyDataAfterLoading)
+        {
+            UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
+            assertEquals(2, resultSet.size());
 
-        Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
-        UntypedResultSet.Row r1 = iter.next();
-        assertEquals(1, r1.getInt("k"));
-        assertEquals(2, r1.getInt("c1"));
-        assertEquals(3, r1.getInt("c2"));
-        assertEquals("a", r1.getString("v"));
-        UntypedResultSet.Row r2 = iter.next();
-        assertEquals(4, r2.getInt("k"));
-        assertEquals(5, r2.getInt("c1"));
-        assertEquals(6, r2.getInt("c2"));
-        assertEquals("b", r2.getString("v"));
-        assertFalse(iter.hasNext());
+            Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
+            UntypedResultSet.Row r1 = iter.next();
+            assertEquals(1, r1.getInt("k"));
+            assertEquals(2, r1.getInt("c1"));
+            assertEquals(3, r1.getInt("c2"));
+            assertEquals("a", r1.getString("v"));
+            UntypedResultSet.Row r2 = iter.next();
+            assertEquals(4, r2.getInt("k"));
+            assertEquals(5, r2.getInt("c1"));
+            assertEquals(6, r2.getInt("c2"));
+            assertEquals("b", r2.getString("v"));
+            assertFalse(iter.hasNext());
+        }
     }
 
     @Test
@@ -873,25 +877,28 @@ public class CQLSSTableWriterTest
         writer.addRow(4, 5, 6, "efg");
 
         writer.close();
-        loadSSTables(dataDir, keyspace);
+        loadSSTables(dataDir, keyspace, table);
 
-        UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
-        assertEquals(2, resultSet.size());
+        if (verifyDataAfterLoading)
+        {
+            UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
+            assertEquals(2, resultSet.size());
 
-        Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
-        UntypedResultSet.Row r1 = iter.next();
-        assertEquals(1, r1.getInt("k"));
-        assertEquals(2, r1.getInt("c1"));
-        assertEquals(3, r1.getInt("c2"));
-        assertEquals(ByteBufferUtil.bytes("abc"), r1.getBytes("v"));
+            Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
+            UntypedResultSet.Row r1 = iter.next();
+            assertEquals(1, r1.getInt("k"));
+            assertEquals(2, r1.getInt("c1"));
+            assertEquals(3, r1.getInt("c2"));
+            assertEquals(ByteBufferUtil.bytes("abc"), r1.getBytes("v"));
 
-        UntypedResultSet.Row r2 = iter.next();
-        assertEquals(4, r2.getInt("k"));
-        assertEquals(5, r2.getInt("c1"));
-        assertEquals(6, r2.getInt("c2"));
-        assertEquals(ByteBufferUtil.bytes("efg"), r2.getBytes("v"));
+            UntypedResultSet.Row r2 = iter.next();
+            assertEquals(4, r2.getInt("k"));
+            assertEquals(5, r2.getInt("c1"));
+            assertEquals(6, r2.getInt("c2"));
+            assertEquals(ByteBufferUtil.bytes("efg"), r2.getBytes("v"));
 
-        assertFalse(iter.hasNext());
+            assertFalse(iter.hasNext());
+        }
     }
 
     @Test
@@ -920,10 +927,13 @@ public class CQLSSTableWriterTest
         }
 
         writer.close();
-        loadSSTables(dataDir, keyspace);
+        loadSSTables(dataDir, keyspace, table);
 
-        UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
-        assertEquals(100, resultSet.size());
+        if (verifyDataAfterLoading)
+        {
+            UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
+            assertEquals(100, resultSet.size());
+        }
     }
 
     @Test
@@ -952,17 +962,20 @@ public class CQLSSTableWriterTest
             writer.addRow(i + ID_OFFSET, LocalDate.fromDaysSinceEpoch(i));
         }
         writer.close();
-        loadSSTables(dataDir, keyspace);
+        loadSSTables(dataDir, keyspace, table);
 
-        UntypedResultSet rs = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + ";");
-        assertEquals(200, rs.size());
-        Map<Integer, LocalDate> map = StreamSupport.stream(rs.spliterator(), false)
-                                                   .collect(Collectors.toMap(r -> r.getInt("k"), r -> r.getDate("c")));
-        for (int i = 0; i < 100; i++)
+        if (verifyDataAfterLoading)
         {
-            final LocalDate expected = LocalDate.fromDaysSinceEpoch(i);
-            assertEquals(expected, map.get(i + ID_OFFSET));
-            assertEquals(expected, map.get(i));
+            UntypedResultSet rs = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + ";");
+            assertEquals(200, rs.size());
+            Map<Integer, LocalDate> map = StreamSupport.stream(rs.spliterator(), false)
+                                                       .collect(Collectors.toMap(r -> r.getInt("k"), r -> r.getDate("c")));
+            for (int i = 0; i < 100; i++)
+            {
+                final LocalDate expected = LocalDate.fromDaysSinceEpoch(i);
+                assertEquals(expected, map.get(i + ID_OFFSET));
+                assertEquals(expected, map.get(i));
+            }
         }
     }
 
@@ -997,33 +1010,36 @@ public class CQLSSTableWriterTest
             writer.addRow(String.valueOf(i), map);
         }
         writer.close();
-        loadSSTables(dataDir, keyspace);
+        loadSSTables(dataDir, keyspace, table);
 
-        UntypedResultSet rs = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + ";");
-        assertEquals(200, rs.size());
-        Map<String, Map<String, String>> map = StreamSupport.stream(rs.spliterator(), false)
-                                                            .collect(Collectors.toMap(r -> r.getString("k"), r -> r.getFrozenMap("c", UTF8Type.instance, UTF8Type.instance)));
-        for (int i = 0; i < 200; i++)
+        if (verifyDataAfterLoading)
         {
-            final String expectedKey = String.valueOf(i);
-            assertTrue(map.containsKey(expectedKey));
-            Map<String, String> innerMap = map.get(expectedKey);
-            assertTrue(innerMap.containsKey("a_key"));
-            assertEquals(innerMap.get("a_key"), "av" + i);
-            assertTrue(innerMap.containsKey("b_key"));
-            assertEquals(innerMap.get("b_key"), "zv" + i);
-        }
+            UntypedResultSet rs = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + ";");
+            assertEquals(200, rs.size());
+            Map<String, Map<String, String>> map = StreamSupport.stream(rs.spliterator(), false)
+                                                                .collect(Collectors.toMap(r -> r.getString("k"), r -> r.getFrozenMap("c", UTF8Type.instance, UTF8Type.instance)));
+            for (int i = 0; i < 200; i++)
+            {
+                final String expectedKey = String.valueOf(i);
+                assertTrue(map.containsKey(expectedKey));
+                Map<String, String> innerMap = map.get(expectedKey);
+                assertTrue(innerMap.containsKey("a_key"));
+                assertEquals(innerMap.get("a_key"), "av" + i);
+                assertTrue(innerMap.containsKey("b_key"));
+                assertEquals(innerMap.get("b_key"), "zv" + i);
+            }
 
-        // Make sure we can filter with map values regardless of which order we put the keys in
-        UntypedResultSet filtered;
-        filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='0' and c={'a_key': 'av0', 'b_key': 'zv0'};");
-        assertEquals(1, filtered.size());
-        filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='0' and c={'b_key': 'zv0', 'a_key': 'av0'};");
-        assertEquals(1, filtered.size());
-        filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='100' and c={'b_key': 'zv100', 'a_key': 'av100'};");
-        assertEquals(1, filtered.size());
-        filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='100' and c={'a_key': 'av100', 'b_key': 'zv100'};");
-        assertEquals(1, filtered.size());
+            // Make sure we can filter with map values regardless of which order we put the keys in
+            UntypedResultSet filtered;
+            filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='0' and c={'a_key': 'av0', 'b_key': 'zv0'};");
+            assertEquals(1, filtered.size());
+            filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='0' and c={'b_key': 'zv0', 'a_key': 'av0'};");
+            assertEquals(1, filtered.size());
+            filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='100' and c={'b_key': 'zv100', 'a_key': 'av100'};");
+            assertEquals(1, filtered.size());
+            filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='100' and c={'a_key': 'av100', 'b_key': 'zv100'};");
+            assertEquals(1, filtered.size());
+        }
     }
 
     @Test
@@ -1058,26 +1074,29 @@ public class CQLSSTableWriterTest
         writer.addRow(String.valueOf(2), map2);
 
         writer.close();
-        loadSSTables(dataDir, keyspace);
+        loadSSTables(dataDir, keyspace, table);
 
-        UntypedResultSet rs = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + ";");
-        assertEquals(2, rs.size());
+        if (verifyDataAfterLoading)
+        {
+            UntypedResultSet rs = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + ";");
+            assertEquals(2, rs.size());
 
-        // Make sure we can filter with map values regardless of which order we put the keys in
-        UntypedResultSet filtered;
-        filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='1' and c={" + uuid1 + ": 1, " + uuid2 + ": 2};");
-        assertEquals(1, filtered.size());
-        filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='1' and c={" + uuid2 + ": 2, " + uuid1 + ": 1};");
-        assertEquals(1, filtered.size());
-        filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='2' and c={" + uuid3 + ": 1, " + uuid4 + ": 2};");
-        assertEquals(1, filtered.size());
-        filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='2' and c={" + uuid4 + ": 2, " + uuid3 + ": 1};");
-        assertEquals(1, filtered.size());
-        UUID other = UUIDs.startOf(1234L); // Just some other TimeUUID
-        filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='2' and c={" + uuid3 + ": 1, " + other + ": 2};");
-        assertEquals(0, filtered.size());
-        filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='2' and c={" + uuid4 + ": 2, " + other + ": 1};");
-        assertEquals(0, filtered.size());
+            // Make sure we can filter with map values regardless of which order we put the keys in
+            UntypedResultSet filtered;
+            filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='1' and c={" + uuid1 + ": 1, " + uuid2 + ": 2};");
+            assertEquals(1, filtered.size());
+            filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='1' and c={" + uuid2 + ": 2, " + uuid1 + ": 1};");
+            assertEquals(1, filtered.size());
+            filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='2' and c={" + uuid3 + ": 1, " + uuid4 + ": 2};");
+            assertEquals(1, filtered.size());
+            filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='2' and c={" + uuid4 + ": 2, " + uuid3 + ": 1};");
+            assertEquals(1, filtered.size());
+            UUID other = UUIDs.startOf(1234L); // Just some other TimeUUID
+            filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='2' and c={" + uuid3 + ": 1, " + other + ": 2};");
+            assertEquals(0, filtered.size());
+            filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='2' and c={" + uuid4 + ": 2, " + other + ": 1};");
+            assertEquals(0, filtered.size());
+        }
     }
 
     @Test
@@ -1110,26 +1129,29 @@ public class CQLSSTableWriterTest
         writer.addRow(String.valueOf(2), set2);
 
         writer.close();
-        loadSSTables(dataDir, keyspace);
+        loadSSTables(dataDir, keyspace, table);
 
-        UntypedResultSet rs = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + ";");
-        assertEquals(2, rs.size());
+        if (verifyDataAfterLoading)
+        {
+            UntypedResultSet rs = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + ";");
+            assertEquals(2, rs.size());
 
-        // Make sure we can filter with map values regardless of which order we put the keys in
-        UntypedResultSet filtered;
-        filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='1' and c={" + uuid1 + ", " + uuid2 + "};");
-        assertEquals(1, filtered.size());
-        filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='1' and c={" + uuid2 + ", " + uuid1 + "};");
-        assertEquals(1, filtered.size());
-        filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='2' and c={" + uuid1 + ", " + uuid2 + "};");
-        assertEquals(1, filtered.size());
-        filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='2' and c={" + uuid2 + ", " + uuid1 + "};");
-        assertEquals(1, filtered.size());
-        UUID other = UUIDs.startOf(10000000L + 1L); // Pick one that's really close just to make sure clustering filters are working
-        filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='2' and c={" + uuid1 + ", " + other + "};");
-        assertEquals(0, filtered.size());
-        filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='2' and c={" + other + ", " + uuid1 + "};");
-        assertEquals(0, filtered.size());
+            // Make sure we can filter with map values regardless of which order we put the keys in
+            UntypedResultSet filtered;
+            filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='1' and c={" + uuid1 + ", " + uuid2 + "};");
+            assertEquals(1, filtered.size());
+            filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='1' and c={" + uuid2 + ", " + uuid1 + "};");
+            assertEquals(1, filtered.size());
+            filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='2' and c={" + uuid1 + ", " + uuid2 + "};");
+            assertEquals(1, filtered.size());
+            filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='2' and c={" + uuid2 + ", " + uuid1 + "};");
+            assertEquals(1, filtered.size());
+            UUID other = UUIDs.startOf(10000000L + 1L); // Pick one that's really close just to make sure clustering filters are working
+            filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='2' and c={" + uuid1 + ", " + other + "};");
+            assertEquals(0, filtered.size());
+            filtered = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable + " where k='2' and c={" + other + ", " + uuid1 + "};");
+            assertEquals(0, filtered.size());
+        }
     }
 
     @Test
@@ -1157,18 +1179,21 @@ public class CQLSSTableWriterTest
         writer.addRow(1, 4, 5, "b", now); // This write should be the one found at the end because it has a higher timestamp
         writer.addRow(1, 2, 3, "a", then);
         writer.close();
-        loadSSTables(dataDir, keyspace);
+        loadSSTables(dataDir, keyspace, table);
 
-        UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
-        assertEquals(1, resultSet.size());
+        if (verifyDataAfterLoading)
+        {
+            UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
+            assertEquals(1, resultSet.size());
 
-        Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
-        UntypedResultSet.Row r1 = iter.next();
-        assertEquals(1, r1.getInt("k"));
-        assertEquals(4, r1.getInt("v1"));
-        assertEquals(5, r1.getInt("v2"));
-        assertEquals("b", r1.getString("v3"));
-        assertFalse(iter.hasNext());
+            Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
+            UntypedResultSet.Row r1 = iter.next();
+            assertEquals(1, r1.getInt("k"));
+            assertEquals(4, r1.getInt("v1"));
+            assertEquals(5, r1.getInt("v2"));
+            assertEquals("b", r1.getString("v3"));
+            assertFalse(iter.hasNext());
+        }
     }
 
     @Test
@@ -1194,18 +1219,21 @@ public class CQLSSTableWriterTest
         writer.addRow(2, 4, 5, "b", 1);
         writer.close();
         Thread.sleep(1200); // Slightly over 1 second, just to make sure
-        loadSSTables(dataDir, keyspace);
+        loadSSTables(dataDir, keyspace, table);
 
-        UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
-        assertEquals(1, resultSet.size());
+        if (verifyDataAfterLoading)
+        {
+            UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
+            assertEquals(1, resultSet.size());
 
-        Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
-        UntypedResultSet.Row r1 = iter.next();
-        assertEquals(1, r1.getInt("k"));
-        assertEquals(2, r1.getInt("v1"));
-        assertEquals(3, r1.getInt("v2"));
-        assertEquals("a", r1.getString("v3"));
-        assertFalse(iter.hasNext());
+            Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
+            UntypedResultSet.Row r1 = iter.next();
+            assertEquals(1, r1.getInt("k"));
+            assertEquals(2, r1.getInt("v1"));
+            assertEquals(3, r1.getInt("v2"));
+            assertEquals("a", r1.getString("v3"));
+            assertFalse(iter.hasNext());
+        }
     }
 
     @Test
@@ -1235,19 +1263,23 @@ public class CQLSSTableWriterTest
         // Insert a row "two seconds ago" with a TTL of 1 second - should not appear in results
         writer.addRow(2, 4, 5, "b", oneSecondFromNow, 1);
         writer.close();
-        loadSSTables(dataDir, keyspace);
-        UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
-        Thread.sleep(1200);
-        resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
-        assertEquals(1, resultSet.size());
+        loadSSTables(dataDir, keyspace, table);
 
-        Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
-        UntypedResultSet.Row r1 = iter.next();
-        assertEquals(1, r1.getInt("k"));
-        assertEquals(2, r1.getInt("v1"));
-        assertEquals(3, r1.getInt("v2"));
-        assertEquals("a", r1.getString("v3"));
-        assertFalse(iter.hasNext());
+        if (verifyDataAfterLoading)
+        {
+            UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
+            Thread.sleep(1200);
+            resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
+            assertEquals(1, resultSet.size());
+
+            Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
+            UntypedResultSet.Row r1 = iter.next();
+            assertEquals(1, r1.getInt("k"));
+            assertEquals(2, r1.getInt("v1"));
+            assertEquals(3, r1.getInt("v2"));
+            assertEquals("a", r1.getString("v3"));
+            assertFalse(iter.hasNext());
+        }
     }
 
     @Test
@@ -1269,15 +1301,18 @@ public class CQLSSTableWriterTest
             writer.addRow(i, UUID.randomUUID().toString());
         }
         writer.close();
-        loadSSTables(dataDir, keyspace);
+        loadSSTables(dataDir, keyspace, table);
 
-        UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
-        assertEquals(rowCount, resultSet.size());
-        Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
-        for (int i = 0; i < rowCount; i++)
+        if (verifyDataAfterLoading)
         {
-            UntypedResultSet.Row row = iter.next();
-            assertEquals(i, row.getInt("k"));
+            UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
+            assertEquals(rowCount, resultSet.size());
+            Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
+            for (int i = 0; i < rowCount; i++)
+            {
+                UntypedResultSet.Row row = iter.next();
+                assertEquals(i, row.getInt("k"));
+            }
         }
     }
 
@@ -1312,16 +1347,63 @@ public class CQLSSTableWriterTest
         assertTrue("The file size should be close to 1MiB (with at most 50KiB error rate for the test)",
                    Math.abs(1024 * 1024 - closeTo1MiBFileSize) < 50 * 1024);
 
-        loadSSTables(dataDir, keyspace);
+        loadSSTables(dataDir, keyspace, table);
 
-        UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
-        assertEquals(rowCount, resultSet.size());
-        Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
-        for (int i = 0; i < rowCount; i++)
+        if (verifyDataAfterLoading)
         {
-            UntypedResultSet.Row row = iter.next();
-            assertEquals(i, row.getInt("k"));
+            UntypedResultSet resultSet = QueryProcessor.executeInternal("SELECT * FROM " + qualifiedTable);
+            assertEquals(rowCount, resultSet.size());
+            Iterator<UntypedResultSet.Row> iter = resultSet.iterator();
+            for (int i = 0; i < rowCount; i++)
+            {
+                UntypedResultSet.Row row = iter.next();
+                assertEquals(i, row.getInt("k"));
+            }
         }
+    }
+
+    @Test
+    public void testMultipleWritersWithDistinctTables() throws IOException
+    {
+        testWriterInClientMode("table1", "table2");
+    }
+
+    @Test
+    public void testMultipleWritersWithSameTable() throws IOException
+    {
+        testWriterInClientMode("table1", "table1");
+    }
+
+    public void testWriterInClientMode(String table1, String table2) throws IOException, InvalidRequestException
+    {
+        String schema = "CREATE TABLE client_test.%s ("
+                        + "  k int PRIMARY KEY,"
+                        + "  v1 text,"
+                        + "  v2 int"
+                        + ")";
+        String insert = "INSERT INTO client_test.%s (k, v1, v2) VALUES (?, ?, ?)";
+
+        CQLSSTableWriter writer = CQLSSTableWriter.builder()
+                                                  .inDirectory(dataDir)
+                                                  .forTable(String.format(schema, table1))
+                                                  .using(String.format(insert, table1)).build();
+
+        CQLSSTableWriter writer2 = CQLSSTableWriter.builder()
+                                                   .inDirectory(dataDir)
+                                                   .forTable(String.format(schema, table2))
+                                                   .using(String.format(insert, table2)).build();
+
+        writer.addRow(0, "A", 0);
+        writer2.addRow(0, "A", 0);
+        writer.addRow(1, "B", 1);
+        writer2.addRow(1, "B", 1);
+        writer.close();
+        writer2.close();
+
+        BiPredicate<File, String> filter = (dir, name) -> name.endsWith("-Data.db");
+
+        File[] dataFiles = dataDir.tryList(filter);
+        assertEquals(2, dataFiles.length);
     }
 
     @Test
@@ -1413,25 +1495,78 @@ public class CQLSSTableWriterTest
         assertFalse(indexDescriptor.isPerColumnIndexBuildComplete(new IndexIdentifier(keyspace, table, "idx2")));
     }
 
-    private static void loadSSTables(File dataDir, String ks) throws ExecutionException, InterruptedException
+    protected static void loadSSTables(File dataDir, final String ks, final String tb) throws ExecutionException, InterruptedException
     {
         SSTableLoader loader = new SSTableLoader(dataDir, new SSTableLoader.Client()
         {
             private String keyspace;
 
+            @Override
             public void init(String keyspace)
             {
                 this.keyspace = keyspace;
-                for (Range<Token> range : StorageService.instance.getLocalReplicas(ks).ranges())
+
+                KeyspaceMetadata keyspaceMetadata = Schema.instance.getKeyspaceMetadata(keyspace);
+
+                RangesAtEndpoint addressReplicas = keyspaceMetadata.replicationStrategy.getAddressReplicas(ClusterMetadata.current(), FBUtilities.getBroadcastAddressAndPort());
+
+                for (Range<Token> range : addressReplicas.ranges())
                     addRangeForEndpoint(range, FBUtilities.getBroadcastAddressAndPort());
             }
 
-            public TableMetadataRef getTableMetadata(String cfName)
+            @Override
+            public TableMetadataRef getTableMetadata(String tableName)
             {
-                return Schema.instance.getTableMetadataRef(keyspace, cfName);
+                KeyspaceMetadata keyspaceMetadata = ClusterMetadata.current().schema.getKeyspaceMetadata(keyspace);
+                TableMetadata tableMetadata = keyspaceMetadata.tables.getNullable(tableName);
+                assert tableMetadata != null;
+                return tableMetadata.ref;
             }
-        }, new OutputHandler.SystemOutput(false, false));
+        }, new OutputHandler.SystemOutput(false, false), 1, ks, tb);
 
         loader.stream().get();
+    }
+
+    private class WriterThread extends Thread
+    {
+        private final File dataDir;
+        private final int id;
+        private final String qualifiedTable;
+        public volatile Exception exception;
+
+        public WriterThread(File dataDir, int id, String qualifiedTable)
+        {
+            this.dataDir = dataDir;
+            this.id = id;
+            this.qualifiedTable = qualifiedTable;
+        }
+
+        @Override
+        public void run()
+        {
+            String schema = "CREATE TABLE " + qualifiedTable + " ("
+                            + "  k int,"
+                            + "  v int,"
+                            + "  PRIMARY KEY (k, v)"
+                            + ")";
+            String insert = "INSERT INTO " + qualifiedTable + " (k, v) VALUES (?, ?)";
+            CQLSSTableWriter writer = CQLSSTableWriter.builder()
+                                                      .inDirectory(dataDir)
+                                                      .forTable(schema)
+                                                      .using(insert).build();
+
+            try
+            {
+                for (int i = 0; i < NUMBER_WRITES_IN_RUNNABLE; i++)
+                {
+                    writer.addRow(id, i);
+                }
+                writer.close();
+            }
+            catch (Exception e)
+            {
+                exception = e;
+            }
+        }
     }
 }

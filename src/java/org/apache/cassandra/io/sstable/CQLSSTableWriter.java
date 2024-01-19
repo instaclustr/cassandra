@@ -19,7 +19,9 @@ package org.apache.cassandra.io.sstable;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
+import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,6 +47,9 @@ import org.apache.cassandra.cql3.statements.schema.CreateIndexStatement;
 import org.apache.cassandra.cql3.statements.schema.CreateTableStatement;
 import org.apache.cassandra.cql3.statements.schema.CreateTypeStatement;
 import org.apache.cassandra.db.Clustering;
+import org.apache.cassandra.db.ColumnFamilyStore;
+import org.apache.cassandra.db.Directories;
+import org.apache.cassandra.db.Keyspace;
 import org.apache.cassandra.db.Slice;
 import org.apache.cassandra.db.Slices;
 import org.apache.cassandra.db.marshal.AbstractType;
@@ -637,6 +642,7 @@ public class CQLSSTableWriter implements Closeable
             synchronized (CQLSSTableWriter.class)
             {
                 String keyspaceName = schemaStatement.keyspace();
+                String tableName = schemaStatement.table();
 
                 Schema.instance.submit(SchemaTransformations.addKeyspace(KeyspaceMetadata.create(keyspaceName,
                                                                                                  KeyspaceParams.simple(1),
@@ -652,21 +658,56 @@ public class CQLSSTableWriter implements Closeable
                                                                Types.none(),
                                                                UserFunctions.none());
 
-                TableMetadata tableMetadata = ksm.tables.getNullable(schemaStatement.table());
+                TableMetadata tableMetadata = Schema.instance.getTableMetadata(keyspaceName, tableName);
                 if (tableMetadata == null)
                 {
                     Types types = createTypes(keyspaceName);
                     Schema.instance.submit(SchemaTransformations.addTypes(types, true));
                     tableMetadata = createTable(types);
+                    Schema.instance.submit(SchemaTransformations.addTable(tableMetadata, true));
 
                     if (buildIndexes && !indexStatements.isEmpty())
                     {
                         // we need to commit keyspace metadata first so applyIndexes sees that keyspace from TCM
                         commitKeyspaceMetadata(ksm.withSwapped(ksm.tables.with(tableMetadata)));
-                        tableMetadata = applyIndexes(ksm.name, tableMetadata.name);
+                        applyIndexes(keyspaceName);
                     }
 
+                    KeyspaceMetadata keyspaceMetadata = ClusterMetadata.current().schema.getKeyspaceMetadata(keyspaceName);
+                    tableMetadata = keyspaceMetadata.tables.getNullable(tableName);
+
                     Schema.instance.submit(SchemaTransformations.addTable(tableMetadata, true));
+                }
+
+                ColumnFamilyStore cfs = null;
+                if (buildIndexes && !indexStatements.isEmpty())
+                {
+                    KeyspaceMetadata keyspaceMetadata = ClusterMetadata.current().schema.getKeyspaceMetadata(keyspaceName);
+                    Keyspace keyspace = Keyspace.mockKS(keyspaceMetadata);
+                    Directories directories = new Directories(tableMetadata, Collections.singleton(new Directories.DataDirectory(new File(directory.toPath()))));
+                    cfs = ColumnFamilyStore.createColumnFamilyStore(keyspace,
+                                                                    tableName,
+                                                                    tableMetadata,
+                                                                    directories,
+                                                                    false,
+                                                                    false);
+
+                    keyspace.initCfCustom(cfs);
+
+                    // this is the empty directory / leftover from times we initialized ColumnFamilyStore
+                    // it will automatically create directories for keyspace and table on disk after initialization
+                    // we set that directory to the destination of generated SSTables so we just remove empty directories here
+                    try
+                    {
+                        new File(directory, keyspaceName).deleteRecursive();
+                    }
+                    catch (UncheckedIOException ex)
+                    {
+                        if (!(ex.getCause() instanceof NoSuchFileException))
+                        {
+                            throw ex;
+                        }
+                    }
                 }
 
                 ModificationStatement preparedModificationStatement = prepareModificationStatement();
@@ -679,9 +720,9 @@ public class CQLSSTableWriter implements Closeable
                 if (format != null)
                     writer.setSSTableFormatType(format);
 
-                if (buildIndexes && !indexStatements.isEmpty())
+                if (buildIndexes && !indexStatements.isEmpty() && cfs != null)
                 {
-                    StorageAttachedIndexGroup saiGroup = StorageAttachedIndexGroup.getIndexGroup(Schema.instance.getColumnFamilyStoreInstance(tableMetadata.id));
+                    StorageAttachedIndexGroup saiGroup = StorageAttachedIndexGroup.getIndexGroup(cfs);
                     if (saiGroup != null)
                         writer.addIndexGroup(saiGroup);
                 }
@@ -707,10 +748,9 @@ public class CQLSSTableWriter implements Closeable
          * Applies any provided index definitions to the target table
          *
          * @param keyspaceName name of the keyspace to apply indexes for
-         * @param tableName name of the table to apply indexes for
          * @return table metadata reflecting applied indexes
          */
-        private TableMetadata applyIndexes(String keyspaceName, String tableName)
+        private void applyIndexes(String keyspaceName)
         {
             ClientState state = ClientState.forInternalCalls();
 
@@ -719,8 +759,6 @@ public class CQLSSTableWriter implements Closeable
                 Keyspaces keyspaces = statement.prepare(state).apply(ClusterMetadata.current());
                 commitKeyspaceMetadata(keyspaces.getNullable(keyspaceName));
             }
-
-            return ClusterMetadata.current().schema.getKeyspaceMetadata(keyspaceName).getTableNullable(tableName);
         }
 
         private void commitKeyspaceMetadata(KeyspaceMetadata keyspaceMetadata)
