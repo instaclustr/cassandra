@@ -195,7 +195,7 @@ public class GossipHelper
             return new HashSet<>(((Move)sequence).tokens);
 
         throw new IllegalArgumentException(String.format("Extracting tokens from %s sequence is " +
-                                                         "neither necessary nor supported here"));
+                                                         "neither necessary nor supported here", sequence.kind()));
     }
 
     private static Collection<Token> getTokensIn(IPartitioner partitioner, EndpointState epState)
@@ -238,7 +238,7 @@ public class GossipHelper
         {
             InetAddressAndPort local = getEitherState(endpoint, epState, INTERNAL_ADDRESS_AND_PORT, INTERNAL_IP, DatabaseDescriptor.getStoragePort());
             InetAddressAndPort nativeAddress = getEitherState(endpoint, epState, NATIVE_ADDRESS_AND_PORT, RPC_ADDRESS, DatabaseDescriptor.getNativeTransportPort());
-            return new NodeAddresses(UUID.randomUUID(), endpoint, local, nativeAddress);
+            return new NodeAddresses(UUID.randomUUID(), endpoint, local, nativeAddress, null);
         }
         catch (UnknownHostException e)
         {

@@ -1682,6 +1682,24 @@ public class StorageService extends NotificationBroadcasterSupport implements IE
         return addresses.nativeAddress.getHostAddress(withPort);
     }
 
+    @Nullable
+    public String getNativeAddressSSL(InetAddressAndPort endpoint, boolean withPort)
+    {
+        if (endpoint.equals(FBUtilities.getBroadcastAddressAndPort()))
+            return FBUtilities.getBroadcastNativeAddressAndPortSSL().getHostAddress(withPort);
+
+        ClusterMetadata metadata = ClusterMetadata.current();
+        Directory directory = metadata.directory;
+        NodeId id = directory.peerId(endpoint);
+        if (id == null)
+            throw new RuntimeException("Unknown endpoint " + endpoint);
+
+        NodeAddresses addresses = directory.getNodeAddresses(id);
+        InetAddressAndPort nativeAddressSSL = addresses.nativeAddressSSL;
+
+        return nativeAddressSSL == null ? null : nativeAddressSSL.getHostAddress(withPort);
+    }
+
     public Map<List<String>, List<String>> getRangeToRpcaddressMap(String keyspace)
     {
         return getRangeToNativeaddressMap(keyspace, false);

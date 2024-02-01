@@ -60,6 +60,7 @@ public class PeersTable extends AbstractVirtualTable
     public static String RELEASE_VERSION = "release_version";
     public static String NATIVE_ADDRESS = "native_address";
     public static String NATIVE_PORT = "native_port";
+    public static String NATIVE_PORT_SSL = "native_port_ssl";
     public static String SCHEMA_VERSION = "schema_version";
     public static String TOKENS = "tokens";
     public static String STATE = "state";
@@ -79,6 +80,7 @@ public class PeersTable extends AbstractVirtualTable
                            .addRegularColumn(PREFERRED_PORT, Int32Type.instance)
                            .addRegularColumn(NATIVE_ADDRESS, InetAddressType.instance)
                            .addRegularColumn(NATIVE_PORT, Int32Type.instance)
+                           .addRegularColumn(NATIVE_PORT_SSL, Int32Type.instance)
                            .addRegularColumn(RELEASE_VERSION, UTF8Type.instance)
                            .addRegularColumn(SCHEMA_VERSION, UUIDType.instance)
                            .addRegularColumn(STATE, UTF8Type.instance)
@@ -104,6 +106,7 @@ public class PeersTable extends AbstractVirtualTable
                   .column(PREFERRED_PORT, addresses.broadcastAddress.getPort())
                   .column(NATIVE_ADDRESS, addresses.nativeAddress.getAddress())
                   .column(NATIVE_PORT, addresses.nativeAddress.getPort())
+                  .column(NATIVE_PORT_SSL, addresses.nativeAddressSSL.getPort())
                   .column(RELEASE_VERSION, metadata.directory.version(peer).cassandraVersion.toString())
                   .column(SCHEMA_VERSION, Schema.instance.getVersion()) //TODO
                   .column(STATE, metadata.directory.peerState(peer).toString())
