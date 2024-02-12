@@ -100,7 +100,7 @@ public class NodeAddresses
         return broadcastAddress.equals(other.broadcastAddress) ||
                localAddress.equals(other.localAddress) ||
                nativeAddress.equals(other.nativeAddress) ||
-               nativeAddressSSL.equals(other.nativeAddressSSL);
+               Objects.equals(nativeAddressSSL, other.nativeAddressSSL);
     }
 
     @Override
@@ -118,7 +118,7 @@ public class NodeAddresses
     @Override
     public int hashCode()
     {
-        return Objects.hash(broadcastAddress, localAddress, nativeAddress);
+        return Objects.hash(broadcastAddress, localAddress, nativeAddress, nativeAddressSSL);
     }
 
     public static NodeAddresses current()
@@ -140,7 +140,16 @@ public class NodeAddresses
             InetAddressAndPort.MetadataSerializer.serializer.serialize(t.broadcastAddress, out, version);
             InetAddressAndPort.MetadataSerializer.serializer.serialize(t.localAddress, out, version);
             InetAddressAndPort.MetadataSerializer.serializer.serialize(t.nativeAddress, out, version);
-            InetAddressAndPort.MetadataSerializer.serializer.serialize(t.nativeAddressSSL, out, version);
+
+            if (t.nativeAddressSSL != null)
+            {
+                out.writeBoolean(true);
+                InetAddressAndPort.MetadataSerializer.serializer.serialize(t.nativeAddressSSL, out, version);
+            }
+            else
+            {
+                out.writeBoolean(false);
+            }
         }
 
         @Override
@@ -150,18 +159,27 @@ public class NodeAddresses
             InetAddressAndPort broadcastAddress = InetAddressAndPort.MetadataSerializer.serializer.deserialize(in, version);
             InetAddressAndPort localAddress = InetAddressAndPort.MetadataSerializer.serializer.deserialize(in, version);
             InetAddressAndPort rpcAddress = InetAddressAndPort.MetadataSerializer.serializer.deserialize(in, version);
-            InetAddressAndPort rpcAddressSSL = InetAddressAndPort.MetadataSerializer.serializer.deserialize(in, version);
+            InetAddressAndPort rpcAddressSSL = null;
+
+            if (in.readBoolean())
+                rpcAddressSSL = InetAddressAndPort.MetadataSerializer.serializer.deserialize(in, version);
+
             return new NodeAddresses(token, broadcastAddress, localAddress, rpcAddress, rpcAddressSSL);
         }
 
         @Override
         public long serializedSize(NodeAddresses t, Version version)
         {
-            return (2 * Long.BYTES) +
-                   InetAddressAndPort.MetadataSerializer.serializer.serializedSize(t.broadcastAddress, version) +
-                   InetAddressAndPort.MetadataSerializer.serializer.serializedSize(t.localAddress, version) +
-                   InetAddressAndPort.MetadataSerializer.serializer.serializedSize(t.nativeAddress, version) +
-                   InetAddressAndPort.MetadataSerializer.serializer.serializedSize(t.nativeAddressSSL, version);
+            long size = (2 * Long.BYTES) +
+                        InetAddressAndPort.MetadataSerializer.serializer.serializedSize(t.broadcastAddress, version) +
+                        InetAddressAndPort.MetadataSerializer.serializer.serializedSize(t.localAddress, version) +
+                        InetAddressAndPort.MetadataSerializer.serializer.serializedSize(t.nativeAddress, version) +
+                        1; // 1 for boolean flag if the message contains nativeAddressSSL or not
+
+            if (t.nativeAddressSSL != null)
+                size += InetAddressAndPort.MetadataSerializer.serializer.serializedSize(t.nativeAddressSSL, version);
+
+            return size;
         }
     }
 }

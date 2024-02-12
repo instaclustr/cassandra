@@ -106,7 +106,7 @@ public class PeersTable extends AbstractVirtualTable
                   .column(PREFERRED_PORT, addresses.broadcastAddress.getPort())
                   .column(NATIVE_ADDRESS, addresses.nativeAddress.getAddress())
                   .column(NATIVE_PORT, addresses.nativeAddress.getPort())
-                  .column(NATIVE_PORT_SSL, addresses.nativeAddressSSL.getPort())
+                  .column(NATIVE_PORT_SSL, addresses.nativeAddressSSL == null ? null : addresses.nativeAddressSSL.getPort())
                   .column(RELEASE_VERSION, metadata.directory.version(peer).cassandraVersion.toString())
                   .column(SCHEMA_VERSION, Schema.instance.getVersion()) //TODO
                   .column(STATE, metadata.directory.peerState(peer).toString())
