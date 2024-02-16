@@ -250,10 +250,11 @@ class Shell(cmd.Cmd):
     last_hist = None
     shunted_query_out = None
     use_paging = True
+    config_file = None
 
     default_page_size = 100
 
-    def __init__(self, hostname, port, color=False,
+    def __init__(self, hostname, port, config_file, color=False,
                  username=None, encoding=None, elapsed_enabled=False, stdin=None, tty=True,
                  completekey=DEFAULT_COMPLETEKEY, browser=None, docspath=None, use_conn=None,
                  cqlver=None, keyspace=None,
@@ -277,6 +278,7 @@ class Shell(cmd.Cmd):
         self.port = port
         self.auth_provider = auth_provider
         self.username = username
+        self.config_file = config_file
 
         if isinstance(auth_provider, PlainTextAuthProvider):
             self.username = auth_provider.username
@@ -298,7 +300,7 @@ class Shell(cmd.Cmd):
                 kwargs['protocol_version'] = protocol_version
             self.conn = Cluster(contact_points=(self.hostname,), port=self.port, cql_version=cqlver,
                                 auth_provider=self.auth_provider,
-                                ssl_options=sslhandling.ssl_settings(hostname, CONFIG_FILE) if ssl else None,
+                                ssl_options=sslhandling.ssl_settings(hostname, self.config_file) if ssl else None,
                                 load_balancing_policy=WhiteListRoundRobinPolicy([self.hostname]),
                                 control_connection_timeout=connect_timeout,
                                 connect_timeout=connect_timeout,
@@ -1402,9 +1404,9 @@ class Shell(cmd.Cmd):
 
         direction = parsed.get_binding('dir').upper()
         if direction == 'FROM':
-            task = ImportTask(self, ks, table, columns, fname, opts, self.conn.protocol_version, CONFIG_FILE)
+            task = ImportTask(self, ks, table, columns, fname, opts, self.conn.protocol_version, self.config_file)
         elif direction == 'TO':
-            task = ExportTask(self, ks, table, columns, fname, opts, self.conn.protocol_version, CONFIG_FILE)
+            task = ExportTask(self, ks, table, columns, fname, opts, self.conn.protocol_version, self.config_file)
         else:
             raise SyntaxError("Unknown direction %s" % direction)
 
@@ -1481,7 +1483,7 @@ class Shell(cmd.Cmd):
         except IOError as e:
             self.printerr('Could not open %r: %s' % (fname, e))
             return
-        subshell = Shell(self.hostname, self.port, color=self.color,
+        subshell = Shell(self.hostname, self.port, self.config_file, color=self.color,
                          username=self.username,
                          encoding=self.encoding, elapsed_enabled=self.elapsed_enabled,
                          stdin=f, tty=False, use_conn=self.conn,
@@ -2310,6 +2312,7 @@ def main(cmdline, pkgpath):
     try:
         shell = Shell(hostname,
                       port,
+                      config_file,
                       color=options.color,
                       username=options.username,
                       stdin=stdin,
