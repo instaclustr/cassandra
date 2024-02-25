@@ -193,9 +193,7 @@ public class DatabaseDescriptor
 
     private static long preparedStatementsCacheSizeInMiB;
 
-    private static long keyCacheSizeInMiB;
     private static long paxosCacheSizeInMiB;
-    private static long counterCacheSizeInMiB;
     private static long indexSummaryCapacityInMiB;
 
     private static String localDC;
@@ -802,9 +800,9 @@ public class DatabaseDescriptor
         try
         {
             // if key_cache_size option was set to "auto" then size of the cache should be "min(5% of Heap (in MiB), 100MiB)
-            keyCacheSizeInMiB = (conf.key_cache_size == null)
-                               ? Math.min(Math.max(1, (int) (Runtime.getRuntime().totalMemory() * 0.05 / 1024 / 1024)), 100)
-                               : conf.key_cache_size.toMebibytes();
+            long keyCacheSizeInMiB = (conf.key_cache_size == null)
+                                     ? Math.min(Math.max(1, (int) (Runtime.getRuntime().totalMemory() * 0.05 / 1024 / 1024)), 100)
+                                     : conf.key_cache_size.toMebibytes();
 
             if (keyCacheSizeInMiB < 0)
                 throw new NumberFormatException(); // to escape duplicating error message
@@ -821,12 +819,15 @@ public class DatabaseDescriptor
         try
         {
             // if counter_cache_size option was set to "auto" then size of the cache should be "min(2.5% of Heap (in MiB), 50MiB)
-            counterCacheSizeInMiB = (conf.counter_cache_size == null)
-                                   ? Math.min(Math.max(1, (int) (Runtime.getRuntime().totalMemory() * 0.025 / 1024 / 1024)), 50)
-                                   : conf.counter_cache_size.toMebibytes();
+            long counterCacheSizeInMiB = (conf.counter_cache_size == null)
+                                         ? Math.min(Math.max(1, (int) (Runtime.getRuntime().totalMemory() * 0.025 / 1024 / 1024)), 50)
+                                         : conf.counter_cache_size.toMebibytes();
 
             if (counterCacheSizeInMiB < 0)
                 throw new NumberFormatException(); // to escape duplicating error message
+
+            // we need this assignment for the Settings virtual table - CASSANDRA-17735
+            conf.counter_cache_size = new DataStorageSpec.LongMebibytesBound(counterCacheSizeInMiB);
         }
         catch (NumberFormatException e)
         {
@@ -849,9 +850,6 @@ public class DatabaseDescriptor
             throw new ConfigurationException("paxos_cache_size option was set incorrectly to '"
                     + conf.paxos_cache_size + "', supported values are <integer> >= 0.", false);
         }
-
-        // we need this assignment for the Settings virtual table - CASSANDRA-17735
-        conf.counter_cache_size = new DataStorageSpec.LongMebibytesBound(counterCacheSizeInMiB);
 
         // if set to empty/"auto" then use 5% of Heap size
         indexSummaryCapacityInMiB = (conf.index_summary_capacity == null)
@@ -3648,7 +3646,12 @@ public class DatabaseDescriptor
 
     public static long getKeyCacheSizeInMiB()
     {
-        return keyCacheSizeInMiB;
+        return conf.key_cache_size == null ? 0 : conf.key_cache_size.toMebibytes();
+    }
+
+    public static void setKeyCacheSizeInMiB(long size)
+    {
+        conf.key_cache_size = new DataStorageSpec.LongMebibytesBound(size);
     }
 
     public static long getIndexSummaryCapacityInMiB()
@@ -3714,7 +3717,12 @@ public class DatabaseDescriptor
 
     public static long getCounterCacheSizeInMiB()
     {
-        return counterCacheSizeInMiB;
+        return conf.counter_cache_size == null ? 0 : conf.counter_cache_size.toMebibytes();
+    }
+
+    public static void setCounterCacheSizeInMib(long val)
+    {
+        conf.counter_cache_size = new DataStorageSpec.LongMebibytesBound(val);
     }
 
     public static void setRowCacheKeysToSave(int rowCacheKeysToSave)

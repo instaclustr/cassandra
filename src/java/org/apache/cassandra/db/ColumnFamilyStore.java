@@ -2437,7 +2437,7 @@ public class ColumnFamilyStore implements ColumnFamilyStoreMBean, Memtable.Owner
      */
     public boolean containsCachedParition(DecoratedKey key)
     {
-        return CacheService.instance.rowCache.getCapacity() != 0 && CacheService.instance.rowCache.containsKey(new RowCacheKey(metadata(), key));
+        return DatabaseDescriptor.getRowCacheSizeInMiB() != 0 && CacheService.instance.rowCache.containsKey(new RowCacheKey(metadata(), key));
     }
 
     public void invalidateCachedPartition(RowCacheKey key)
@@ -2455,14 +2455,14 @@ public class ColumnFamilyStore implements ColumnFamilyStoreMBean, Memtable.Owner
 
     public ClockAndCount getCachedCounter(ByteBuffer partitionKey, Clustering<?> clustering, ColumnMetadata column, CellPath path)
     {
-        if (CacheService.instance.counterCache.getCapacity() == 0L) // counter cache disabled.
+        if (DatabaseDescriptor.getCounterCacheSizeInMiB() == 0L) // counter cache disabled.
             return null;
         return CacheService.instance.counterCache.get(CounterCacheKey.create(metadata(), partitionKey, clustering, column, path));
     }
 
     public void putCachedCounter(ByteBuffer partitionKey, Clustering<?> clustering, ColumnMetadata column, CellPath path, ClockAndCount clockAndCount)
     {
-        if (CacheService.instance.counterCache.getCapacity() == 0L) // counter cache disabled.
+        if (DatabaseDescriptor.getCounterCacheSizeInMiB() == 0L) // counter cache disabled.
             return;
         CacheService.instance.counterCache.put(CounterCacheKey.create(metadata(), partitionKey, clustering, column, path), clockAndCount);
     }
@@ -3216,19 +3216,19 @@ public class ColumnFamilyStore implements ColumnFamilyStoreMBean, Memtable.Owner
     public boolean isRowCacheEnabled()
     {
 
-        boolean retval = metadata().params.caching.cacheRows() && CacheService.instance.rowCache.getCapacity() > 0;
+        boolean retval = metadata().params.caching.cacheRows() && DatabaseDescriptor.getRowCacheSizeInMiB() > 0;
         assert(!retval || !isIndex());
         return retval;
     }
 
     public boolean isCounterCacheEnabled()
     {
-        return metadata().isCounter() && CacheService.instance.counterCache.getCapacity() > 0;
+        return metadata().isCounter() && DatabaseDescriptor.getCounterCacheSizeInMiB() > 0;
     }
 
     public boolean isKeyCacheEnabled()
     {
-        return metadata().params.caching.cacheKeys() && CacheService.instance.keyCache.getCapacity() > 0;
+        return metadata().params.caching.cacheKeys() && DatabaseDescriptor.getKeyCacheSizeInMiB() > 0;
     }
 
     public boolean isAutoSnapshotEnabled()
