@@ -22,6 +22,7 @@ import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Metric;
 
 import static org.apache.cassandra.metrics.CassandraMetricsRegistry.Metrics;
+import static org.apache.cassandra.metrics.CassandraMetricsRegistry.getGaugeValue;
 
 /**
  * Gauge metric representation for a {@link org.apache.cassandra.db.virtual.CollectionVirtualTableAdapter}.
@@ -52,6 +53,6 @@ public class GaugeMetricRow
     @Column
     public String value()
     {
-        return value.getValue().toString();
+        return getGaugeValue(value);
     }
 }

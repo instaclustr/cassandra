@@ -194,7 +194,7 @@ public class CassandraMetricsRegistry extends MetricRegistry
         if (metric instanceof Counter)
             return Long.toString(((Counter) metric).getCount());
         else if (metric instanceof Gauge)
-            return ((Gauge) metric).getValue().toString();
+            return getGaugeValue((Gauge) metric);
         else if (metric instanceof Histogram)
             return Double.toString(((Histogram) metric).getSnapshot().getMedian());
         else if (metric instanceof Meter)
@@ -203,6 +203,29 @@ public class CassandraMetricsRegistry extends MetricRegistry
             return Long.toString(((Timer) metric).getCount());
         else
             throw new IllegalStateException("Unknown metric type: " + metric.getClass().getName());
+    }
+
+    public static String getGaugeValue(Gauge<?> gauge)
+    {
+        Object value = gauge.getValue();
+        if (value == null)
+            return "null";
+        else if (value instanceof long[])
+            return Arrays.toString((long[]) value);
+        else if (value instanceof double[])
+            return Arrays.toString((double[]) value);
+        else if (value instanceof short[])
+            return Arrays.toString((short[]) value);
+        else if (value instanceof int[])
+            return Arrays.toString((int[]) value);
+        else if (value instanceof float[])
+            return Arrays.toString((float[]) value);
+        else if (value instanceof byte[])
+            return Arrays.toString((byte[]) value);
+        else if (value instanceof Object[])
+            return Arrays.toString((Object[]) value);
+        else
+            return value.toString();
     }
 
     public static List<VirtualTable> createMetricsKeyspaceTables()
@@ -234,35 +257,35 @@ public class CassandraMetricsRegistry extends MetricRegistry
                                                          "All metrics with type \"Counter\"",
                                                          new CounterMetricRowWalker(),
                                                          Metrics.getMetrics(),
-                                                         value -> value instanceof Counter,
+                                                         Counter.class::isInstance,
                                                          CounterMetricRow::new))
                .add(createSinglePartitionedValueFiltered(VIRTUAL_METRICS,
                                                          "type_gauge",
                                                          "All metrics with type \"Gauge\"",
                                                          new GaugeMetricRowWalker(),
                                                          Metrics.getMetrics(),
-                                                         value -> value instanceof Gauge,
+                                                         Gauge.class::isInstance,
                                                          GaugeMetricRow::new))
                .add(createSinglePartitionedValueFiltered(VIRTUAL_METRICS,
                                                          "type_histogram",
                                                          "All metrics with type \"Histogram\"",
                                                          new HistogramMetricRowWalker(),
                                                          Metrics.getMetrics(),
-                                                         value -> value instanceof Histogram,
+                                                         Histogram.class::isInstance,
                                                          HistogramMetricRow::new))
                .add(createSinglePartitionedValueFiltered(VIRTUAL_METRICS,
                                                          "type_meter",
                                                          "All metrics with type \"Meter\"",
                                                          new MeterMetricRowWalker(),
                                                          Metrics.getMetrics(),
-                                                         value -> value instanceof Meter,
+                                                         Meter.class::isInstance,
                                                          MeterMetricRow::new))
                .add(createSinglePartitionedValueFiltered(VIRTUAL_METRICS,
                                                          "type_timer",
                                                          "All metrics with type \"Timer\"",
                                                          new TimerMetricRowWalker(),
                                                          Metrics.getMetrics(),
-                                                         value -> value instanceof Timer,
+                                                         Timer.class::isInstance,
                                                          TimerMetricRow::new));
         return builder.build();
     }
