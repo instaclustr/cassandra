@@ -105,6 +105,7 @@ cqlsh> select * from system_metrics.all_groups  ;
              Table |               table_group
        ThreadPools |        thread_pools_group
       TrieMemtable |       trie_memtable_group
+   UnweightedCache |    unweighted_cache_group
 
 (33 rows)
 ----
