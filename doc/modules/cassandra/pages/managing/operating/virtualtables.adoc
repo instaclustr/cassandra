@@ -107,7 +107,6 @@ cqlsh> select * from system_metrics.all_groups  ;
       TrieMemtable |       trie_memtable_group
    UnweightedCache |    unweighted_cache_group
 
-(33 rows)
 ----
 
 === Virtual Tables _system_views_ Keyspace
