@@ -44,7 +44,7 @@ public class CommitLogSegmentManagerStandard extends AbstractCommitLogSegmentMan
      * @param size total size of mutation (overhead + serialized size)
      * @return the provided Allocation object
      */
-    public CommitLogSegment.Allocation allocate(Mutation mutation, int size)
+    public synchronized CommitLogSegment.Allocation allocate(Mutation mutation, int size)
     {
         CommitLogSegment segment = allocatingFrom();
 
