@@ -32,6 +32,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static org.apache.cassandra.locator.HttpServiceConnector.METADATA_REQUEST_HEADERS_PROPERTY;
+import static org.apache.cassandra.locator.HttpServiceConnector.METADATA_URL_PROPERTY;
 import static org.junit.Assert.assertEquals;
 
 public class HttpSeedProviderTest
@@ -49,12 +51,12 @@ public class HttpSeedProviderTest
                                                .withStatus(200)));
 
         Properties p = new Properties();
-        p.setProperty(HttpSeedProvider.SEEDS_URL_PROPERTY, "http://127.0.0.1:8080/seeds");
+        p.setProperty(METADATA_URL_PROPERTY, "http://127.0.0.1:8080/seeds");
         assertEquals(3, new HttpSeedProvider(p).getSeeds().size());
 
         assertEquals(3, new HttpSeedProvider(new HashMap<>()
         {{
-            put(HttpSeedProvider.SEEDS_URL_PROPERTY, "http://127.0.0.1:8080/seeds");
+            put(METADATA_URL_PROPERTY, "http://127.0.0.1:8080/seeds");
         }}).getSeeds().size());
     }
 
@@ -68,7 +70,7 @@ public class HttpSeedProviderTest
                                                .withStatus(200)));
 
         Properties p = new Properties();
-        p.setProperty(HttpSeedProvider.SEEDS_URL_PROPERTY, "http://127.0.0.1:8080/seeds");
+        p.setProperty(METADATA_URL_PROPERTY, "http://127.0.0.1:8080/seeds");
 
         List<InetAddressAndPort> seeds = new HttpSeedProvider(p).getSeeds();
         assertEquals(3, seeds.size());
@@ -90,8 +92,8 @@ public class HttpSeedProviderTest
                                                .withStatus(200)));
 
         Properties p = new Properties();
-        p.setProperty(HttpSeedProvider.SEEDS_URL_PROPERTY, "http://127.0.0.1:8080/seeds");
-        p.setProperty(HttpSeedProvider.REQUEST_HEADERS_PROPERTY, "myheader=myheadervalue,anotherheader=anothervalue");
+        p.setProperty(METADATA_URL_PROPERTY, "http://127.0.0.1:8080/seeds");
+        p.setProperty(METADATA_REQUEST_HEADERS_PROPERTY, "myheader=myheadervalue,anotherheader=anothervalue");
 
         assertEquals(3, new HttpSeedProvider(p).getSeeds().size());
     }
@@ -107,7 +109,7 @@ public class HttpSeedProviderTest
 
         assertEquals(0, new HttpSeedProvider(new HashMap<>()
         {{
-            put(HttpSeedProvider.SEEDS_URL_PROPERTY, "http://127.0.0.1:8080/seeds");
+            put(METADATA_URL_PROPERTY, "http://127.0.0.1:8080/seeds");
         }}).getSeeds().size());
     }
 }

@@ -18,8 +18,6 @@
 
 package org.apache.cassandra.locator;
 
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,9 +40,7 @@ abstract class AbstractCloudMetadataServiceSnitch extends AbstractNetworkTopolog
     private final String localRack;
     private final String localDc;
 
-    private Map<InetAddressAndPort, Map<String, String>> savedEndpoints;
-
-    public AbstractCloudMetadataServiceSnitch(AbstractCloudMetadataServiceConnector connector, Pair<String, String> dcAndRack)
+    protected AbstractCloudMetadataServiceSnitch(AbstractCloudMetadataServiceConnector connector, Pair<String, String> dcAndRack)
     {
         this.connector = connector;
         this.localDc = dcAndRack.left;

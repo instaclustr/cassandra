@@ -22,7 +22,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -32,34 +31,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.util.stream.Collectors.toList;
-import static org.apache.cassandra.locator.HttpServiceConnector.resolveMetadataUrl;
-import static org.apache.cassandra.locator.HttpServiceConnector.resolveRequestTimeoutMs;
 
 public class HttpSeedProvider implements SeedProvider
 {
     private static final Logger logger = LoggerFactory.getLogger(HttpSeedProvider.class);
     private static final Pattern NEW_LINES_PATTERN = Pattern.compile("\\n");
 
-    static final String SEEDS_URL_PROPERTY = "seeds_url";
-    static final String REQUEST_HEADERS_PROPERTY = "request_headers";
-    static final String REQUEST_TIMEOUT_PROPERTY = "request_timeout";
-    static final String DEFAULT_REQUEST_TIMEOUT = "30s";
-
     private final HttpServiceConnector serviceConnector;
-    private final Map<String, String> headers;
 
     public HttpSeedProvider(Map<String, String> parameters)
     {
         this(getProperties(parameters));
     }
 
-    public HttpSeedProvider(Properties properties)
+    HttpSeedProvider(Properties properties)
     {
-        serviceConnector = new HttpServiceConnector(resolveMetadataUrl(properties, SEEDS_URL_PROPERTY),
-                                                    resolveRequestTimeoutMs(properties,
-                                                                            REQUEST_TIMEOUT_PROPERTY,
-                                                                            DEFAULT_REQUEST_TIMEOUT));
-        headers = resolveHeaders(properties);
+        serviceConnector = new HttpServiceConnector(properties);
     }
 
     @Override
@@ -67,7 +54,7 @@ public class HttpSeedProvider implements SeedProvider
     {
         try
         {
-            String response = serviceConnector.apiCall("", headers);
+            String response = serviceConnector.apiCall("");
 
             List<String> lines = Arrays.stream(NEW_LINES_PATTERN.split(response))
                                        .map(String::trim)
@@ -96,31 +83,6 @@ public class HttpSeedProvider implements SeedProvider
             logger.error("Exception occured while resolving seeds, returning empty seeds list.", e);
             return Collections.emptyList();
         }
-    }
-
-    private Map<String, String> resolveHeaders(Properties properties)
-    {
-        String rawRequestHeaders = properties.getProperty(REQUEST_HEADERS_PROPERTY);
-
-        if (rawRequestHeaders == null || rawRequestHeaders.isBlank())
-            return Collections.emptyMap();
-
-        Map<String, String> headersMap = new HashMap<>();
-
-        for (String rawHeaderPair : rawRequestHeaders.split(","))
-        {
-            String[] header = rawHeaderPair.trim().split("=");
-            if (header.length != 2)
-                continue;
-
-            String headerKey = header[0].trim();
-            String headerValue = header[1].trim();
-
-            if (headerKey.length() != 0 && headerValue.length() != 0)
-                headersMap.put(headerKey, headerValue);
-        }
-
-        return Collections.unmodifiableMap(headersMap);
     }
 
     private static Properties getProperties(Map<String, String> args)

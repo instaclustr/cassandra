@@ -26,12 +26,12 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
-
-import com.google.common.collect.ImmutableMap;
 
 import org.apache.cassandra.config.DurationSpec;
 import org.apache.cassandra.exceptions.ConfigurationException;
@@ -40,23 +40,41 @@ import static java.lang.String.format;
 
 public class HttpServiceConnector
 {
+    public static final String METADATA_URL_PROPERTY = "metadata_url";
+    public static final String METADATA_REQUEST_TIMEOUT_PROPERTY = "metadata_request_timeout";
+    public static final String METADATA_REQUEST_HEADERS_PROPERTY = "metadata_request_headers";
+    public static final String DEFAULT_METADATA_REQUEST_TIMEOUT = "30s";
+
     protected final String metadataServiceUrl;
     protected final int requestTimeoutMs;
+    protected final Map<String, String> headers;
 
-    public HttpServiceConnector(String serviceUrl, int requestTimeoutMs)
+    public HttpServiceConnector(Properties properties)
+    {
+        this(resolveMetadataUrl(properties, METADATA_URL_PROPERTY),
+             resolveRequestTimeoutMs(properties,
+                                     HttpServiceConnector.METADATA_REQUEST_TIMEOUT_PROPERTY,
+                                     HttpServiceConnector.DEFAULT_METADATA_REQUEST_TIMEOUT),
+             resolveHeaders(properties));
+    }
+
+    public HttpServiceConnector(String serviceUrl, int requestTimeoutMs, Map<String, String> headers)
     {
         this.metadataServiceUrl = serviceUrl;
         this.requestTimeoutMs = requestTimeoutMs;
+        this.headers = headers;
     }
 
     public final String apiCall(String query) throws IOException
     {
-        return apiCall(metadataServiceUrl, query, "GET", ImmutableMap.of(), 200);
+        return apiCall(metadataServiceUrl, query, "GET", headers, 200);
     }
 
     public final String apiCall(String query, Map<String, String> extraHeaders) throws IOException
     {
-        return apiCall(metadataServiceUrl, query, "GET", extraHeaders, 200);
+        Map<String, String> mergedHeaders = new HashMap<>(headers);
+        mergedHeaders.putAll(extraHeaders);
+        return apiCall(metadataServiceUrl, query, "GET", mergedHeaders, 200);
     }
 
     public String apiCall(String url,
@@ -65,11 +83,13 @@ public class HttpServiceConnector
                           Map<String, String> extraHeaders,
                           int expectedResponseCode) throws IOException
     {
+        Map<String, String> mergedHeaders = new HashMap<>(headers);
+        mergedHeaders.putAll(extraHeaders);
         HttpURLConnection conn = null;
         try
         {
             conn = (HttpURLConnection) new URL(url + query).openConnection();
-            extraHeaders.forEach(conn::setRequestProperty);
+            mergedHeaders.forEach(conn::setRequestProperty);
             conn.setRequestMethod(method);
             conn.setConnectTimeout(requestTimeoutMs);
             if (conn.getResponseCode() != expectedResponseCode)
@@ -80,7 +100,8 @@ public class HttpServiceConnector
             try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(conn.getInputStream())))
             {
                 String line;
-                while ((line = bufferedReader.readLine()) != null) {
+                while ((line = bufferedReader.readLine()) != null)
+                {
                     response.add(line);
                 }
             }
@@ -101,7 +122,7 @@ public class HttpServiceConnector
         try
         {
             if (parsedUrl == null)
-                throw new IllegalStateException(String.format("%s was not specified", keyProperty));
+                throw new ConfigurationException(format("%s was not specified", keyProperty));
 
             URL url = new URL(parsedUrl);
             url.toURI();
@@ -128,6 +149,40 @@ public class HttpServiceConnector
                                                     metadataRequestTimeout,
                                                     keyProperty));
         }
+    }
+
+    public static Map<String, String> resolveHeaders(Properties properties)
+    {
+        String rawRequestHeaders = properties.getProperty(METADATA_REQUEST_HEADERS_PROPERTY);
+
+        if (rawRequestHeaders == null || rawRequestHeaders.isBlank())
+            return Collections.emptyMap();
+
+        Map<String, String> headersMap = new HashMap<>();
+
+        for (String rawHeaderPair : rawRequestHeaders.split(","))
+        {
+            String[] header = rawHeaderPair.trim().split("=");
+            if (header.length != 2)
+                continue;
+
+            String headerKey = header[0].trim();
+            String headerValue = header[1].trim();
+
+            if (!headerKey.isEmpty() && !headerValue.isEmpty())
+                headersMap.put(headerKey, headerValue);
+        }
+
+        return Collections.unmodifiableMap(headersMap);
+    }
+
+    @Override
+    public String toString()
+    {
+        return format("%s{%s=%s,%s=%s,%s=%s}", getClass().getName(),
+                      METADATA_URL_PROPERTY, metadataServiceUrl,
+                      METADATA_REQUEST_TIMEOUT_PROPERTY, requestTimeoutMs,
+                      METADATA_REQUEST_HEADERS_PROPERTY, headers);
     }
 
     public static final class HttpException extends IOException

@@ -18,36 +18,19 @@
 
 package org.apache.cassandra.locator;
 
-import static java.lang.String.format;
-
-abstract class AbstractCloudMetadataServiceConnector extends HttpServiceConnector
+public abstract class AbstractCloudMetadataServiceConnector extends HttpServiceConnector
 {
-    static final String METADATA_URL_PROPERTY = "metadata_url";
-    static final String METADATA_REQUEST_TIMEOUT_PROPERTY = "metadata_request_timeout";
-    static final String DEFAULT_METADATA_REQUEST_TIMEOUT = "30s";
-
     private final SnitchProperties properties;
 
     AbstractCloudMetadataServiceConnector(SnitchProperties snitchProperties)
     {
-        super(HttpServiceConnector.resolveMetadataUrl(snitchProperties.getProperties(), METADATA_URL_PROPERTY),
-              HttpServiceConnector.resolveRequestTimeoutMs(snitchProperties.getProperties(),
-                                                           METADATA_REQUEST_TIMEOUT_PROPERTY,
-                                                           DEFAULT_METADATA_REQUEST_TIMEOUT));
+        super(snitchProperties.getProperties());
         this.properties = snitchProperties;
     }
 
     public SnitchProperties getProperties()
     {
         return properties;
-    }
-
-    @Override
-    public String toString()
-    {
-        return format("%s{%s=%s,%s=%s}", getClass().getName(),
-                      METADATA_URL_PROPERTY, metadataServiceUrl,
-                      METADATA_REQUEST_TIMEOUT_PROPERTY, requestTimeoutMs);
     }
 
     public static class DefaultCloudMetadataServiceConnector extends AbstractCloudMetadataServiceConnector
