@@ -135,6 +135,36 @@ public class HttpServiceConnector
         }
     }
 
+    public static List<String> resolveAllMetadataUrls(Properties properties, String keyProperty)
+    {
+        String rawUrls = properties.getProperty(keyProperty);
+
+        try
+        {
+            if (rawUrls == null)
+                throw new ConfigurationException(format("%s was not specified", keyProperty));
+
+            String[] splitUrls = rawUrls.split(",");
+            List<String> resolvedUrls = new ArrayList<>();
+
+            for (String parsedUrl : splitUrls)
+            {
+                if (parsedUrl.isBlank())
+                    continue;
+
+                URL url = new URL(parsedUrl);
+                url.toURI();
+                resolvedUrls.add(parsedUrl);
+            }
+
+            return resolvedUrls;
+        }
+        catch (MalformedURLException | IllegalArgumentException | URISyntaxException ex)
+        {
+            throw new ConfigurationException(format("URLs '%s' are invalid.", rawUrls), ex);
+        }
+    }
+
     public static int resolveRequestTimeoutMs(Properties properties, String keyProperty, String defaultValue)
     {
         String metadataRequestTimeout = properties.getProperty(keyProperty, defaultValue);

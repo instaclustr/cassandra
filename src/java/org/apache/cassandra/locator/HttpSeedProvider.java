@@ -30,14 +30,21 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
+import static org.apache.cassandra.locator.HttpServiceConnector.DEFAULT_METADATA_REQUEST_TIMEOUT;
+import static org.apache.cassandra.locator.HttpServiceConnector.METADATA_REQUEST_TIMEOUT_PROPERTY;
+import static org.apache.cassandra.locator.HttpServiceConnector.METADATA_URL_PROPERTY;
+import static org.apache.cassandra.locator.HttpServiceConnector.resolveAllMetadataUrls;
+import static org.apache.cassandra.locator.HttpServiceConnector.resolveHeaders;
+import static org.apache.cassandra.locator.HttpServiceConnector.resolveRequestTimeoutMs;
 
 public class HttpSeedProvider implements SeedProvider
 {
     private static final Logger logger = LoggerFactory.getLogger(HttpSeedProvider.class);
     private static final Pattern NEW_LINES_PATTERN = Pattern.compile("\\n");
 
-    private final HttpServiceConnector serviceConnector;
+    private final List<HttpServiceConnector> serviceConnectors = new ArrayList<>();
 
     public HttpSeedProvider(Map<String, String> parameters)
     {
@@ -46,11 +53,30 @@ public class HttpSeedProvider implements SeedProvider
 
     HttpSeedProvider(Properties properties)
     {
-        serviceConnector = new HttpServiceConnector(properties);
+        int timeout = resolveRequestTimeoutMs(properties,
+                                              METADATA_REQUEST_TIMEOUT_PROPERTY,
+                                              DEFAULT_METADATA_REQUEST_TIMEOUT);
+
+        Map<String, String> headers = resolveHeaders(properties);
+
+        for (String url : resolveAllMetadataUrls(properties, METADATA_URL_PROPERTY))
+            serviceConnectors.add(new HttpServiceConnector(url, timeout, headers));
     }
 
     @Override
     public List<InetAddressAndPort> getSeeds()
+    {
+        for (HttpServiceConnector serviceConnector : serviceConnectors)
+        {
+            List<InetAddressAndPort> seedsInternal = getSeedsInternal(serviceConnector);
+            if (!seedsInternal.isEmpty())
+                return seedsInternal;
+        }
+
+        return Collections.emptyList();
+    }
+
+    private List<InetAddressAndPort> getSeedsInternal(HttpServiceConnector serviceConnector)
     {
         try
         {
@@ -80,7 +106,9 @@ public class HttpSeedProvider implements SeedProvider
         }
         catch (Exception e)
         {
-            logger.error("Exception occured while resolving seeds, returning empty seeds list.", e);
+            logger.error(format("Exception occured while resolving seeds agains URL %s, returning empty seeds list.",
+                                serviceConnector.metadataServiceUrl),
+                         e);
             return Collections.emptyList();
         }
     }
