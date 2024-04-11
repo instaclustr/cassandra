@@ -19,12 +19,15 @@
 package org.apache.cassandra.db.guardrails;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
 
@@ -39,6 +42,7 @@ import org.apache.cassandra.locator.InetAddressAndPort;
 import org.apache.cassandra.service.ClientState;
 import org.apache.cassandra.service.disk.usage.DiskUsageBroadcaster;
 import org.apache.cassandra.utils.MBeanWrapper;
+import org.apache.cassandra.utils.Pair;
 
 import static java.lang.String.format;
 
@@ -52,8 +56,9 @@ public final class Guardrails implements GuardrailsMBean
     public static final GuardrailsConfigProvider CONFIG_PROVIDER = GuardrailsConfigProvider.instance;
     private static final GuardrailsOptions DEFAULT_CONFIG = DatabaseDescriptor.getGuardrailsConfig();
 
-    @VisibleForTesting
     public static final Guardrails instance = new Guardrails();
+
+    public static final Map<String, Pair<BiConsumer<Number, Number>, Supplier<Pair<Number, Number>>>> thresholds = new HashMap<>();
 
     /**
      * Guardrail on the total number of user keyspaces.
@@ -515,6 +520,168 @@ public final class Guardrails implements GuardrailsMBean
                    "Executing a query on secondary indexes without partition key restriction might degrade performance",
                    state -> CONFIG_PROVIDER.getOrCreate(state).getNonPartitionRestrictedQueryEnabled(),
                    "Non-partition key restricted query");
+
+    static void addThreshold(Threshold threshold, BiConsumer<Number, Number> setter, Supplier<Pair<Number, Number>> getter)
+    {
+        Guardrails.thresholds.put(threshold.name, Pair.create(setter, getter));
+    }
+
+    static
+    {
+        addThreshold(keyspaces,
+                     (warn, fail) -> Guardrails.instance.setKeyspacesThreshold(warn.intValue(), fail.intValue()),
+                     () -> Pair.create(Guardrails.instance.getKeyspacesWarnThreshold(),
+                                       Guardrails.instance.getKeyspacesFailThreshold()));
+
+        addThreshold(tables,
+                     (warn, fail) -> Guardrails.instance.setTablesThreshold(warn.intValue(), fail.intValue()),
+                     () -> Pair.create(Guardrails.instance.getTablesWarnThreshold(),
+                                       Guardrails.instance.getTablesFailThreshold()));
+
+        addThreshold(columnsPerTable,
+                     (warn, fail) -> Guardrails.instance.setColumnsPerTableThreshold(warn.intValue(), fail.intValue()),
+                     () -> Pair.create(Guardrails.instance.getColumnsPerTableWarnThreshold(),
+                                       Guardrails.instance.getColumnsPerTableFailThreshold()));
+
+        addThreshold(secondaryIndexesPerTable,
+                     (warn, fail) -> Guardrails.instance.setSecondaryIndexesPerTableThreshold(warn.intValue(), fail.intValue()),
+                     () -> Pair.create(Guardrails.instance.getSecondaryIndexesPerTableWarnThreshold(),
+                                       Guardrails.instance.getSecondaryIndexesPerTableFailThreshold()));
+
+        addThreshold(materializedViewsPerTable,
+                     (warn, fail) -> Guardrails.instance.setMaterializedViewsPerTableThreshold(warn.intValue(), fail.intValue()),
+                     () -> Pair.create(Guardrails.instance.getMaterializedViewsPerTableWarnThreshold(),
+                                       Guardrails.instance.getMaterializedViewsPerTableFailThreshold()));
+
+        addThreshold(pageSize,
+                     (warn, fail) -> Guardrails.instance.setPageSizeThreshold(warn.intValue(), fail.intValue()),
+                     () -> Pair.create(Guardrails.instance.getPageSizeWarnThreshold(),
+                                       Guardrails.instance.getPageSizeFailThreshold()));
+
+        addThreshold(partitionKeysInSelect,
+                     (warn, fail) -> Guardrails.instance.setPartitionKeysInSelectThreshold(warn.intValue(), fail.intValue()),
+                     () -> Pair.create(Guardrails.instance.getPartitionKeysInSelectWarnThreshold(),
+                                       Guardrails.instance.getPartitionKeysInSelectFailThreshold()));
+
+        addThreshold(inSelectCartesianProduct,
+                     (warn, fail) -> Guardrails.instance.setInSelectCartesianProductThreshold(warn.intValue(), fail.intValue()),
+                     () -> Pair.create(Guardrails.instance.getInSelectCartesianProductWarnThreshold(),
+                                       Guardrails.instance.getInSelectCartesianProductFailThreshold()));
+
+        addThreshold(partitionTombstones,
+                     (warn, fail) -> Guardrails.instance.setPartitionTombstonesThreshold(warn.longValue(), fail.longValue()),
+                     () -> Pair.create(Guardrails.instance.getPartitionTombstonesWarnThreshold(),
+                                       Guardrails.instance.getPartitionTombstonesFailThreshold()));
+
+        addThreshold(columnValueSize,
+                     (warn, fail) -> Guardrails.instance.setColumnValueSizeThreshold(new DataStorageSpec.LongBytesBound(warn.longValue()).toString(),
+                                                                                     new DataStorageSpec.LongBytesBound(fail.longValue()).toString()),
+                     () -> Pair.create(Guardrails.instance.getColumnsPerTableWarnThreshold(),
+                                       Guardrails.instance.getColumnsPerTableFailThreshold()));
+
+        addThreshold(itemsPerCollection,
+                     (warn, fail) -> Guardrails.instance.setItemsPerCollectionThreshold(warn.intValue(), fail.intValue()),
+                     () -> Pair.create(Guardrails.instance.getItemsPerCollectionWarnThreshold(),
+                                       Guardrails.instance.getItemsPerCollectionFailThreshold()));
+
+        addThreshold(fieldsPerUDT,
+                     (warn, fail) -> Guardrails.instance.setFieldsPerUDTThreshold(warn.intValue(), fail.intValue()),
+                     () -> Pair.create(Guardrails.instance.getFieldsPerUDTWarnThreshold(),
+                                       Guardrails.instance.getFieldsPerUDTFailThreshold()));
+
+        addThreshold(vectorDimensions,
+                     (warn, fail) -> Guardrails.instance.setVectorDimensionsThreshold(warn.intValue(), fail.intValue()),
+                     () -> Pair.create(Guardrails.instance.getVectorDimensionsWarnThreshold(),
+                                       Guardrails.instance.getVectorDimensionsFailThreshold()));
+
+        addThreshold(minimumReplicationFactor,
+                     (warn, fail) -> Guardrails.instance.setMinimumReplicationFactorThreshold(warn.intValue(), fail.intValue()),
+                     () -> Pair.create(Guardrails.instance.getMinimumReplicationFactorWarnThreshold(),
+                                       Guardrails.instance.getMinimumReplicationFactorFailThreshold()));
+
+        addThreshold(maximumReplicationFactor,
+                     (warn, fail) -> Guardrails.instance.setMaximumReplicationFactorThreshold(warn.intValue(), fail.intValue()),
+                     () -> Pair.create(Guardrails.instance.getMaximumReplicationFactorWarnThreshold(),
+                                       Guardrails.instance.getMaximumReplicationFactorFailThreshold()));
+
+        addThreshold(partitionSize,
+                     (warn, fail) -> {
+                         Guardrails.instance.setPartitionSizeThreshold(new DataStorageSpec.LongBytesBound(warn.longValue()).toString(),
+                                                                       new DataStorageSpec.LongBytesBound(fail.longValue()).toString());
+                     },
+                     () -> {
+                         long warnValue = 0;
+                         String warnThreshold = Guardrails.instance.getPartitionSizeWarnThreshold();
+                         if (warnThreshold != null)
+                             warnValue = new DataStorageSpec.LongBytesBound(warnThreshold).toBytes();
+
+                         long failValue = 0;
+                         String failThreshold = Guardrails.instance.getPartitionSizeFailThreshold();
+                         if (failThreshold != null)
+                             failValue = new DataStorageSpec.LongBytesBound(failThreshold).toBytes();
+
+                         return Pair.create(warnValue, failValue);
+                     });
+
+        addThreshold(collectionSize,
+                     (warn, fail) -> Guardrails.instance.setCollectionSizeThreshold(new DataStorageSpec.LongBytesBound(warn.longValue()).toString(),
+                                                                                    new DataStorageSpec.LongBytesBound(fail.longValue()).toString()),
+                     () ->
+                     {
+                         long warnValue = 0;
+                         String warnThreshold = Guardrails.instance.getCollectionSizeWarnThreshold();
+                         if (warnThreshold != null)
+                             warnValue = new DataStorageSpec.LongBytesBound(warnThreshold).toBytes();
+
+                         long failValue = 0;
+                         String failThreshold = Guardrails.instance.getCollectionSizeFailThreshold();
+                         if (failThreshold != null)
+                             failValue = new DataStorageSpec.LongBytesBound(failThreshold).toBytes();
+
+                         return Pair.create(warnValue, failValue);
+                     });
+
+        addThreshold(maximumAllowableTimestamp,
+                     (warn, fail) -> Guardrails.instance.setMaximumTimestampThreshold(new DataStorageSpec.LongBytesBound(warn.longValue()).toString(),
+                                                                                      new DataStorageSpec.LongBytesBound(fail.longValue()).toString()),
+                     () ->
+                     {
+                         long warnValue = 0;
+                         String warnThreshold = Guardrails.instance.getMaximumTimestampWarnThreshold();
+                         if (warnThreshold != null)
+                             warnValue = new DataStorageSpec.LongBytesBound(warnThreshold).toBytes();
+
+                         long failValue = 0;
+                         String failThreshold = Guardrails.instance.getMaximumTimestampFailThreshold();
+                         if (failThreshold != null)
+                             failValue = new DataStorageSpec.LongBytesBound(failThreshold).toBytes();
+
+                         return Pair.create(warnValue, failValue);
+                     });
+
+        addThreshold(minimumAllowableTimestamp,
+                     (warn, fail) -> Guardrails.instance.setMinimumTimestampThreshold(new DataStorageSpec.LongBytesBound(warn.longValue()).toString(),
+                                                                                      new DataStorageSpec.LongBytesBound(fail.longValue()).toString()),
+                     () ->
+                     {
+                         long warnValue = 0;
+                         String warnThreshold = Guardrails.instance.getMinimumTimestampWarnThreshold();
+                         if (warnThreshold != null)
+                             warnValue = new DataStorageSpec.LongBytesBound(warnThreshold).toBytes();
+
+                         long failValue = 0;
+                         String failThreshold = Guardrails.instance.getMinimumTimestampFailThreshold();
+                         if (failThreshold != null)
+                             failValue = new DataStorageSpec.LongBytesBound(failThreshold).toBytes();
+
+                         return Pair.create(warnValue, failValue);
+                     });
+
+        addThreshold(saiSSTableIndexesPerQuery,
+                     (warn, fail) -> Guardrails.instance.setSaiSSTableIndexesPerQueryThreshold(warn.intValue(), fail.intValue()),
+                     () -> Pair.create(Guardrails.instance.getSaiSSTableIndexesPerQueryWarnThreshold(),
+                                       Guardrails.instance.getSaiSSTableIndexesPerQueryFailThreshold()));
+    }
 
     private Guardrails()
     {
