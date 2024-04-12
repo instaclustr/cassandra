@@ -17,6 +17,8 @@
  */
 package org.apache.cassandra.distributed.test;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -43,6 +45,58 @@ import static org.awaitility.Awaitility.await;
 @SuppressWarnings("Convert2MethodRef")
 public class HintsMaxSizeTest extends TestBaseImpl
 {
+    @Test
+    public void testOversizedHint() throws Exception
+    {
+        try (Cluster cluster = init(Cluster.build(2)
+                                           .withDataDirCount(1)
+                                           .withConfig(config -> config.with(NETWORK, GOSSIP)
+                                                                       .set("hinted_handoff_enabled", true)
+                                                                       .set("max_hints_delivery_threads", "1")
+                                                                       .set("hints_flush_period", "10s")
+                                                                       .set("max_mutation_size", "10MiB")
+                                                                       .set("max_hints_file_size", "2MiB"))
+                                           .start(), 2))
+        {
+            final IInvokableInstance node1 = cluster.get(1);
+            final IInvokableInstance node2 = cluster.get(2);
+
+            waitForExistingRoles(cluster);
+
+            String createTableStatement = format("CREATE TABLE %s.cf (k text PRIMARY KEY, c1 text) WITH compression = {'enabled': 'false'} ", KEYSPACE);
+            cluster.schemaChange(createTableStatement);
+
+            UUID node2UUID = node2.callOnInstance((IIsolatedExecutor.SerializableCallable<UUID>) () -> StorageService.instance.getLocalHostUUID());
+
+            // shutdown the second node in a blocking manner
+            node2.shutdown().get();
+
+            String randomUUID = UUID.randomUUID().toString();
+
+            // this will create a mutation of size approx. 3.5MiB
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < 100_000; i++)
+                sb.append(randomUUID);
+
+            for (int i = 0; i < 10; i++)
+            {
+                cluster.coordinator(1)
+                       .execute(withKeyspace("INSERT INTO %s.cf (k, c1) VALUES (?, ?);"),
+                                ONE, valueOf(i), sb.toString());
+
+                await().atLeast(3, SECONDS).pollDelay(3, SECONDS).until(() -> true);
+            }
+
+            node1.appliesOnInstance((IIsolatedExecutor.SerializableFunction<UUID, Long>) secondNode -> {
+                HintsService.instance.flushAndFsyncBlockingly(Collections.singletonList(secondNode));
+                return null;
+            }).apply(node2UUID);
+
+            await().until(() -> node1.callOnInstance(() -> StorageMetrics.totalHints.getCount()) > 0);
+            assertThat(node1.callOnInstance(() -> StorageMetrics.totalHints.getCount())).isEqualTo(10);
+        }
+    }
+
     @Test
     public void testMaxHintedHandoffSize() throws Exception
     {
