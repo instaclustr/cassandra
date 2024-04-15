@@ -99,10 +99,16 @@ public class GuardrailThresholdsTable extends AbstractMutableVirtualTable
 
         List<ByteBuffer> unpack = tupleType.unpack((ByteBuffer) val);
 
+        ByteBuffer warnBuffer = unpack.get(0);
+        ByteBuffer failBuffer = unpack.get(1);
+
+        if (warnBuffer == null || failBuffer == null)
+            throw new InvalidRequestException("Both elements of a tuple must not be null.");
+
         try
         {
-            setterAndGetter.left.accept(LongType.instance.compose(unpack.get(0)),
-                                        LongType.instance.compose(unpack.get(1)));
+            setterAndGetter.left.accept(LongType.instance.compose(warnBuffer),
+                                        LongType.instance.compose(failBuffer));
         }
         catch (Exception ex)
         {

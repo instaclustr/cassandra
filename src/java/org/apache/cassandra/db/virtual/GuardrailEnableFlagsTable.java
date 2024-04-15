@@ -31,6 +31,7 @@ import org.apache.cassandra.exceptions.InvalidRequestException;
 import org.apache.cassandra.schema.TableMetadata;
 import org.apache.cassandra.utils.Pair;
 
+import static java.lang.String.format;
 import static org.apache.cassandra.schema.SchemaConstants.VIRTUAL_GUARDRAILS;
 
 public class GuardrailEnableFlagsTable extends AbstractMutableVirtualTable
@@ -87,12 +88,19 @@ public class GuardrailEnableFlagsTable extends AbstractMutableVirtualTable
         String key = partitionKey.value(0);
         Pair<Consumer<Boolean>, Supplier<Boolean>> setterAndGetter = Guardrails.getFlagGuardrails().get(key);
         if (setterAndGetter == null)
-            throw new InvalidRequestException(String.format("there is no such guardrail with name %s", key));
+            throw new InvalidRequestException(format("there is no such guardrail with name %s", key));
 
         Consumer<Boolean> setter = setterAndGetter.left;
         if (setter == null)
-            throw new InvalidRequestException(String.format("there is no associated setter for guardrail with name %s", key));
+            throw new InvalidRequestException(format("there is no associated setter for guardrail with name %s", key));
 
-        setter.accept(columnValue.get().value());
+        try
+        {
+            setter.accept(columnValue.get().value());
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidRequestException(ex.getMessage());
+        }
     }
 }
