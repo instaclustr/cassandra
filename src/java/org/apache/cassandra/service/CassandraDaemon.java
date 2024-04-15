@@ -56,7 +56,6 @@ import org.apache.cassandra.db.SystemKeyspace;
 import org.apache.cassandra.db.SystemKeyspaceMigrator41;
 import org.apache.cassandra.db.commitlog.CommitLog;
 import org.apache.cassandra.db.virtual.GuardrailEnableFlagsTable;
-import org.apache.cassandra.db.virtual.GuardrailThresholdsOnTupleTable;
 import org.apache.cassandra.db.virtual.GuardrailThresholdsTable;
 import org.apache.cassandra.db.virtual.GuardrailValuesTable;
 import org.apache.cassandra.db.virtual.SystemViewsKeyspace;
@@ -555,8 +554,7 @@ public class CassandraDaemon
         VirtualKeyspaceRegistry.instance.register(new VirtualKeyspace(VIRTUAL_METRICS, createMetricsKeyspaceTables()));
         VirtualKeyspaceRegistry.instance.register(new VirtualKeyspace(VIRTUAL_GUARDRAILS, List.of(new GuardrailValuesTable(),
                                                                                                   new GuardrailEnableFlagsTable(),
-                                                                                                  new GuardrailThresholdsTable(),
-                                                                                                  new GuardrailThresholdsOnTupleTable())));
+                                                                                                  new GuardrailThresholdsTable())));
 
         // flush log messages to system_views.system_logs virtual table as there were messages already logged
         // before that virtual table was instantiated

@@ -18,21 +18,20 @@
 
 package org.apache.cassandra.db.virtual;
 
-import java.util.Iterator;
+import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 import org.apache.cassandra.db.guardrails.Guardrails;
-import org.apache.cassandra.db.marshal.IntegerType;
 import org.apache.cassandra.db.marshal.LongType;
+import org.apache.cassandra.db.marshal.TupleType;
+import org.apache.cassandra.db.marshal.TypeParser;
 import org.apache.cassandra.db.marshal.UTF8Type;
-import org.apache.cassandra.db.partitions.PartitionUpdate;
-import org.apache.cassandra.db.rows.Cell;
-import org.apache.cassandra.db.rows.Row;
 import org.apache.cassandra.dht.LocalPartitioner;
 import org.apache.cassandra.exceptions.InvalidRequestException;
-import org.apache.cassandra.schema.ColumnMetadata;
 import org.apache.cassandra.schema.TableMetadata;
 import org.apache.cassandra.utils.Pair;
 
@@ -44,23 +43,22 @@ public class GuardrailThresholdsTable extends AbstractMutableVirtualTable
     public static final String TABLE_NAME = "thresholds";
 
     public static final String NAME_COLUMN = "name";
-    public static final String WARN_COLUMN = "warn";
-    public static final String FAIL_COLUMN = "fail";
+    public static final String VALUE_COLUMN = "value";
 
     public GuardrailThresholdsTable()
     {
         this(VIRTUAL_GUARDRAILS);
     }
 
+    private static final TupleType tupleType = TupleType.getInstance(new TypeParser(format("(%s, %s)", LongType.instance, LongType.instance)));
+
     public GuardrailThresholdsTable(String keyspace)
     {
         super(TableMetadata.builder(keyspace, TABLE_NAME)
-                           .comment("Guardrails configuration table for thresholds")
                            .kind(TableMetadata.Kind.VIRTUAL)
                            .partitioner(new LocalPartitioner(UTF8Type.instance))
                            .addPartitionKeyColumn(NAME_COLUMN, UTF8Type.instance)
-                           .addRegularColumn(WARN_COLUMN, LongType.instance)
-                           .addRegularColumn(FAIL_COLUMN, LongType.instance)
+                           .addRegularColumn(VALUE_COLUMN, TupleType.getInstance(new TypeParser(format("(%s, %s)", LongType.instance, LongType.instance))))
                            .build());
     }
 
@@ -77,44 +75,34 @@ public class GuardrailThresholdsTable extends AbstractMutableVirtualTable
             if (getter == null)
                 continue;
 
-            result.row(guardrailName)
-                  .column(WARN_COLUMN, getter.left.get().longValue())
-                  .column(FAIL_COLUMN, getter.right.get().longValue());
+            result.row(guardrailName).column(VALUE_COLUMN, tupleType.pack(LongType.instance.decompose(getter.left.get().longValue()),
+                                                                          LongType.instance.decompose(getter.right.get().longValue())));
         }
 
         return result;
     }
 
     @Override
-    public void apply(PartitionUpdate update)
+    protected void applyColumnUpdate(ColumnValues partitionKey, ColumnValues clusteringColumns, Optional<ColumnValue> columnValue)
     {
-        ColumnValues partitionKey = ColumnValues.from(metadata(), update.partitionKey());
+        if (columnValue.isEmpty())
+            return;
 
         String key = partitionKey.value(0);
-
         Pair<BiConsumer<Number, Number>, Pair<Supplier<Number>, Supplier<Number>>> setterAndGetter = Guardrails.getThresholdGuardails().get(key);
+
         if (setterAndGetter == null)
             throw new InvalidRequestException(format("there is no such guardrail with name %s", key));
 
-        Iterator<Row> iterator = update.iterator();
-        Row row = iterator.next();
+        ColumnValue value = columnValue.get();
+        Object val = value.value();
 
-        Cell<?> warnCell = row.getCell(ColumnMetadata.regularColumn(metadata().keyspace, metadata().name, WARN_COLUMN, IntegerType.instance));
-        Cell<?> failCell = row.getCell(ColumnMetadata.regularColumn(metadata().keyspace, metadata().name, FAIL_COLUMN, IntegerType.instance));
-
-        if (warnCell == null || failCell == null)
-            throw new InvalidRequestException("both warn and fail columns must be specified for updates");
-
-        Long warnValue = ColumnValue.from(warnCell).value();
-        Long failValue = ColumnValue.from(failCell).value();
-
-        BiConsumer<Number, Number> setter = setterAndGetter.left;
-        if (setter == null)
-            throw new InvalidRequestException(format("There is not any associated setter for guardrail %s", key));
+        List<ByteBuffer> unpack = tupleType.unpack((ByteBuffer) val);
 
         try
         {
-            setter.accept(warnValue, failValue);
+            setterAndGetter.left.accept(LongType.instance.compose(unpack.get(0)),
+                                        LongType.instance.compose(unpack.get(1)));
         }
         catch (Exception ex)
         {

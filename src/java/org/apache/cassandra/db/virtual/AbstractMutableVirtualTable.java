@@ -57,7 +57,7 @@ public abstract class AbstractMutableVirtualTable extends AbstractVirtualTable
     }
 
     @Override
-    public void apply(PartitionUpdate update)
+    public final void apply(PartitionUpdate update)
     {
         ColumnValues partitionKey = ColumnValues.from(metadata(), update.partitionKey());
 
