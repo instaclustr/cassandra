@@ -48,6 +48,7 @@ import org.apache.cassandra.auth.AuthCacheService;
 import org.apache.cassandra.concurrent.ScheduledExecutors;
 import org.apache.cassandra.config.CassandraRelevantProperties;
 import org.apache.cassandra.config.DatabaseDescriptor;
+import org.apache.cassandra.cql3.FieldIdentifier;
 import org.apache.cassandra.cql3.QueryProcessor;
 import org.apache.cassandra.db.ColumnFamilyStore;
 import org.apache.cassandra.db.Keyspace;
@@ -55,6 +56,9 @@ import org.apache.cassandra.db.SizeEstimatesRecorder;
 import org.apache.cassandra.db.SystemKeyspace;
 import org.apache.cassandra.db.SystemKeyspaceMigrator41;
 import org.apache.cassandra.db.commitlog.CommitLog;
+import org.apache.cassandra.db.marshal.LongType;
+import org.apache.cassandra.db.marshal.UTF8Type;
+import org.apache.cassandra.db.marshal.UserType;
 import org.apache.cassandra.db.virtual.GuardrailEnableFlagsTable;
 import org.apache.cassandra.db.virtual.GuardrailThresholdsTable;
 import org.apache.cassandra.db.virtual.GuardrailValuesTable;
@@ -72,6 +76,7 @@ import org.apache.cassandra.metrics.DefaultNameFactory;
 import org.apache.cassandra.net.StartupClusterConnectivityChecker;
 import org.apache.cassandra.schema.Schema;
 import org.apache.cassandra.schema.SchemaConstants;
+import org.apache.cassandra.schema.Types;
 import org.apache.cassandra.security.ThreadAwareSecurityManager;
 import org.apache.cassandra.service.paxos.PaxosState;
 import org.apache.cassandra.streaming.StreamManager;
@@ -552,9 +557,18 @@ public class CassandraDaemon
         VirtualKeyspaceRegistry.instance.register(VirtualSchemaKeyspace.instance);
         VirtualKeyspaceRegistry.instance.register(SystemViewsKeyspace.instance);
         VirtualKeyspaceRegistry.instance.register(new VirtualKeyspace(VIRTUAL_METRICS, createMetricsKeyspaceTables()));
-        VirtualKeyspaceRegistry.instance.register(new VirtualKeyspace(VIRTUAL_GUARDRAILS, List.of(new GuardrailValuesTable(),
-                                                                                                  new GuardrailEnableFlagsTable(),
-                                                                                                  new GuardrailThresholdsTable())));
+
+        VirtualKeyspace guardrailsKeyspace = new VirtualKeyspace(VIRTUAL_GUARDRAILS,
+                                                                 List.of(new GuardrailValuesTable(),
+                                                                         new GuardrailEnableFlagsTable(),
+                                                                         new GuardrailThresholdsTable()),
+                                                                 Types.of(new UserType(VIRTUAL_GUARDRAILS,
+                                                                                       UTF8Type.instance.decompose("settings"),
+                                                                                       List.of(FieldIdentifier.forQuoted("warn"),
+                                                                                               FieldIdentifier.forQuoted("fail")),
+                                                                                       List.of(LongType.instance, LongType.instance),
+                                                                                       true)));
+        VirtualKeyspaceRegistry.instance.register(guardrailsKeyspace);
 
         // flush log messages to system_views.system_logs virtual table as there were messages already logged
         // before that virtual table was instantiated

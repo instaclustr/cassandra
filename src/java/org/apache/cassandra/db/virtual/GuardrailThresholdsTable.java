@@ -25,11 +25,11 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
+import org.apache.cassandra.cql3.FieldIdentifier;
 import org.apache.cassandra.db.guardrails.Guardrails;
 import org.apache.cassandra.db.marshal.LongType;
-import org.apache.cassandra.db.marshal.TupleType;
-import org.apache.cassandra.db.marshal.TypeParser;
 import org.apache.cassandra.db.marshal.UTF8Type;
+import org.apache.cassandra.db.marshal.UserType;
 import org.apache.cassandra.dht.LocalPartitioner;
 import org.apache.cassandra.exceptions.InvalidRequestException;
 import org.apache.cassandra.schema.TableMetadata;
@@ -50,15 +50,24 @@ public class GuardrailThresholdsTable extends AbstractMutableVirtualTable
         this(VIRTUAL_GUARDRAILS);
     }
 
-    private static final TupleType tupleType = TupleType.getInstance(new TypeParser(format("(%s, %s)", LongType.instance, LongType.instance)));
+    private static UserType getUserType(String keyspace)
+    {
+        return new UserType(keyspace,
+                            UTF8Type.instance.decompose("settings"),
+                            List.of(FieldIdentifier.forQuoted("warn"),
+                                    FieldIdentifier.forQuoted("fail")),
+                            List.of(LongType.instance, LongType.instance),
+                            true);
+    }
 
     public GuardrailThresholdsTable(String keyspace)
     {
         super(TableMetadata.builder(keyspace, TABLE_NAME)
                            .kind(TableMetadata.Kind.VIRTUAL)
+                           .comment("Guardrails configuration table for thresholds")
                            .partitioner(new LocalPartitioner(UTF8Type.instance))
                            .addPartitionKeyColumn(NAME_COLUMN, UTF8Type.instance)
-                           .addRegularColumn(VALUE_COLUMN, TupleType.getInstance(new TypeParser(format("(%s, %s)", LongType.instance, LongType.instance))))
+                           .addRegularColumn(VALUE_COLUMN, getUserType(keyspace))
                            .build());
     }
 
@@ -75,8 +84,9 @@ public class GuardrailThresholdsTable extends AbstractMutableVirtualTable
             if (getter == null)
                 continue;
 
-            result.row(guardrailName).column(VALUE_COLUMN, tupleType.pack(LongType.instance.decompose(getter.left.get().longValue()),
-                                                                          LongType.instance.decompose(getter.right.get().longValue())));
+            UserType settings = getUserType(metadata().keyspace);
+            result.row(guardrailName).column(VALUE_COLUMN, settings.pack(LongType.instance.decompose(getter.left.get().longValue()),
+                                                                         LongType.instance.decompose(getter.right.get().longValue())));
         }
 
         return result;
@@ -97,7 +107,8 @@ public class GuardrailThresholdsTable extends AbstractMutableVirtualTable
         ColumnValue value = columnValue.get();
         Object val = value.value();
 
-        List<ByteBuffer> unpack = tupleType.unpack((ByteBuffer) val);
+        UserType settings = getUserType(metadata().keyspace);
+        List<ByteBuffer> unpack = settings.unpack((ByteBuffer) val);
 
         ByteBuffer warnBuffer = unpack.get(0);
         ByteBuffer failBuffer = unpack.get(1);
