@@ -25,7 +25,6 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
-import org.apache.cassandra.cql3.FieldIdentifier;
 import org.apache.cassandra.db.guardrails.Guardrails;
 import org.apache.cassandra.db.marshal.LongType;
 import org.apache.cassandra.db.marshal.UTF8Type;
@@ -45,30 +44,24 @@ public class GuardrailThresholdsTable extends AbstractMutableVirtualTable
     public static final String NAME_COLUMN = "name";
     public static final String VALUE_COLUMN = "value";
 
-    public GuardrailThresholdsTable()
+    private final UserType valueType;
+
+    public GuardrailThresholdsTable(UserType valueType)
     {
-        this(VIRTUAL_GUARDRAILS);
+        this(VIRTUAL_GUARDRAILS, valueType);
     }
 
-    private static UserType getUserType(String keyspace)
-    {
-        return new UserType(keyspace,
-                            UTF8Type.instance.decompose("settings"),
-                            List.of(FieldIdentifier.forQuoted("warn"),
-                                    FieldIdentifier.forQuoted("fail")),
-                            List.of(LongType.instance, LongType.instance),
-                            true);
-    }
-
-    public GuardrailThresholdsTable(String keyspace)
+    public GuardrailThresholdsTable(String keyspace, UserType valueType)
     {
         super(TableMetadata.builder(keyspace, TABLE_NAME)
                            .kind(TableMetadata.Kind.VIRTUAL)
                            .comment("Guardrails configuration table for thresholds")
                            .partitioner(new LocalPartitioner(UTF8Type.instance))
                            .addPartitionKeyColumn(NAME_COLUMN, UTF8Type.instance)
-                           .addRegularColumn(VALUE_COLUMN, getUserType(keyspace))
+                           .addRegularColumn(VALUE_COLUMN, valueType)
                            .build());
+
+        this.valueType = valueType;
     }
 
     @Override
@@ -84,9 +77,8 @@ public class GuardrailThresholdsTable extends AbstractMutableVirtualTable
             if (getter == null)
                 continue;
 
-            UserType settings = getUserType(metadata().keyspace);
-            result.row(guardrailName).column(VALUE_COLUMN, settings.pack(LongType.instance.decompose(getter.left.get().longValue()),
-                                                                         LongType.instance.decompose(getter.right.get().longValue())));
+            result.row(guardrailName).column(VALUE_COLUMN, valueType.pack(LongType.instance.decompose(getter.left.get().longValue()),
+                                                                          LongType.instance.decompose(getter.right.get().longValue())));
         }
 
         return result;
@@ -107,8 +99,7 @@ public class GuardrailThresholdsTable extends AbstractMutableVirtualTable
         ColumnValue value = columnValue.get();
         Object val = value.value();
 
-        UserType settings = getUserType(metadata().keyspace);
-        List<ByteBuffer> unpack = settings.unpack((ByteBuffer) val);
+        List<ByteBuffer> unpack = valueType.unpack((ByteBuffer) val);
 
         ByteBuffer warnBuffer = unpack.get(0);
         ByteBuffer failBuffer = unpack.get(1);

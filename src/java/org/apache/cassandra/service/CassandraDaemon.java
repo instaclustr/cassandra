@@ -558,16 +558,18 @@ public class CassandraDaemon
         VirtualKeyspaceRegistry.instance.register(SystemViewsKeyspace.instance);
         VirtualKeyspaceRegistry.instance.register(new VirtualKeyspace(VIRTUAL_METRICS, createMetricsKeyspaceTables()));
 
+        UserType guardrailThresholdSettings = new UserType(VIRTUAL_GUARDRAILS,
+                                                           UTF8Type.instance.decompose("settings"),
+                                                           List.of(FieldIdentifier.forQuoted("warn"),
+                                                                   FieldIdentifier.forQuoted("fail")),
+                                                           List.of(LongType.instance, LongType.instance),
+                                                           true);
+
         VirtualKeyspace guardrailsKeyspace = new VirtualKeyspace(VIRTUAL_GUARDRAILS,
                                                                  List.of(new GuardrailValuesTable(),
                                                                          new GuardrailEnableFlagsTable(),
-                                                                         new GuardrailThresholdsTable()),
-                                                                 Types.of(new UserType(VIRTUAL_GUARDRAILS,
-                                                                                       UTF8Type.instance.decompose("settings"),
-                                                                                       List.of(FieldIdentifier.forQuoted("warn"),
-                                                                                               FieldIdentifier.forQuoted("fail")),
-                                                                                       List.of(LongType.instance, LongType.instance),
-                                                                                       true)));
+                                                                         new GuardrailThresholdsTable(guardrailThresholdSettings)),
+                                                                 Types.of(guardrailThresholdSettings));
         VirtualKeyspaceRegistry.instance.register(guardrailsKeyspace);
 
         // flush log messages to system_views.system_logs virtual table as there were messages already logged
