@@ -1,3 +1,9 @@
+cassandra (3.11.16.1) unstable; urgency=medium
+
+  * New release
+
+ -- Jackson Fleming<jackson.fleming@instaclustr.com>  Tue, 22 Aug 2023 11:44:32 +1000
+
 cassandra (3.11.17) unstable; urgency=medium
 
   * New release

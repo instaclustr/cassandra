@@ -1,3 +1,7 @@
+3.11.16.1
+ * Reject empty options and invalid DC names in replication configuration while creating or altering a keyspace (CASSANDRA-12681)
+
+
 3.11.17
  * Move ClientWarn.State#warnings to a thread-safe list (CASSANDRA-19427)
  * Fix delayed SSTable release with unsafe_aggressive_sstable_expiration (CASSANDRA-18756)
