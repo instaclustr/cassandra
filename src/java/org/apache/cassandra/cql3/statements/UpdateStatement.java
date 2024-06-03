@@ -17,8 +17,11 @@
  */
 package org.apache.cassandra.cql3.statements;
 
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.cassandra.audit.AuditLogContext;
@@ -26,14 +29,18 @@ import org.apache.cassandra.audit.AuditLogEntryType;
 import org.apache.cassandra.cql3.*;
 import org.apache.cassandra.cql3.conditions.ColumnCondition;
 import org.apache.cassandra.cql3.conditions.Conditions;
+import org.apache.cassandra.cql3.constraints.ColumnConstraint;
 import org.apache.cassandra.cql3.restrictions.StatementRestrictions;
 import org.apache.cassandra.cql3.terms.Constants;
 import org.apache.cassandra.cql3.terms.Term;
 import org.apache.cassandra.db.Clustering;
 import org.apache.cassandra.db.Slice;
 import org.apache.cassandra.db.partitions.PartitionUpdate;
+import org.apache.cassandra.db.rows.Cell;
+import org.apache.cassandra.db.rows.Row;
 import org.apache.cassandra.schema.ColumnMetadata;
 import org.apache.cassandra.schema.TableMetadata;
+import org.apache.cassandra.serializers.TypeSerializer;
 import org.apache.cassandra.service.ClientState;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.apache.cassandra.utils.Pair;
@@ -93,7 +100,9 @@ public class UpdateStatement extends ModificationStatement
             for (int i = 0, isize = updates.size(); i < isize; i++)
                 updates.get(i).execute(updateBuilder.partitionKey(), params);
 
-            updateBuilder.add(params.buildRow());
+            Row row = params.buildRow();
+            evaluateConstraintsForRow(row);
+            updateBuilder.add(row);
         }
 
         if (updatesStaticRow())
@@ -261,6 +270,15 @@ public class UpdateStatement extends ModificationStatement
                                                                            false,
                                                                            false);
 
+            Json.Prepared unprepared = jsonValue.collectMarkers(metadata, defs, bindVariables);
+            List<ColumnIdentifier> columnNames = new ArrayList<>();
+            List<Term.Raw> columnValues = new ArrayList<>();
+
+            for (ColumnMetadata columnMetadata : defs)
+            {
+                columnNames.add(columnMetadata.name);
+                columnValues.add(unprepared.getRawTermForColumn(columnMetadata, false));
+            }
             return new UpdateStatement(type,
                                        bindVariables,
                                        metadata,
@@ -347,5 +365,35 @@ public class UpdateStatement extends ModificationStatement
     public AuditLogContext getAuditLogContext()
     {
         return new AuditLogContext(AuditLogEntryType.UPDATE, keyspace(), table());
+    }
+
+    public static void evaluateConstraintsForRow(Row row)
+    {
+        Iterator<Cell<?>> cellIt = row.cells().iterator();
+        // check constraint for each column
+        while (cellIt.hasNext())
+        {
+            Cell<?> cell = cellIt.next();
+            ColumnMetadata columnMetadata = cell.column();
+            if (!columnMetadata.hasConstraint()
+                || columnMetadata.isComplex()) // complex column is not supported, for now
+                continue;
+
+            ByteBuffer cellData = cell.buffer();
+            evaluateConstraint(columnMetadata, cellData);
+        }
+    }
+
+    public static void evaluateConstraint(ColumnMetadata columnMetadata, ByteBuffer cellData)
+    {
+        if (columnMetadata.hasConstraint())
+        {
+            for (ColumnConstraint constraint : columnMetadata.getColumnConstraints().getConstraints())
+            {
+                TypeSerializer<?> serializer = columnMetadata.type.getSerializer();
+                constraint.evaluate(columnMetadata.type.getClass(),
+                                    serializer.deserialize(cellData));
+            }
+        }
     }
 }

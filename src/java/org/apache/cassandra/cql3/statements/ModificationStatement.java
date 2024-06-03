@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.cassandra.auth.Permission;
+import org.apache.cassandra.cql3.constraints.ConstraintViolationException;
 import org.apache.cassandra.db.guardrails.Guardrails;
 import org.apache.cassandra.dht.Token;
 import org.apache.cassandra.locator.Replica;
@@ -153,6 +154,7 @@ public abstract class ModificationStatement implements CQLStatement.SingleKeyspa
             modifiedColumns = metadata.regularAndStaticColumns();
 
         this.updatedColumns = modifiedColumns;
+
         this.conditionColumns = conditionColumnsBuilder.build();
         this.requiresRead = requiresReadBuilder.build();
     }
@@ -764,7 +766,7 @@ public abstract class ModificationStatement implements CQLStatement.SingleKeyspa
                           long nowInSeconds,
                           Dispatcher.RequestTime requestTime)
     {
-        if (hasSlices())
+        if (hasSlices()) // range deletion
         {
             Slices slices = createSlices(options);
 
@@ -804,7 +806,7 @@ public abstract class ModificationStatement implements CQLStatement.SingleKeyspa
 
             for (ByteBuffer key : keys)
             {
-                Validation.validateKey(metadata(), key);
+                Validation.validateKeyAndCheckConstraints(metadata(), key);
                 DecoratedKey dk = metadata().partitioner.decorateKey(key);
 
                 PartitionUpdate.Builder updateBuilder = collector.getPartitionUpdateBuilder(metadata(), dk, options.getConsistency());
@@ -815,11 +817,32 @@ public abstract class ModificationStatement implements CQLStatement.SingleKeyspa
                 }
                 else
                 {
+                    // Clustering keys need to be checked on their own
                     for (Clustering<?> clustering : clusterings)
                     {
                         clustering.validate();
+                        checkClusteringConstraints(clustering);
                         addUpdateForKey(updateBuilder, clustering, params);
                     }
+                }
+            }
+        }
+    }
+
+    private void checkClusteringConstraints(Clustering<?> clustering)
+    {
+        for (int i = 0; i < clustering.size(); i++)
+        {
+            ColumnMetadata column = metadata.clusteringColumns().get(i);
+            if (column.hasConstraint())
+            {
+                try
+                {
+                    clustering.checkConstraints(i, metadata.comparator, column.getColumnConstraints());
+                }
+                catch (ConstraintViolationException e)
+                {
+                    throw new InvalidRequestException(e.getMessage(), e);
                 }
             }
         }

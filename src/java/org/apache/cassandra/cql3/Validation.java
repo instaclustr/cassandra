@@ -18,7 +18,10 @@
 package org.apache.cassandra.cql3;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 
+import org.apache.cassandra.cql3.constraints.ColumnConstraint;
+import org.apache.cassandra.cql3.constraints.ConstraintViolationException;
 import org.apache.cassandra.exceptions.InvalidRequestException;
 import org.apache.cassandra.schema.TableMetadata;
 import org.apache.cassandra.serializers.MarshalException;
@@ -62,6 +65,23 @@ public abstract class Validation
         catch (MarshalException e)
         {
             throw new InvalidRequestException(e.getMessage());
+        }
+    }
+
+    public static void validateKeyAndCheckConstraints(TableMetadata metadata, ByteBuffer key)
+    {
+        validateKey(metadata, key);
+        List<ColumnConstraint> partitionKeyConstraints = metadata.partitionKeyConstraints;
+        if (!partitionKeyConstraints.isEmpty())
+        {
+            try
+            {
+                metadata.partitionKeyType.checkConstraints(key, partitionKeyConstraints);
+            }
+            catch (ConstraintViolationException e)
+            {
+                throw new InvalidRequestException(e.getMessage(), e);
+            }
         }
     }
 }
