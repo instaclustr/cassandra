@@ -28,7 +28,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
@@ -94,9 +93,17 @@ public class CIDRGroupsMappingManager implements CIDRGroupsMappingManagerMBean
 
     protected static String getCidrTuplesSetString(List<CIDR> cidrs)
     {
-        String inner = cidrs.stream().map(CIDR::asCqlTupleString)
-                            .collect(Collectors.joining(", "));
-        return '{' + inner + '}';
+        StringBuilder sb = new StringBuilder();
+        sb.append('{');
+        int cidrsSize = cidrs.size();
+        for (int i = 0; i < cidrsSize; i++)
+        {
+            sb.append(cidrs.get(i).asCqlTupleString());
+            if (i + 1 < cidrsSize)
+                sb.append(", ");
+        }
+        sb.append('}');
+        return sb.toString();
     }
 
     public UntypedResultSet getCidrGroupsTableEntries()

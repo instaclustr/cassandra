@@ -20,7 +20,6 @@ package org.apache.cassandra.db.virtual;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +32,7 @@ import org.apache.cassandra.db.marshal.SetType;
 import org.apache.cassandra.db.marshal.UTF8Type;
 import org.apache.cassandra.db.marshal.UUIDType;
 import org.apache.cassandra.dht.LocalPartitioner;
+import org.apache.cassandra.dht.Token;
 import org.apache.cassandra.locator.InetAddressAndPort;
 import org.apache.cassandra.schema.Schema;
 import org.apache.cassandra.schema.TableMetadata;
@@ -96,6 +96,11 @@ public class PeersTable extends AbstractVirtualTable
             NodeId peer = metadata.directory.peerId(addr);
 
             NodeAddresses addresses = metadata.directory.getNodeAddresses(peer);
+
+            Set<String> tokens = new HashSet<>();
+            for (Token token : metadata.tokenMap.tokens(peer))
+                tokens.add(token.getToken().getTokenValue().toString());
+
             result.row(addr.getAddress(), addr.getPort())
                   .column(DATA_CENTER, metadata.directory.location(peer).datacenter)
                   .column(RACK, metadata.directory.location(peer).rack)
@@ -107,7 +112,7 @@ public class PeersTable extends AbstractVirtualTable
                   .column(RELEASE_VERSION, metadata.directory.version(peer).cassandraVersion.toString())
                   .column(SCHEMA_VERSION, Schema.instance.getVersion()) //TODO
                   .column(STATE, metadata.directory.peerState(peer).toString())
-                  .column(TOKENS, new HashSet<>(metadata.tokenMap.tokens(peer).stream().map((token) -> token.getToken().getTokenValue().toString()).collect(Collectors.toList())));
+                  .column(TOKENS, tokens);
         }
 
         return result;

@@ -17,10 +17,12 @@
  */
 package org.apache.cassandra.db.virtual;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
@@ -41,11 +43,14 @@ public class VirtualKeyspace
         this.name = name;
         this.tables = ImmutableList.copyOf(tables);
 
-        List<String> duplicates = tables.stream()
-                                        .map(VirtualTable::name)
-                                        .distinct()
-                                        .filter(entry -> Collections.frequency(tables, entry) > 1)
-                                        .collect(Collectors.toList());
+        Set<String> vtablesNames = new HashSet<>();
+        for (VirtualTable vtable : tables)
+            vtablesNames.add(vtable.name());
+
+        List<String> duplicates = new ArrayList<>();
+        for (String vtableName : vtablesNames)
+            if (Collections.frequency(tables, vtableName) > 1)
+                duplicates.add(vtableName);
 
         if (!duplicates.isEmpty())
             throw new IllegalArgumentException(String.format("Duplicate table names in virtual keyspace %s: %s", name, duplicates));

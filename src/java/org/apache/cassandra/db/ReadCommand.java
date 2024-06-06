@@ -418,7 +418,7 @@ public abstract class ReadCommand extends AbstractReadQuery
      *
      * @return an iterator over the result of executing this command locally.
      */
-                                  // iterators created inside the try as long as we do close the original resultIterator), or by closing the result.
+     // iterators created inside the try as long as we do close the original resultIterator), or by closing the result.
     public UnfilteredPartitionIterator executeLocally(ReadExecutionController executionController)
     {
         long startTimeNanos = nanoTime();
@@ -436,13 +436,17 @@ public abstract class ReadCommand extends AbstractReadQuery
 
                 searcher = indexQueryPlan.searcherFor(this);
                 Tracing.trace("Executing read on {}.{} using index{} {}",
+                              () ->
+                              new Object[]
+                              {
                               cfs.metadata.keyspace,
                               cfs.metadata.name,
                               indexQueryPlan.getIndexes().size() == 1 ? "" : "es",
                               indexQueryPlan.getIndexes()
                                             .stream()
                                             .map(i -> i.getIndexMetadata().name)
-                                            .collect(Collectors.joining(",")));
+                                            .collect(Collectors.joining(","))
+                              });
             }
 
             UnfilteredPartitionIterator iterator = (null == searcher) ? queryStorage(cfs, executionController) : searcher.search(executionController);

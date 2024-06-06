@@ -535,16 +535,13 @@ public class TimeUUID implements Serializable, Comparable<TimeUUID>
             try
             {
                 Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
-                if (nets != null)
+                while (nets.hasMoreElements())
                 {
-                    while (nets.hasMoreElements())
-                    {
-                        Function<InetAddress, InetAddressAndPort> converter =
-                        address -> InetAddressAndPort.getByAddressOverrideDefaults(address, 0);
-                        List<InetAddressAndPort> addresses =
-                        Collections.list(nets.nextElement().getInetAddresses()).stream().map(converter).collect(Collectors.toList());
-                        localAddresses.addAll(addresses);
-                    }
+                    Function<InetAddress, InetAddressAndPort> converter =
+                    address -> InetAddressAndPort.getByAddressOverrideDefaults(address, 0);
+                    List<InetAddressAndPort> addresses =
+                    Collections.list(nets.nextElement().getInetAddresses()).stream().map(converter).collect(Collectors.toList());
+                    localAddresses.addAll(addresses);
                 }
             }
             catch (SocketException e)

@@ -18,6 +18,7 @@
 package org.apache.cassandra.hints;
 
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +36,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import org.apache.cassandra.db.Keyspace;
 import org.apache.cassandra.io.util.File;
+import org.apache.cassandra.locator.Replica;
 import org.apache.cassandra.locator.ReplicaLayout;
 import org.apache.cassandra.utils.concurrent.Future;
 import org.slf4j.Logger;
@@ -194,10 +196,15 @@ public final class HintsService implements HintsServiceMBean
 
         // judicious use of streams: eagerly materializing probably cheaper
         // than performing filters / translations 2x extra via Iterables.filter/transform
-        List<UUID> hostIds = replicas.stream()
-                .filter(replica -> StorageProxy.shouldHint(replica, false))
-                .map(replica -> StorageService.instance.getHostIdForEndpoint(replica.endpoint()))
-                .collect(Collectors.toList());
+
+        List<UUID> hostIds = new ArrayList<>();
+        for (Replica replica : replicas)
+        {
+            if (!StorageProxy.shouldHint(replica, false))
+                continue;
+
+            hostIds.add(StorageService.instance.getHostIdForEndpoint(replica.endpoint()));
+        }
 
         write(hostIds, hint);
     }

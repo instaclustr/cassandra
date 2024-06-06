@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -359,6 +360,15 @@ public abstract class Tracing extends ExecutorLocals.Impl
             return;
 
         state.trace(format, args);
+    }
+
+    public static void trace(String format, Supplier<Object[]> args)
+    {
+        final TraceState state = instance.get();
+        if (state == null) // inline isTracing to avoid implicit two calls to state.get()
+            return;
+
+        state.trace(format, args.get());
     }
 
     /**

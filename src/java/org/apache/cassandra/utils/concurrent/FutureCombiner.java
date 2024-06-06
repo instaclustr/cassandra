@@ -20,6 +20,7 @@ package org.apache.cassandra.utils.concurrent;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -27,7 +28,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
 
@@ -238,7 +238,16 @@ public class FutureCombiner<T> extends AsyncFuture<T>
         if (futures.isEmpty())
             return ImmediateFuture.success(Collections.emptyList());
 
-        return new FutureCombiner<>(futures, () -> futures.stream().map(f -> f.getNow()).collect(Collectors.toList()), FailFastListener::new);
+        return new FutureCombiner<>(futures,
+                                    () ->
+                                    {
+                                        List<V> nows = new ArrayList<>();
+                                        for (io.netty.util.concurrent.Future<? extends V> future : futures)
+                                            nows.add(future.getNow());
+
+                                        return nows;
+                                    },
+                                    FailFastListener::new);
     }
 
     /**
@@ -254,9 +263,15 @@ public class FutureCombiner<T> extends AsyncFuture<T>
             return ImmediateFuture.success(Collections.emptyList());
 
         return new FutureCombiner<>(futures,
-                                    () -> futures.stream()
-                                                 .map(f -> f.isSuccess() ? f.getNow() : null)
-                                                 .collect(Collectors.toList()),
+                                    () ->
+                                    {
+                                        List<V> nows = new ArrayList<>();
+
+                                        for (io.netty.util.concurrent.Future<V> future : futures)
+                                            nows.add(future.isSuccess() ? future.getNow() : null);
+
+                                        return nows;
+                                    },
                                     Listener::new);
     }
 }

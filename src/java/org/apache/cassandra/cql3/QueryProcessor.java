@@ -28,7 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
@@ -509,10 +508,12 @@ public class QueryProcessor implements QueryHandler
             {
                 throw new IllegalArgumentException("Unable to handle; only expected ReadCommands but given " + readQuery.getClass());
             }
-            Future<List<Message<ReadResponse>>> future = FutureCombiner.allOf(commands.stream()
-                                                                                      .map(rc -> Message.out(rc.verb(), rc))
-                                                                                      .map(m -> MessagingService.instance().<ReadCommand, ReadResponse>sendWithResult(m, address))
-                                                                                      .collect(Collectors.toList()));
+
+            List<Future<Message<ReadResponse>>> sent = new ArrayList<>();
+            for (ReadCommand rc : commands)
+                sent.add(MessagingService.instance().sendWithResult(Message.out(rc.verb(), rc), address));
+
+            Future<List<Message<ReadResponse>>> future = FutureCombiner.allOf(sent);
 
             ResultSetBuilder result = new ResultSetBuilder(select.getResultMetadata(), select.getSelection().newSelectors(options), false);
             return future.map(list -> {

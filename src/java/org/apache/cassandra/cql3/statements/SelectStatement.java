@@ -259,11 +259,11 @@ public class SelectStatement implements CQLStatement.SingleKeyspaceCqlStatement
         if (!state.hasTablePermission(table, Permission.UNMASK) &&
             !state.hasTablePermission(table, Permission.SELECT_MASKED))
         {
-            List<ColumnMetadata> queriedMaskedColumns = table.columns()
-                                                             .stream()
-                                                             .filter(ColumnMetadata::isMasked)
-                                                             .filter(restrictions::isRestricted)
-                                                             .collect(Collectors.toList());
+
+            List<ColumnMetadata> queriedMaskedColumns = new ArrayList<>();
+            for (ColumnMetadata columnMetadata : table.columns())
+                if (columnMetadata.isMasked() && restrictions.isRestricted(columnMetadata))
+                    queriedMaskedColumns.add(columnMetadata);
 
             if (!queriedMaskedColumns.isEmpty())
                 throw new UnauthorizedException(format("User %s has no UNMASK nor SELECT_MASKED permission on table %s.%s, " +
@@ -1293,7 +1293,7 @@ public class SelectStatement implements CQLStatement.SingleKeyspaceCqlStatement
             if (!table.hasStaticColumns() || selectables.isEmpty())
                 return false;
 
-            return Selectable.selectColumns(selectables, (column) -> column.isStatic())
+            return Selectable.selectColumns(selectables, ColumnMetadata::isStatic)
                     && !Selectable.selectColumns(selectables, (column) -> !column.isPartitionKey() && !column.isStatic());
         }
 
@@ -1317,9 +1317,12 @@ public class SelectStatement implements CQLStatement.SingleKeyspaceCqlStatement
 
         private List<Ordering> getOrderings(TableMetadata table)
         {
-            return parameters.orderings.stream()
-                                       .map(o -> o.bind(table, bindVariables))
-                                       .collect(Collectors.toList());
+            List<Ordering> orderings = new ArrayList<>();
+            Iterator<Ordering.Raw> iterator = parameters.orderings.iterator();
+            while (iterator.hasNext())
+                orderings.add(iterator.next().bind(table, bindVariables));
+
+            return orderings;
         }
 
         /**

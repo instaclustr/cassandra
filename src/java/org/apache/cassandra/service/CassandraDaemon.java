@@ -201,7 +201,15 @@ public class CassandraDaemon
         {
             try
             {
-                Keyspace.allExisting().forEach(k -> k.getColumnFamilyStores().forEach(ColumnFamilyStore::updateSpeculationThreshold));
+                for (String keyspaceString : Schema.instance.getKeyspaces())
+                {
+                    Keyspace keyspaceInstance = Schema.instance.getKeyspaceInstance(keyspaceString);
+                    if (keyspaceInstance != null)
+                    {
+                        for (ColumnFamilyStore cfs : keyspaceInstance.getColumnFamilyStores())
+                            cfs.updateSpeculationThreshold();
+                    }
+                }
             }
             catch (Throwable t)
             {

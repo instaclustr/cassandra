@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
@@ -1302,9 +1301,11 @@ public class SinglePartitionReadCommand extends ReadCommand implements SinglePar
             if (queries.size() == 1)
                 return queries.get(0).execute(consistency, state, requestTime);
 
-            return PartitionIterators.concat(queries.stream()
-                                                    .map(q -> q.execute(consistency, state, requestTime))
-                                                    .collect(Collectors.toList()));
+            List<PartitionIterator> partitionIterators = new ArrayList<>();
+            for (SinglePartitionReadCommand command : queries)
+                partitionIterators.add(command.execute(consistency, state, requestTime));
+
+            return PartitionIterators.concat(partitionIterators);
         }
     }
 

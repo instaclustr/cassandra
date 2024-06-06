@@ -18,8 +18,8 @@
 package org.apache.cassandra.db.virtual;
 
 import java.net.InetSocketAddress;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.cassandra.db.marshal.BooleanType;
 import org.apache.cassandra.db.marshal.InetAddressType;
@@ -85,6 +85,10 @@ final class ClientsTable extends AbstractVirtualTable
         {
             InetSocketAddress remoteAddress = client.remoteAddress();
 
+            Map<String, String> authMetadata = new HashMap<>();
+            for (Map.Entry<String, Object> entry : client.authenticationMetadata().entrySet())
+                authMetadata.put(entry.getKey(), String.valueOf(entry.getValue()));
+
             result.row(remoteAddress.getAddress(), remoteAddress.getPort())
                   .column(HOSTNAME, remoteAddress.getHostName())
                   .column(USERNAME, client.username().orElse(null))
@@ -99,9 +103,7 @@ final class ClientsTable extends AbstractVirtualTable
                   .column(SSL_CIPHER_SUITE, client.sslCipherSuite().orElse(null))
                   .column(KEYSPACE_NAME, client.keyspace().orElse(null))
                   .column(AUTHENTICATION_MODE, client.authenticationMode().toString())
-                  .column(AUTHENTICATION_METADATA, client.authenticationMetadata()
-                                                         .entrySet().stream()
-                                                         .collect(Collectors.toMap(Entry::getKey, entry -> String.valueOf(entry.getValue()))));
+                  .column(AUTHENTICATION_METADATA, authMetadata);
         }
 
         return result;

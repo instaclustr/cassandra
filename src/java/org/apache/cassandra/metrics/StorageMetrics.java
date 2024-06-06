@@ -18,7 +18,6 @@
 package org.apache.cassandra.metrics;
 
 import java.util.function.ToLongFunction;
-import java.util.stream.StreamSupport;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
@@ -54,8 +53,13 @@ public class StorageMetrics
     private static Gauge<Long> createSummingGauge(String name, ToLongFunction<KeyspaceMetrics> extractor)
     {
         return Metrics.register(factory.createMetricName(name),
-                                () -> StreamSupport.stream(Keyspace.all().spliterator(), false)
-                                                   .mapToLong(keyspace -> extractor.applyAsLong(keyspace.metric))
-                                                   .sum());
+                                () ->
+                                {
+                                    long sum = 0;
+                                    for (Keyspace keyspace : Keyspace.all())
+                                        sum += extractor.applyAsLong(keyspace.metric);
+
+                                    return sum;
+                                });
     }
 }

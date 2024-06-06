@@ -18,6 +18,7 @@
 package org.apache.cassandra.auth;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -91,9 +92,12 @@ public class Roles
      */
     public static Set<RoleResource> getAllRoles(Predicate<RoleResource> predicate)
     {
-        return getAllRoles().stream()
-                            .filter(predicate)
-                            .collect(Collectors.toUnmodifiableSet());
+        Set<RoleResource> roleResources = new HashSet<>();
+        for (RoleResource roleResource : getAllRoles())
+            if (predicate.test(roleResource))
+                roleResources.add(roleResource);
+
+        return Collections.unmodifiableSet(roleResources);
     }
 
     /**

@@ -601,7 +601,7 @@ public class ColumnFamilyStore implements ColumnFamilyStoreMBean, Memtable.Owner
         }
         catch (Throwable e)
         {
-            logger.error("Exception caught while calculating speculative retry threshold for {}: {}", metadata(), e);
+            logger.error("Exception caught while calculating speculative retry threshold for {}", metadata(), e);
         }
     }
 

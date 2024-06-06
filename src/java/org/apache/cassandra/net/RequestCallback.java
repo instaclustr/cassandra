@@ -77,7 +77,14 @@ public interface RequestCallback<T>
         // org.apache.cassandra.utils.concurrent.Awaitable.await(long, java.util.concurrent.TimeUnit)
         // The race is that the message expire path runs and expires all messages, this then casues the condition
         // to signal telling the caller "got all replies!".
-        return failureReasonByEndpoint.values().stream().allMatch(RequestFailureReason.TIMEOUT::equals);
-    }
 
+        if (failureReasonByEndpoint.isEmpty())
+            return false;
+
+        for (RequestFailureReason reason : failureReasonByEndpoint.values())
+            if (reason != RequestFailureReason.TIMEOUT)
+                return false;
+
+        return true;
+    }
 }

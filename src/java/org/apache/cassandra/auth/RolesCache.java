@@ -17,9 +17,9 @@
  */
 package org.apache.cassandra.auth;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
-import java.util.stream.Collectors;
 
 import org.apache.cassandra.config.DatabaseDescriptor;
 
@@ -52,9 +52,11 @@ public class RolesCache extends AuthCache<RoleResource, Set<Role>> implements Ro
      */
     Set<RoleResource> getRoleResources(RoleResource primaryRole)
     {
-        return get(primaryRole).stream()
-                               .map(r -> r.resource)
-                               .collect(Collectors.toSet());
+        Set<RoleResource> roleResources = new HashSet<>();
+        for (Role role : get(primaryRole))
+            roleResources.add(role.resource);
+
+        return roleResources;
     }
 
     /**
