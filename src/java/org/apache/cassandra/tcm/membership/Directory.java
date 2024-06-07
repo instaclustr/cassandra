@@ -43,6 +43,7 @@ import org.apache.cassandra.tcm.MetadataValue;
 import org.apache.cassandra.tcm.serialization.MetadataSerializer;
 import org.apache.cassandra.tcm.serialization.Version;
 import org.apache.cassandra.net.MessagingService;
+import org.apache.cassandra.utils.FBUtilities;
 import org.apache.cassandra.utils.Pair;
 import org.apache.cassandra.utils.UUIDSerializer;
 import org.apache.cassandra.utils.btree.BTreeBiMap;
@@ -346,6 +347,24 @@ public class Directory implements MetadataValue<Directory>
     public Location location(NodeId id)
     {
         return locations.get(id);
+    }
+
+    public Location myLocation()
+    {
+        if (locations == null)
+            return null;
+
+        if (peers == null)
+            return null;
+
+        InetAddressAndPort addr = FBUtilities.getBroadcastAddressAndPort();
+
+        NodeId nodeId = peerId(addr);
+
+        if (nodeId == null)
+            return null;
+
+        return locations.get(nodeId);
     }
 
     public Set<InetAddressAndPort> datacenterEndpoints(String datacenter)
