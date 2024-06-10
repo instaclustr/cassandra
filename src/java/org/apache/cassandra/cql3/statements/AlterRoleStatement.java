@@ -24,6 +24,7 @@ import org.apache.cassandra.auth.IRoleManager.Option;
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.cql3.PasswordObfuscator;
 import org.apache.cassandra.cql3.RoleName;
+import org.apache.cassandra.db.guardrails.Guardrails;
 import org.apache.cassandra.exceptions.*;
 import org.apache.cassandra.service.ClientState;
 import org.apache.cassandra.transport.messages.ResultMessage;
@@ -72,7 +73,7 @@ public class AlterRoleStatement extends AuthenticationStatement
             cidrPermissions.validate();
         }
 
-        // validate login here before authorize to avoid leaking user existence to anonymous users.
+        // validate login here before authorize, to avoid leaking user existence to anonymous users.
         state.ensureNotAnonymous();
         if (!DatabaseDescriptor.getRoleManager().isExistingRole(role))
         {
@@ -114,6 +115,19 @@ public class AlterRoleStatement extends AuthenticationStatement
 
     public ResultMessage execute(ClientState state) throws RequestValidationException, RequestExecutionException
     {
+        if (opts.isGeneratedPassword())
+        {
+            String generatedPassword = Guardrails.password.generate();
+            if (generatedPassword != null)
+                opts.setOption(IRoleManager.Option.PASSWORD, generatedPassword);
+            else
+                throw new InvalidRequestException("You have to enable password_validator and it's generator_class_name property " +
+                                                  "in cassandra.yaml to be able to generate passwords.");
+        }
+
+        if (opts.getPassword().isPresent())
+            Guardrails.password.guard(opts.getPassword().get(), state);
+
         if (!opts.isEmpty())
             DatabaseDescriptor.getRoleManager().alterRole(state.getUser(), role, opts);
 
@@ -123,7 +137,7 @@ public class AlterRoleStatement extends AuthenticationStatement
         if (cidrPermissions != null)
             DatabaseDescriptor.getCIDRAuthorizer().setCidrGroupsForRole(role, cidrPermissions);
 
-        return null;
+        return getResultMessage(opts);
     }
 
     @Override

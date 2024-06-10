@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import org.apache.cassandra.cql3.statements.schema.TableAttributes;
 import org.apache.cassandra.db.ConsistencyLevel;
+import org.apache.cassandra.db.guardrails.CustomGuardrailConfig;
 import org.apache.cassandra.db.guardrails.Guardrails;
 import org.apache.cassandra.db.guardrails.GuardrailsConfig;
 import org.apache.cassandra.io.util.FileUtils;
@@ -815,6 +816,12 @@ public class GuardrailsOptions implements GuardrailsConfig
     public int getMaximumReplicationFactorFailThreshold()
     {
         return config.maximum_replication_factor_fail_threshold;
+    }
+
+    @Override
+    public CustomGuardrailConfig getPasswordValidatorConfig()
+    {
+        return config.password_validator;
     }
 
     public void setMaximumReplicationFactorThreshold(int warn, int fail)
