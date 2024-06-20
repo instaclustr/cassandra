@@ -109,6 +109,8 @@ import org.apache.cassandra.service.paxos.PaxosRepairHistory;
 import org.apache.cassandra.service.paxos.PaxosState;
 import org.apache.cassandra.service.paxos.uncommitted.PaxosRows;
 import org.apache.cassandra.service.paxos.uncommitted.PaxosUncommittedIndex;
+import org.apache.cassandra.service.snapshot.SnapshotManager;
+import org.apache.cassandra.service.snapshot.TableSnapshot;
 import org.apache.cassandra.streaming.StreamOperation;
 import org.apache.cassandra.tcm.ClusterMetadata;
 import org.apache.cassandra.tcm.Epoch;
@@ -116,6 +118,7 @@ import org.apache.cassandra.tcm.membership.NodeState;
 import org.apache.cassandra.transport.ProtocolVersion;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.apache.cassandra.utils.CassandraVersion;
+import org.apache.cassandra.utils.Clock;
 import org.apache.cassandra.utils.FBUtilities;
 import org.apache.cassandra.utils.MD5Digest;
 import org.apache.cassandra.utils.Pair;
@@ -144,7 +147,6 @@ import static org.apache.cassandra.service.paxos.Commit.latest;
 import static org.apache.cassandra.utils.CassandraVersion.NULL_VERSION;
 import static org.apache.cassandra.utils.CassandraVersion.UNREADABLE_VERSION;
 import static org.apache.cassandra.utils.Clock.Global.currentTimeMillis;
-import static org.apache.cassandra.utils.FBUtilities.now;
 
 public final class SystemKeyspace
 {
@@ -1808,10 +1810,8 @@ public final class SystemKeyspace
      * Compare the release version in the system.local table with the one included in the distro.
      * If they don't match, snapshot all tables in the system and schema keyspaces. This is intended
      * to be called at startup to create a backup of the system tables during an upgrade
-     *
-     * @throws IOException
      */
-    public static void snapshotOnVersionChange() throws IOException
+    public static void snapshotOnVersionChange()
     {
         String previous = getPreviousVersionString();
         String next = FBUtilities.getReleaseVersionString();
@@ -1820,16 +1820,27 @@ public final class SystemKeyspace
 
         // if we're restarting after an upgrade, snapshot the system and schema keyspaces
         if (!previous.equals(NULL_VERSION.toString()) && !previous.equals(next))
-
         {
             logger.info("Detected version upgrade from {} to {}, snapshotting system keyspaces", previous, next);
-            String snapshotName = Keyspace.getTimestampedSnapshotName(format("upgrade-%s-%s",
-                                                                             previous,
-                                                                             next));
 
-            Instant creationTime = now();
+            List<String> entities = new ArrayList<>();
             for (String keyspace : SchemaConstants.LOCAL_SYSTEM_KEYSPACE_NAMES)
-                Keyspace.open(keyspace).snapshot(snapshotName, null, false, null, null, creationTime);
+            {
+                for (ColumnFamilyStore cfs : Keyspace.open(keyspace).getColumnFamilyStores())
+                    entities.add(cfs.getKeyspaceTableName());
+            }
+
+            long creationTime = Clock.Global.currentTimeMillis();
+            logger.info("Detected version upgrade from {} to {}, snapshotting system keyspaces", previous, next);
+            String snapshotName = TableSnapshot.getTimestampedSnapshotName(format("%s-%s-%s",
+                                                                                  TableSnapshot.SNAPSHOT_UPGRADE_PREFIX,
+                                                                                  previous,
+                                                                                  next),
+                                                                           creationTime);
+
+            SnapshotManager.instance.snapshotBuilder(snapshotName, entities.toArray(new String[0]))
+                                    .creationTime(creationTime)
+                                    .takeSnapshot();
         }
     }
 
