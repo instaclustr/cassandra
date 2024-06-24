@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.cassandra.db.guardrails.generators;
+package org.apache.cassandra.db.guardrails;
 
-import org.apache.cassandra.db.guardrails.CustomGuardrailConfig;
-import org.apache.cassandra.db.guardrails.ValueGenerator;
+import javax.annotation.Nonnull;
+
 import org.apache.cassandra.exceptions.ConfigurationException;
 
 /**
@@ -28,12 +28,9 @@ import org.apache.cassandra.exceptions.ConfigurationException;
  */
 public class NoOpGenerator<VALUE> extends ValueGenerator<VALUE>
 {
-    public NoOpGenerator()
-    {
-        this(new CustomGuardrailConfig());
-    }
+    private static final CustomGuardrailConfig config = new CustomGuardrailConfig();
 
-    public NoOpGenerator(CustomGuardrailConfig config)
+    public NoOpGenerator(CustomGuardrailConfig unused)
     {
         super(config);
     }
@@ -48,6 +45,13 @@ public class NoOpGenerator<VALUE> extends ValueGenerator<VALUE>
     public VALUE generate()
     {
         return null;
+    }
+
+    @Nonnull
+    @Override
+    public CustomGuardrailConfig getParameters()
+    {
+        return config;
     }
 
     @Override

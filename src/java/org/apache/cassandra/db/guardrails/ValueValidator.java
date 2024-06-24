@@ -18,7 +18,6 @@
 
 package org.apache.cassandra.db.guardrails;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -26,7 +25,6 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.cassandra.db.guardrails.validators.NoOpValidator;
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.cassandra.utils.FBUtilities;
 
@@ -50,27 +48,27 @@ public abstract class ValueValidator<VALUE>
 
     public static final String CLASS_NAME_KEY = "class_name";
 
-    private static final String DEFAULT_VALIDATOR_IMPLEMENTATION_PACKAGE = ValueValidator.class.getPackage().getName() + ".validators.";
+    private static final String DEFAULT_VALIDATOR_IMPLEMENTATION_PACKAGE = ValueValidator.class.getPackage().getName();
 
-    private final CustomGuardrailConfig config;
+    protected final CustomGuardrailConfig config;
 
     public ValueValidator(CustomGuardrailConfig config)
     {
         this.config = config;
     }
 
-    public static class ValidationResult
+    public static class ValidationViolation
     {
         public final String message;
         public final String redactedMessage;
 
-        public ValidationResult(String message)
+        public ValidationViolation(String message)
         {
             this.message = message;
             this.redactedMessage = message;
         }
 
-        public ValidationResult(String message, String redactedMessage)
+        public ValidationViolation(String message, String redactedMessage)
         {
             this.message = message;
             this.redactedMessage = redactedMessage;
@@ -83,7 +81,7 @@ public abstract class ValueValidator<VALUE>
      * @param value value to validate
      * @return if optional is empty, value is valid, otherwise it returns warning violation message
      */
-    public abstract Optional<ValidationResult> shouldWarn(VALUE value);
+    public abstract Optional<ValidationViolation> shouldWarn(VALUE value);
 
     /**
      * Test a value to see if it emits failures.
@@ -91,7 +89,7 @@ public abstract class ValueValidator<VALUE>
      * @param value value to validate
      * @return if optional is empty, value is valid, otherwise it returns failure violation message
      */
-    public abstract Optional<ValidationResult> shouldFail(VALUE value);
+    public abstract Optional<ValidationViolation> shouldFail(VALUE value);
 
     /**
      * Validates parameters for this validator.
@@ -104,10 +102,7 @@ public abstract class ValueValidator<VALUE>
      * @return parameters for this validator
      */
     @Nonnull
-    public CustomGuardrailConfig getParameters()
-    {
-        return new CustomGuardrailConfig(Collections.unmodifiableMap(config));
-    }
+    public abstract CustomGuardrailConfig getParameters();
 
     /**
      * Returns an instance of a validator according to the parameters in {@code config}.
@@ -132,7 +127,7 @@ public abstract class ValueValidator<VALUE>
         }
 
         if (!className.contains("."))
-            className = DEFAULT_VALIDATOR_IMPLEMENTATION_PACKAGE + className;
+            className = DEFAULT_VALIDATOR_IMPLEMENTATION_PACKAGE + '.' + className;
 
         try
         {
@@ -151,7 +146,7 @@ public abstract class ValueValidator<VALUE>
             else
                 message = ex.getMessage();
 
-            throw new IllegalStateException(format("Unable to create instance of validator of class %s: %s", className, message), ex);
+            throw new ConfigurationException(format("Unable to create instance of validator of class %s: %s", className, message), ex);
         }
     }
 }

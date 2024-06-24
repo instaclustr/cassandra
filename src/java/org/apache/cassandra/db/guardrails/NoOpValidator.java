@@ -16,12 +16,12 @@
  * limitations under the License.
  */
 
-package org.apache.cassandra.db.guardrails.validators;
+package org.apache.cassandra.db.guardrails;
 
 import java.util.Optional;
 
-import org.apache.cassandra.db.guardrails.CustomGuardrailConfig;
-import org.apache.cassandra.db.guardrails.ValueValidator;
+import javax.annotation.Nonnull;
+
 import org.apache.cassandra.exceptions.ConfigurationException;
 
 /**
@@ -30,26 +30,30 @@ import org.apache.cassandra.exceptions.ConfigurationException;
  */
 public class NoOpValidator<T> extends ValueValidator<T>
 {
-    public NoOpValidator()
-    {
-        this(new CustomGuardrailConfig());
-    }
+    private static final CustomGuardrailConfig config = new CustomGuardrailConfig();
 
-    public NoOpValidator(CustomGuardrailConfig config)
+    public NoOpValidator(CustomGuardrailConfig unused)
     {
-        super(config);
+        super(NoOpValidator.config);
     }
 
     @Override
-    public Optional<ValidationResult> shouldWarn(T value)
+    public Optional<ValidationViolation> shouldWarn(T value)
     {
         return Optional.empty();
     }
 
     @Override
-    public Optional<ValidationResult> shouldFail(T value)
+    public Optional<ValidationViolation> shouldFail(T value)
     {
         return Optional.empty();
+    }
+
+    @Nonnull
+    @Override
+    public CustomGuardrailConfig getParameters()
+    {
+        return config;
     }
 
     @Override

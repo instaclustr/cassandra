@@ -18,14 +18,12 @@
 
 package org.apache.cassandra.db.guardrails;
 
-import java.util.Collections;
 import java.util.HashMap;
 import javax.annotation.Nonnull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.cassandra.db.guardrails.generators.NoOpGenerator;
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.cassandra.utils.FBUtilities;
 
@@ -44,9 +42,9 @@ public abstract class ValueGenerator<VALUE>
 
     public static final String GENERATOR_CLASS_NAME_KEY = "generator_class_name";
 
-    private static final String DEFAULT_VALIDATOR_IMPLEMENTATION_PACKAGE = ValueGenerator.class.getPackage().getName() + ".generators.";
+    private static final String DEFAULT_VALIDATOR_IMPLEMENTATION_PACKAGE = ValueGenerator.class.getPackage().getName();
 
-    private final CustomGuardrailConfig config;
+    protected final CustomGuardrailConfig config;
 
     public ValueGenerator(CustomGuardrailConfig config)
     {
@@ -72,10 +70,7 @@ public abstract class ValueGenerator<VALUE>
      * @return parameters for this generator
      */
     @Nonnull
-    public CustomGuardrailConfig getParameters()
-    {
-        return new CustomGuardrailConfig(Collections.unmodifiableMap(config));
-    }
+    public abstract CustomGuardrailConfig getParameters();
 
     /**
      * Validates parameters for this generator.
@@ -109,7 +104,7 @@ public abstract class ValueGenerator<VALUE>
         }
 
         if (!className.contains("."))
-            className = DEFAULT_VALIDATOR_IMPLEMENTATION_PACKAGE + className;
+            className = DEFAULT_VALIDATOR_IMPLEMENTATION_PACKAGE + '.' + className;
 
         try
         {
@@ -127,7 +122,7 @@ public abstract class ValueGenerator<VALUE>
             else
                 message = ex.getMessage();
 
-            throw new IllegalStateException(format("Unable to create instance of generator of class %s: %s", className, message), ex);
+            throw new ConfigurationException(format("Unable to create instance of generator of class %s: %s", className, message), ex);
         }
     }
 }

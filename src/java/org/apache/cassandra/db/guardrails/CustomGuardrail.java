@@ -24,7 +24,8 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
-import org.apache.cassandra.db.guardrails.ValueValidator.ValidationResult;
+import org.apache.cassandra.db.guardrails.ValueValidator.ValidationViolation;
+import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.cassandra.service.ClientState;
 
 /**
@@ -80,8 +81,8 @@ public class CustomGuardrail<VALUE> extends Guardrail
     }
 
     /**
-     * @param value  value to validate by the validator of this guardrail
-     * @param state  client's state
+     * @param value value to validate by the validator of this guardrail
+     * @param state client's state
      */
     public void guard(VALUE value, ClientState state)
     {
@@ -90,7 +91,7 @@ public class CustomGuardrail<VALUE> extends Guardrail
 
         ValueValidator<VALUE> currentValidator = getValidator();
 
-        Optional<ValidationResult> validationResult = currentValidator.shouldFail(value);
+        Optional<ValidationViolation> validationResult = currentValidator.shouldFail(value);
 
         if (validationResult.isPresent())
             fail(validationResult.get().message,
@@ -135,11 +136,11 @@ public class CustomGuardrail<VALUE> extends Guardrail
      * <p>
      * New configuration is merged into the old one. Values for the keys in the old configuration
      * are replaced by the values of the same key in the new configuration.
-     *<p>
+     * <p>
      *
      * @param newConfig if null or the configuration is an empty map, no reconfiguration happens.
-     * @throws IllegalStateException when new validator can not replace the old one or when it is not possible
-     *                               to instantiate new validator or generator.
+     * @throws ConfigurationException when new validator can not replace the old one or when it is not possible
+     *                                to instantiate new validator or generator.
      */
     void reconfigure(@Nullable Map<String, Object> newConfig)
     {
