@@ -32,8 +32,9 @@ import java.util.Objects;
  * which can otherwise be influenced by the system property "java.rmi.server.hostname" in strange and
  * unpredictable ways.
  */
-public class RMIClientSocketFactoryImpl implements RMIClientSocketFactory, Serializable
+public class RMIClientSocketFactoryImpl implements RMIClientSocketFactory, Serializable, RMICloseableSocketFactory
 {
+    private static final long serialVersionUID = 955153017775496366L;
     List<Socket> sockets = new ArrayList<>();
     private final InetAddress localAddress;
 
@@ -50,6 +51,7 @@ public class RMIClientSocketFactoryImpl implements RMIClientSocketFactory, Seria
         return socket;
     }
 
+    @Override
     public void close() throws IOException
     {
         for (Socket socket: sockets)

@@ -29,13 +29,15 @@ import java.util.Objects;
 
 import javax.net.ServerSocketFactory;
 
+import org.apache.cassandra.utils.RMICloseableSocketFactory;
+
 
 /**
  * This class is used to keep track of RMI servers created during a cluster creation so we can
  * later close the sockets, which would otherwise be left with a thread running waiting for
  * connections that would never show up as the server was otherwise closed.
  */
-class CollectingRMIServerSocketFactoryImpl implements RMIServerSocketFactory
+class CollectingRMIServerSocketFactoryImpl implements RMIServerSocketFactory, RMICloseableSocketFactory
 {
     private final InetAddress bindAddress;
     List<ServerSocket> sockets = new ArrayList<>();
@@ -62,7 +64,7 @@ class CollectingRMIServerSocketFactoryImpl implements RMIServerSocketFactory
         return result;
     }
 
-
+    @Override
     public void close() throws IOException
     {
         for (ServerSocket socket : sockets)
