@@ -53,10 +53,11 @@ public final class SystemViewsKeyspace extends VirtualKeyspace
                     .add(CollectionVirtualTableAdapter.create(VIRTUAL_VIEWS,
                                                               COMPACTION_OPERATIONS_HISTORY,
                                                               "Compaction operations that are currently " +
-                                                              "running or have been completed since the node start",
+                                                              "running or have been completed since the node started",
                                                               new StorageOperationsWalker(),
                                                               CompactionManager.instance.getRunningOperations().entrySet(),
-                                                              StorageOperationsRow::new))
+                                                              StorageOperationsRow::new,
+                                                              m -> CompactionManager.instance.clearRunningOperations()))
                     .add(new InternodeOutboundTable(VIRTUAL_VIEWS))
                     .add(new InternodeInboundTable(VIRTUAL_VIEWS))
                     .add(new PendingHintsTable(VIRTUAL_VIEWS))

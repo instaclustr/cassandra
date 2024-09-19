@@ -27,11 +27,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -48,8 +50,6 @@ import javax.management.openmbean.TabularData;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ConcurrentHashMultiset;
@@ -132,7 +132,6 @@ import static java.util.Collections.singleton;
 import static org.apache.cassandra.concurrent.ExecutorFactory.Global.executorFactory;
 import static org.apache.cassandra.concurrent.FutureTask.callable;
 import static org.apache.cassandra.config.CassandraRelevantProperties.CASSANDRA_OPERATIONS_HISTORY_SIZE;
-import static org.apache.cassandra.config.CassandraRelevantProperties.CASSANDRA_OPERATIONS_HISTORY_TTL_SECONDS;
 import static org.apache.cassandra.config.DatabaseDescriptor.getConcurrentCompactors;
 import static org.apache.cassandra.db.compaction.CompactionManager.CompactionExecutor.compactionThreadGroup;
 import static org.apache.cassandra.service.ActiveRepairService.NO_PENDING_REPAIR;
@@ -183,12 +182,8 @@ public class CompactionManager implements CompactionManagerMBean, ICompactionMan
     final Multiset<ColumnFamilyStore> compactingCF = ConcurrentHashMultiset.create();
 
     public final ActiveCompactions active = new ActiveCompactions();
-    private final Cache<TimeUUID, OperationInfo> operations = CacheBuilder.newBuilder()
-                                                                         .expireAfterWrite(
-                                                                             CASSANDRA_OPERATIONS_HISTORY_TTL_SECONDS.getInt(),
-                                                                             TimeUnit.SECONDS)
-                                                                         .maximumSize(CASSANDRA_OPERATIONS_HISTORY_SIZE.getInt())
-                                                                         .build();
+    private final ConcurrentNavigableMap<TimeUUID, OperationInfo> operations =
+        new BoundedConcurrentSkipListMap(CASSANDRA_OPERATIONS_HISTORY_SIZE.getInt());
 
     // used to temporarily pause non-strategy managed compactions (like index summary redistribution)
     private final AtomicInteger globalCompactionPauseCount = new AtomicInteger(0);
@@ -2095,15 +2090,14 @@ public class CompactionManager implements CompactionManagerMBean, ICompactionMan
         return active.getCompactions().size();
     }
 
-    public ConcurrentMap<TimeUUID, OperationInfo> getRunningOperations()
+    public NavigableMap<TimeUUID, OperationInfo> getRunningOperations()
     {
-        return operations.asMap();
+        return Collections.unmodifiableNavigableMap(operations.descendingMap());
     }
 
-    @VisibleForTesting
     public void clearRunningOperations()
     {
-        operations.invalidateAll();
+        operations.clear();
     }
 
     public static boolean isCompactor(Thread thread)
@@ -2710,6 +2704,31 @@ public class CompactionManager implements CompactionManagerMBean, ICompactionMan
             {
                 return keyspace + '.' + table;
             }
+        }
+    }
+
+    private static class BoundedConcurrentSkipListMap extends ConcurrentSkipListMap<TimeUUID, OperationInfo>
+    {
+        private final int maxSize;
+
+        BoundedConcurrentSkipListMap(int maxSize)
+        {
+            if (maxSize <= 0)
+                throw new IllegalArgumentException("maxSize must be greater than 0");
+            this.maxSize = maxSize;
+        }
+
+        @Override
+        public OperationInfo put(TimeUUID key, OperationInfo value)
+        {
+            // Strict guarantees that the map will not grow beyond maxSize is not required.
+            if (size() >= maxSize)
+            {
+                TimeUUID firstKey = firstKey();
+                remove(firstKey);
+            }
+
+            return super.put(key, value);
         }
     }
 }
