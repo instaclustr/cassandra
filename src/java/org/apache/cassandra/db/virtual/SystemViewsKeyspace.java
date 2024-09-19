@@ -19,7 +19,10 @@ package org.apache.cassandra.db.virtual;
 
 import com.google.common.collect.ImmutableList;
 
+import org.apache.cassandra.db.compaction.CompactionManager;
+import org.apache.cassandra.db.virtual.model.StorageOperationsRow;
 import org.apache.cassandra.db.virtual.model.ThreadPoolRow;
+import org.apache.cassandra.db.virtual.walker.StorageOperationsWalker;
 import org.apache.cassandra.db.virtual.walker.ThreadPoolRowWalker;
 import org.apache.cassandra.index.sai.virtual.StorageAttachedIndexTables;
 
@@ -28,6 +31,8 @@ import static org.apache.cassandra.schema.SchemaConstants.VIRTUAL_VIEWS;
 
 public final class SystemViewsKeyspace extends VirtualKeyspace
 {
+    public static final String COMPACTION_OPERATIONS_HISTORY = "compaction_operations_history";
+
     public static SystemViewsKeyspace instance = new SystemViewsKeyspace();
 
     private SystemViewsKeyspace()
@@ -45,6 +50,13 @@ public final class SystemViewsKeyspace extends VirtualKeyspace
                                                               new ThreadPoolRowWalker(),
                                                               Metrics.allThreadPoolMetrics(),
                                                               ThreadPoolRow::new))
+                    .add(CollectionVirtualTableAdapter.create(VIRTUAL_VIEWS,
+                                                              COMPACTION_OPERATIONS_HISTORY,
+                                                              "Compaction operations that are currently " +
+                                                              "running or have been completed since the node start",
+                                                              new StorageOperationsWalker(),
+                                                              CompactionManager.instance.getRunningOperations().entrySet(),
+                                                              StorageOperationsRow::new))
                     .add(new InternodeOutboundTable(VIRTUAL_VIEWS))
                     .add(new InternodeInboundTable(VIRTUAL_VIEWS))
                     .add(new PendingHintsTable(VIRTUAL_VIEWS))

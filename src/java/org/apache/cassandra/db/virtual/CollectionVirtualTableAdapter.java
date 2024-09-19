@@ -60,6 +60,7 @@ import org.apache.cassandra.db.marshal.FloatType;
 import org.apache.cassandra.db.marshal.Int32Type;
 import org.apache.cassandra.db.marshal.LongType;
 import org.apache.cassandra.db.marshal.ShortType;
+import org.apache.cassandra.db.marshal.TimeUUIDType;
 import org.apache.cassandra.db.marshal.UTF8Type;
 import org.apache.cassandra.db.marshal.UUIDType;
 import org.apache.cassandra.db.partitions.AbstractUnfilteredPartitionIterator;
@@ -82,6 +83,7 @@ import org.apache.cassandra.schema.ColumnMetadata;
 import org.apache.cassandra.schema.TableMetadata;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.apache.cassandra.utils.Pair;
+import org.apache.cassandra.utils.TimeUUID;
 
 import static org.apache.cassandra.db.rows.Cell.NO_DELETION_TIME;
 import static org.apache.cassandra.utils.FBUtilities.camelToSnake;
@@ -120,6 +122,7 @@ public class CollectionVirtualTableAdapter<R> implements VirtualTable
                     .put(Short.class, ShortType.instance)
                     .put(Short.TYPE, ShortType.instance)
                     .put(UUID.class, UUIDType.instance)
+                    .put(TimeUUID.class, TimeUUIDType.instance)
                     .build();
 
     /**

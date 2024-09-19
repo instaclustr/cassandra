@@ -1743,7 +1743,7 @@ public class ColumnFamilyStore implements ColumnFamilyStoreMBean, Memtable.Owner
         return maxFile;
     }
 
-    public CompactionManager.AllSSTableOpStatus forceCleanup(int jobs) throws ExecutionException, InterruptedException
+    public CompactionManager.AllSSTableOpStatus forceCleanup(int jobs)
     {
         return CompactionManager.instance.performCleanup(ColumnFamilyStore.this, jobs);
     }

@@ -27,8 +27,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -44,6 +48,8 @@ import javax.management.openmbean.TabularData;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ConcurrentHashMultiset;
@@ -57,6 +63,7 @@ import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.codahale.metrics.Meter;
 import net.openhft.chronicle.core.util.ThrowingSupplier;
 import org.apache.cassandra.cache.AutoSavingCache;
@@ -108,6 +115,8 @@ import org.apache.cassandra.schema.TableMetadata;
 import org.apache.cassandra.service.ActiveRepairService;
 import org.apache.cassandra.service.StorageService;
 import org.apache.cassandra.streaming.PreviewKind;
+import org.apache.cassandra.tcm.ClusterMetadata;
+import org.apache.cassandra.tcm.ownership.DataPlacement;
 import org.apache.cassandra.utils.FBUtilities;
 import org.apache.cassandra.utils.JVMStabilityInspector;
 import org.apache.cassandra.utils.MBeanWrapper;
@@ -115,8 +124,6 @@ import org.apache.cassandra.utils.OutputHandler;
 import org.apache.cassandra.utils.Throwables;
 import org.apache.cassandra.utils.TimeUUID;
 import org.apache.cassandra.utils.WrappedRunnable;
-import org.apache.cassandra.tcm.ClusterMetadata;
-import org.apache.cassandra.tcm.ownership.DataPlacement;
 import org.apache.cassandra.utils.concurrent.Future;
 import org.apache.cassandra.utils.concurrent.ImmediateFuture;
 import org.apache.cassandra.utils.concurrent.Refs;
@@ -124,6 +131,8 @@ import org.apache.cassandra.utils.concurrent.Refs;
 import static java.util.Collections.singleton;
 import static org.apache.cassandra.concurrent.ExecutorFactory.Global.executorFactory;
 import static org.apache.cassandra.concurrent.FutureTask.callable;
+import static org.apache.cassandra.config.CassandraRelevantProperties.CASSANDRA_OPERATIONS_HISTORY_SIZE;
+import static org.apache.cassandra.config.CassandraRelevantProperties.CASSANDRA_OPERATIONS_HISTORY_TTL_SECONDS;
 import static org.apache.cassandra.config.DatabaseDescriptor.getConcurrentCompactors;
 import static org.apache.cassandra.db.compaction.CompactionManager.CompactionExecutor.compactionThreadGroup;
 import static org.apache.cassandra.service.ActiveRepairService.NO_PENDING_REPAIR;
@@ -174,6 +183,12 @@ public class CompactionManager implements CompactionManagerMBean, ICompactionMan
     final Multiset<ColumnFamilyStore> compactingCF = ConcurrentHashMultiset.create();
 
     public final ActiveCompactions active = new ActiveCompactions();
+    private final Cache<TimeUUID, OperationInfo> operations = CacheBuilder.newBuilder()
+                                                                         .expireAfterWrite(
+                                                                             CASSANDRA_OPERATIONS_HISTORY_TTL_SECONDS.getInt(),
+                                                                             TimeUnit.SECONDS)
+                                                                         .maximumSize(CASSANDRA_OPERATIONS_HISTORY_SIZE.getInt())
+                                                                         .build();
 
     // used to temporarily pause non-strategy managed compactions (like index summary redistribution)
     private final AtomicInteger globalCompactionPauseCount = new AtomicInteger(0);
@@ -627,7 +642,34 @@ public class CompactionManager implements CompactionManagerMBean, ICompactionMan
         }, jobs, OperationType.UPGRADE_SSTABLES);
     }
 
-    public AllSSTableOpStatus performCleanup(final ColumnFamilyStore cfStore, int jobs) throws InterruptedException, ExecutionException
+    private OperationInfo nextCachedOperationInfo(OperationType type)
+    {
+        OperationInfo info = new OperationInfo(type);
+        operations.put(info.operationId, info);
+        return info;
+    }
+
+    public AllSSTableOpStatus performCleanup(Iterable<ColumnFamilyStore> stores, int jobs)
+    {
+        OperationInfo info = nextCachedOperationInfo(OperationType.CLEANUP);
+        AllSSTableOpStatus result = AllSSTableOpStatus.SUCCESSFUL;
+        for (ColumnFamilyStore cfStore : stores)
+        {
+            info.markKeyspace(cfStore.getKeyspaceName());
+            AllSSTableOpStatus oneStatus = performCleanup(cfStore, jobs, info);
+            info.saveSStableProcessedStatus(cfStore.getKeyspaceName(), cfStore.getTableName(), oneStatus);
+            if (oneStatus != AllSSTableOpStatus.SUCCESSFUL)
+                result = oneStatus;
+        }
+        return info.operationResult = result;
+    }
+
+    public AllSSTableOpStatus performCleanup(final ColumnFamilyStore cfStore, int jobs)
+    {
+        return performCleanup(Collections.singleton(cfStore), jobs);
+    }
+
+    private AllSSTableOpStatus performCleanup(ColumnFamilyStore cfStore, int jobs, OperationInfo info)
     {
         assert !cfStore.isIndex();
         Keyspace keyspace = cfStore.keyspace;
@@ -695,6 +737,7 @@ public class CompactionManager implements CompactionManagerMBean, ICompactionMan
             {
                 CleanupStrategy cleanupStrategy = CleanupStrategy.get(cfStore, allRanges, transientRanges, txn.onlyOne().isRepaired(), FBUtilities.nowInSeconds());
                 doCleanupOne(cfStore, txn, cleanupStrategy, allRanges, hasIndexes);
+                info.markTableProcessed(cfStore.getKeyspaceName());
             }
         }, jobs, OperationType.CLEANUP);
     }
@@ -1203,8 +1246,13 @@ public class CompactionManager implements CompactionManagerMBean, ICompactionMan
     @Override
     public void forceUserDefinedCleanup(String dataFiles)
     {
+        forceUserDefinedCleanup(dataFiles, nextCachedOperationInfo(OperationType.CLEANUP));
+    }
+
+    private void forceUserDefinedCleanup(String dataFiles, OperationInfo info)
+    {
         String[] filenames = dataFiles.split(",");
-        HashMap<ColumnFamilyStore, Descriptor> descriptors = Maps.newHashMap();
+        HashMap<ColumnFamilyStore, List<Descriptor>> descriptors = Maps.newHashMap();
 
         for (String filename : filenames)
         {
@@ -1219,16 +1267,18 @@ public class CompactionManager implements CompactionManagerMBean, ICompactionMan
             ColumnFamilyStore cfs = Keyspace.open(desc.ksname).getColumnFamilyStore(desc.cfname);
             desc = cfs.getDirectories().find(new File(filename.trim()).name());
             if (desc != null)
-                descriptors.put(cfs, desc);
+                descriptors.computeIfAbsent(cfs, c -> new ArrayList<>()).add(desc);
         }
 
+        descriptors.keySet().forEach(cfs -> info.markKeyspace(cfs.getKeyspaceName()));
         if (!StorageService.instance.isJoined())
         {
             logger.error("Cleanup cannot run before a node has joined the ring");
+            info.operationResult = AllSSTableOpStatus.ABORTED;
             return;
         }
 
-        for (Map.Entry<ColumnFamilyStore,Descriptor> entry : descriptors.entrySet())
+        for (Map.Entry<ColumnFamilyStore, List<Descriptor>> entry : descriptors.entrySet())
         {
             ColumnFamilyStore cfs = entry.getKey();
             Keyspace keyspace = cfs.keyspace;
@@ -1236,27 +1286,41 @@ public class CompactionManager implements CompactionManagerMBean, ICompactionMan
             final Set<Range<Token>> allRanges = replicas.ranges();
             final Set<Range<Token>> transientRanges = replicas.onlyTransient().ranges();
             boolean hasIndexes = cfs.indexManager.hasIndexes();
-            SSTableReader sstable = lookupSSTable(cfs, entry.getValue());
+            List<SSTableReader> sstables = new ArrayList<>(entry.getValue().size());
+            for (Descriptor desc : entry.getValue())
+            {
+                SSTableReader sstable = lookupSSTable(cfs, desc);
+                if (sstable == null)
+                    continue;
+                sstables.add(sstable);
+            }
 
-            if (sstable == null)
+            if (sstables.isEmpty())
             {
                 logger.warn("Will not clean {}, it is not an active sstable", entry.getValue());
+                continue;
             }
-            else
+
+            for (SSTableReader sstable : sstables)
             {
-                CleanupStrategy cleanupStrategy = CleanupStrategy.get(cfs, allRanges, transientRanges, sstable.isRepaired(), FBUtilities.nowInSeconds());
+                CleanupStrategy cleanupStrategy = CleanupStrategy.get(cfs, allRanges, transientRanges,
+                                                                      sstable.isRepaired(),
+                                                                      FBUtilities.nowInSeconds());
                 try (LifecycleTransaction txn = cfs.getTracker().tryModify(sstable, OperationType.CLEANUP))
                 {
                     doCleanupOne(cfs, txn, cleanupStrategy, allRanges, hasIndexes);
+                    info.markTableProcessed(cfs.getKeyspaceName());
+                    info.saveSStableProcessedStatus(cfs.getKeyspaceName(), cfs.getTableName(), AllSSTableOpStatus.SUCCESSFUL);
                 }
                 catch (IOException e)
                 {
+                    info.saveSStableProcessedStatus(cfs.getKeyspaceName(), cfs.getTableName(), AllSSTableOpStatus.ABORTED);
                     logger.error("forceUserDefinedCleanup failed: {}", e.getLocalizedMessage());
                 }
             }
         }
+        info.operationResult = AllSSTableOpStatus.SUCCESSFUL;
     }
-
 
     public Future<?> submitUserDefined(final ColumnFamilyStore cfs, final Collection<Descriptor> dataFiles, final long gcBefore)
     {
@@ -2031,6 +2095,17 @@ public class CompactionManager implements CompactionManagerMBean, ICompactionMan
         return active.getCompactions().size();
     }
 
+    public ConcurrentMap<TimeUUID, OperationInfo> getRunningOperations()
+    {
+        return operations.asMap();
+    }
+
+    @VisibleForTesting
+    public void clearRunningOperations()
+    {
+        operations.invalidateAll();
+    }
+
     public static boolean isCompactor(Thread thread)
     {
         return thread.getThreadGroup().getParent() == compactionThreadGroup;
@@ -2536,5 +2611,105 @@ public class CompactionManager implements CompactionManagerMBean, ICompactionMan
     public interface CompactionPauser extends AutoCloseable
     {
         public void close();
+    }
+
+    public static class OperationInfo
+    {
+        /** The unique id for the operation. */
+        public final TimeUUID operationId = TimeUUID.Generator.nextTimeUUID();
+        /** The type of operation to be carried out. */
+        public final OperationType operationType;
+        /** The names of the keyspaces for which this operation is being performed. */
+        public final Set<String> keyspaceNames = new ConcurrentSkipListSet<>();
+        /** The keyspace and table names for which this operation is being performed and the status of operations. */
+        public final Map<CFInfo, AllSSTableOpStatus> sstableOperationStatusPerKeyspace = new ConcurrentHashMap<>();
+        /** The number of sstables that have been completed for each keyspace. */
+        public final Map<String, AtomicInteger> processedSSTablesPerKeyspace = new ConcurrentHashMap<>();
+        /** The final result of the operation. */
+        private volatile AllSSTableOpStatus operationResult;
+
+        private OperationInfo(OperationType operationType)
+        {
+            this.operationType = operationType;
+        }
+
+        private void markKeyspace(String keyspace)
+        {
+            keyspaceNames.add(keyspace);
+            processedSSTablesPerKeyspace.computeIfAbsent(keyspace, k -> new AtomicInteger());
+        }
+
+        private void saveSStableProcessedStatus(String keyspace, String table, AllSSTableOpStatus status)
+        {
+            sstableOperationStatusPerKeyspace.putIfAbsent(new CFInfo(keyspace, table), status);
+        }
+
+        private void markTableProcessed(String keyspace)
+        {
+            processedSSTablesPerKeyspace.computeIfAbsent(keyspace, k -> new AtomicInteger()).incrementAndGet();
+        }
+
+        public AllSSTableOpStatus operationResult()
+        {
+            return operationResult;
+        }
+
+        public Map<CFInfo, AllSSTableOpStatus> sstableOperationStatusPerKeyspace()
+        {
+            return sstableOperationStatusPerKeyspace;
+        }
+
+        public Map<String, AtomicInteger> processedSSTablesPerKeyspace()
+        {
+            return processedSSTablesPerKeyspace;
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            OperationInfo that = (OperationInfo) o;
+            return Objects.equals(operationId, that.operationId);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return Objects.hash(operationId);
+        }
+
+        public static class CFInfo
+        {
+            public final String keyspace;
+            public final String table;
+
+            public CFInfo(String keyspace, String table)
+            {
+                this.keyspace = keyspace;
+                this.table = table;
+            }
+
+            @Override
+            public boolean equals(Object o)
+            {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+                CFInfo cfInfo = (CFInfo) o;
+                return Objects.equals(keyspace, cfInfo.keyspace) && Objects.equals(table, cfInfo.table);
+            }
+
+            @Override
+            public int hashCode()
+            {
+                return Objects.hash(keyspace, table);
+            }
+
+            @Override
+            public String toString()
+            {
+                return keyspace + '.' + table;
+            }
+        }
     }
 }

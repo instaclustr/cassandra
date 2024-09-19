@@ -2578,16 +2578,11 @@ public class StorageService extends NotificationBroadcasterSupport implements IE
         if (isLocalSystemKeyspace(keyspaceName))
             throw new RuntimeException("Cleanup of the system keyspace is neither necessary nor wise");
 
-        CompactionManager.AllSSTableOpStatus status = CompactionManager.AllSSTableOpStatus.SUCCESSFUL;
         logger.info("Starting {} on {}.{}", OperationType.CLEANUP, keyspaceName, Arrays.toString(tableNames));
-        for (ColumnFamilyStore cfStore : getValidColumnFamilies(false, false, keyspaceName, tableNames))
-        {
-            CompactionManager.AllSSTableOpStatus oneStatus = cfStore.forceCleanup(jobs);
-            if (oneStatus != CompactionManager.AllSSTableOpStatus.SUCCESSFUL)
-                status = oneStatus;
-        }
-        logger.info("Completed {} with status {}", OperationType.CLEANUP, status);
-        return status.statusCode;
+        CompactionManager.AllSSTableOpStatus result = CompactionManager.instance.performCleanup(getValidColumnFamilies(
+            false, false, keyspaceName, tableNames), jobs);
+        logger.info("Completed {} with status {}", OperationType.CLEANUP, result);
+        return result.statusCode;
     }
 
     public int scrub(boolean disableSnapshot, boolean skipCorrupted, boolean checkData, boolean reinsertOverflowedTTL, int jobs, String keyspaceName, String... tableNames) throws IOException, ExecutionException, InterruptedException
