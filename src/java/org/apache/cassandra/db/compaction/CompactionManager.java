@@ -117,6 +117,7 @@ import org.apache.cassandra.service.StorageService;
 import org.apache.cassandra.streaming.PreviewKind;
 import org.apache.cassandra.tcm.ClusterMetadata;
 import org.apache.cassandra.tcm.ownership.DataPlacement;
+import org.apache.cassandra.utils.Clock;
 import org.apache.cassandra.utils.FBUtilities;
 import org.apache.cassandra.utils.JVMStabilityInspector;
 import org.apache.cassandra.utils.MBeanWrapper;
@@ -730,9 +731,45 @@ public class CompactionManager implements CompactionManagerMBean, ICompactionMan
             @Override
             public void execute(LifecycleTransaction txn) throws IOException
             {
-                CleanupStrategy cleanupStrategy = CleanupStrategy.get(cfStore, allRanges, transientRanges, txn.onlyOne().isRepaired(), FBUtilities.nowInSeconds());
-                doCleanupOne(cfStore, txn, cleanupStrategy, allRanges, hasIndexes);
-                info.markTableProcessed(cfStore.getKeyspaceName());
+                long start = Clock.Global.currentTimeMillis();
+                long startSeconds = TimeUnit.MILLISECONDS.toSeconds(start);
+
+                long bytesIn = txn.onlyOne().bytesOnDisk();
+
+                try
+                {
+                    CleanupStrategy cleanupStrategy = CleanupStrategy.get(cfStore, allRanges, transientRanges, txn.onlyOne().isRepaired(), startSeconds);
+                    doCleanupOne(cfStore, txn, cleanupStrategy, allRanges, hasIndexes);
+                    info.markTableProcessed(cfStore.getKeyspaceName());
+
+                    SystemKeyspace.updateCompactionHistory(info.operationId,
+                                                           cfStore.getKeyspaceName(),
+                                                           cfStore.getTableName(),
+                                                           start,
+                                                           bytesIn,
+                                                           txn.current().iterator().next().bytesOnDisk(),
+                                                           null,
+                                                           Map.of("compaction_type",
+                                                                  OperationType.CLEANUP.toString(),
+                                                                  "compaction_result",
+                                                                  AllSSTableOpStatus.SUCCESSFUL.toString()));
+                }
+                catch (IOException ex)
+                {
+                    SystemKeyspace.updateCompactionHistory(info.operationId,
+                                                           cfStore.getKeyspaceName(),
+                                                           cfStore.getTableName(),
+                                                           start,
+                                                           bytesIn,
+                                                           txn.current().iterator().next().bytesOnDisk(),
+                                                           null,
+                                                           Map.of("compaction_type",
+                                                                  OperationType.CLEANUP.toString(),
+                                                                  "compaction_result",
+                                                                  AllSSTableOpStatus.ABORTED.toString()));
+
+                    throw ex;
+                }
             }
         }, jobs, OperationType.CLEANUP);
     }
@@ -1298,6 +1335,8 @@ public class CompactionManager implements CompactionManagerMBean, ICompactionMan
 
             for (SSTableReader sstable : sstables)
             {
+                long start = Clock.Global.currentTimeMillis();
+
                 CleanupStrategy cleanupStrategy = CleanupStrategy.get(cfs, allRanges, transientRanges,
                                                                       sstable.isRepaired(),
                                                                       FBUtilities.nowInSeconds());
@@ -1306,10 +1345,35 @@ public class CompactionManager implements CompactionManagerMBean, ICompactionMan
                     doCleanupOne(cfs, txn, cleanupStrategy, allRanges, hasIndexes);
                     info.markTableProcessed(cfs.getKeyspaceName());
                     info.saveSStableProcessedStatus(cfs.getKeyspaceName(), cfs.getTableName(), AllSSTableOpStatus.SUCCESSFUL);
+
+                    SystemKeyspace.updateCompactionHistory(info.operationId,
+                                                           cfs.getKeyspaceName(),
+                                                           cfs.getTableName(),
+                                                           start,
+                                                           sstable.bytesOnDisk(),
+                                                           txn.current().iterator().next().bytesOnDisk(),
+                                                           null,
+                                                           Map.of("compaction_type",
+                                                                  OperationType.CLEANUP.toString(),
+                                                                  "compaction_result",
+                                                                  AllSSTableOpStatus.SUCCESSFUL.toString()));
                 }
                 catch (IOException e)
                 {
                     info.saveSStableProcessedStatus(cfs.getKeyspaceName(), cfs.getTableName(), AllSSTableOpStatus.ABORTED);
+
+                    SystemKeyspace.updateCompactionHistory(info.operationId,
+                                                           cfs.getKeyspaceName(),
+                                                           cfs.getTableName(),
+                                                           start,
+                                                           sstable.bytesOnDisk(),
+                                                           0,
+                                                           null,
+                                                           Map.of("compaction_type",
+                                                                  OperationType.CLEANUP.toString(),
+                                                                  "compaction_result",
+                                                                  AllSSTableOpStatus.ABORTED.toString()));
+
                     logger.error("forceUserDefinedCleanup failed: {}", e.getLocalizedMessage());
                 }
             }
