@@ -18,6 +18,8 @@
 
 package org.apache.cassandra.db.tries;
 
+import java.util.Locale;
+
 import org.junit.Test;
 
 import org.apache.cassandra.io.compress.BufferType;
@@ -30,7 +32,7 @@ public class TrieToMermaidTest
         InMemoryTrie<String> trie = new InMemoryTrie<>(BufferType.OFF_HEAP);
         // This was used as a basis the graphs in BTIFormat.md
         String s = "a allow an and any are as node of on the this to trie types with without";
-        s = s.toLowerCase();
+        s = s.toLowerCase(Locale.US);
         for (String word : s.split("[^a-z]+"))
             trie.putRecursive(InMemoryTrieTestBase.comparable(word), word, (x, y) -> y);
 
