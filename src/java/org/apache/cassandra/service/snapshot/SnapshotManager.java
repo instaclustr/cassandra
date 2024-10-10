@@ -469,6 +469,7 @@ public class SnapshotManager implements SnapshotManagerMBean, INotificationConsu
         };
     }
 
+    // TODO - this is used just by tests now, replace it in test by snapshotBuilder method and remove this one
     public TakeSnapshotTask.Builder takeSnapshot(String tag, String... entities)
     {
         return new TakeSnapshotTask.Builder(tag, entities);
@@ -612,7 +613,7 @@ public class SnapshotManager implements SnapshotManagerMBean, INotificationConsu
             if (!truncationNotification.disableSnapshot && cfs.isAutoSnapshotEnabled())
             {
                 String tag = getTimestampedSnapshotNameWithPrefix(cfs.name, TableSnapshot.SNAPSHOT_TRUNCATE_PREFIX);
-                SnapshotManager.instance.takeSnapshot(tag, cfs.getKeyspaceTableName())
+                SnapshotManager.instance.snapshotBuilder(tag, cfs.getKeyspaceTableName())
                                         .ttl(truncationNotification.ttl)
                                         .creationTime(creationTime)
                                         .takeSnapshot();
