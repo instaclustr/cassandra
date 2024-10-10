@@ -602,6 +602,8 @@ public class SnapshotManager implements SnapshotManagerMBean, INotificationConsu
     @Override
     public void handleNotification(INotification notification, Object sender)
     {
+        Instant creationTime = now();
+
         if (notification instanceof TruncationNotification)
         {
             TruncationNotification truncationNotification = (TruncationNotification) notification;
@@ -612,6 +614,7 @@ public class SnapshotManager implements SnapshotManagerMBean, INotificationConsu
                 String tag = getTimestampedSnapshotNameWithPrefix(cfs.name, TableSnapshot.SNAPSHOT_TRUNCATE_PREFIX);
                 SnapshotManager.instance.takeSnapshot(tag, cfs.getKeyspaceTableName())
                                         .ttl(truncationNotification.ttl)
+                                        .creationTime(creationTime)
                                         .takeSnapshot();
             }
         }
@@ -626,18 +629,18 @@ public class SnapshotManager implements SnapshotManagerMBean, INotificationConsu
                 SnapshotManager.instance.snapshotBuilder(tag, cfs.getKeyspaceTableName())
                                         .cfs(cfs)
                                         .ttl(tableDroppedNotification.ttl)
+                                        .creationTime(creationTime)
                                         .takeSnapshot();
             }
         }
         else if (notification instanceof TablePreScrubNotification)
         {
             TablePreScrubNotification tablePreScrubNotification = (TablePreScrubNotification) notification;
+            ColumnFamilyStore cfs = tablePreScrubNotification.cfs;
 
-            String tableName = tablePreScrubNotification.cfs.getKeyspaceTableName();
-            Instant creationTime = now();
-            String snapshotName = "pre-scrub-" + creationTime.toEpochMilli();
+            String snapshotName = TableSnapshot.SNAPHOT_PRE_SCRUB_PREFIX + '-' + creationTime.toEpochMilli();
 
-            SnapshotManager.instance.snapshotBuilder(snapshotName, tableName)
+            SnapshotManager.instance.snapshotBuilder(snapshotName, cfs.getKeyspaceTableName())
                                     .skipFlush()
                                     .creationTime(creationTime)
                                     .takeSnapshot();

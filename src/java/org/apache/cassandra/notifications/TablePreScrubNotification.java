@@ -20,7 +20,7 @@ package org.apache.cassandra.notifications;
 
 import org.apache.cassandra.db.ColumnFamilyStore;
 
-public class TablePreScrubNotification
+public class TablePreScrubNotification implements INotification
 {
     public final ColumnFamilyStore cfs;
 

@@ -1835,7 +1835,7 @@ public final class SystemKeyspace
                     entities.add(keyspace + '.' + cfs.name);
             }
 
-            SnapshotManager.instance.takeSnapshot(snapshotName, Map.of(), entities.toArray(new String[0]));
+            SnapshotManager.instance.snapshotBuilder(snapshotName, entities.toArray(new String[0])).takeSnapshot();
         }
     }
 

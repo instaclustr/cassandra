@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -176,7 +175,6 @@ import static org.apache.cassandra.config.DatabaseDescriptor.getFlushWriters;
 import static org.apache.cassandra.db.commitlog.CommitLogPosition.NONE;
 import static org.apache.cassandra.utils.Clock.Global.currentTimeMillis;
 import static org.apache.cassandra.utils.Clock.Global.nanoTime;
-import static org.apache.cassandra.utils.FBUtilities.now;
 import static org.apache.cassandra.utils.Throwables.maybeFail;
 import static org.apache.cassandra.utils.Throwables.merge;
 import static org.apache.cassandra.utils.concurrent.CountDownLatch.newCountDownLatch;
@@ -1749,15 +1747,7 @@ public class ColumnFamilyStore implements ColumnFamilyStoreMBean, Memtable.Owner
     {
         // skip snapshot creation during scrub, SEE JIRA 5891
         if (!disableSnapshot)
-        {
-            Instant creationTime = now();
-            String snapshotName = "pre-scrub-" + creationTime.toEpochMilli();
-
-            SnapshotManager.instance.snapshotBuilder(snapshotName, getKeyspaceTableName())
-                                    .skipFlush()
-                                    .creationTime(creationTime)
-                                    .takeSnapshot();
-        }
+            data.notifyPreScrubbed();
 
         try
         {

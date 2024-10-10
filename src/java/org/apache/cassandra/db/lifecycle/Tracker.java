@@ -58,6 +58,7 @@ import org.apache.cassandra.notifications.SSTableListChangedNotification;
 import org.apache.cassandra.notifications.SSTableMetadataChanged;
 import org.apache.cassandra.notifications.SSTableRepairStatusChanged;
 import org.apache.cassandra.notifications.TableDroppedNotification;
+import org.apache.cassandra.notifications.TablePreScrubNotification;
 import org.apache.cassandra.notifications.TruncationNotification;
 import org.apache.cassandra.utils.Pair;
 import org.apache.cassandra.utils.Throwables;
@@ -542,6 +543,11 @@ public class Tracker
     public void notifyDropped(DurationSpec.IntSecondsBound ttl)
     {
         notify(new TableDroppedNotification(cfstore, ttl));
+    }
+
+    public void notifyPreScrubbed()
+    {
+        notify(new TablePreScrubNotification(cfstore));
     }
 
     public void notifyRenewed(Memtable renewed)

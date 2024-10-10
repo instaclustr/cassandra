@@ -63,6 +63,7 @@ public class TableSnapshot
 
     public static final String SNAPSHOT_TRUNCATE_PREFIX = "truncated";
     public static final String SNAPSHOT_DROP_PREFIX = "dropped";
+    public static final String SNAPHOT_PRE_SCRUB_PREFIX = "pre-scrub";
 
     private final String keyspaceName;
     private final String tableName;
