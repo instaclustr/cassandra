@@ -42,6 +42,6 @@ public class SnapshotTest extends CQLTester
             File toc = sstable.descriptor.fileFor(Components.TOC);
             Files.write(toc.toPath(), new byte[0], StandardOpenOption.TRUNCATE_EXISTING);
         }
-        SnapshotManager.instance.takeSnapshot("hello", getCurrentColumnFamilyStore().getKeyspaceTableName());
+        SnapshotManager.instance.snapshotBuilder("hello", getCurrentColumnFamilyStore().getKeyspaceTableName()).takeSnapshot();
     }
 }

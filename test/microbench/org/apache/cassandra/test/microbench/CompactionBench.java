@@ -79,7 +79,7 @@ public class CompactionBench extends CQLTester
 
         cfs.forceBlockingFlush(ColumnFamilyStore.FlushReason.USER_FORCED);
 
-        SnapshotManager.instance.takeSnapshot("originals", cfs.getKeyspaceTableName());
+        SnapshotManager.instance.snapshotBuilder("originals", cfs.getKeyspaceTableName()).takeSnapshot();
 
         snapshotFiles = cfs.getDirectories().sstableLister(Directories.OnTxnErr.IGNORE).snapshots("originals").listFiles();
     }
