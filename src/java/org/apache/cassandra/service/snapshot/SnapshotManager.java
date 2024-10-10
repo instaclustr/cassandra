@@ -487,11 +487,6 @@ public class SnapshotManager implements SnapshotManagerMBean, INotificationConsu
         return new TakeSnapshotTask.Builder(tag, entities);
     }
 
-    public TableSnapshot takeSnapshot(String snapshotName, String keyspace, String table)
-    {
-        return snapshotBuilder(snapshotName, keyspace + '.' + table).takeSnapshot().get(0);
-    }
-
     // MBean methods
 
     @Override

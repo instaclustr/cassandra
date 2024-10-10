@@ -48,7 +48,7 @@ public class SnapshotVerbHandler implements IVerbHandler<SnapshotCommand>
         {
             try
             {
-                SnapshotManager.instance.takeSnapshot(command.snapshot_name, command.keyspace, command.column_family);
+                SnapshotManager.instance.snapshotBuilder(command.snapshot_name, command.keyspace + '.' + command.column_family).takeSnapshot();
             }
             catch (Exception ex)
             {
