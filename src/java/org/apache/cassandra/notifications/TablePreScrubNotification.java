@@ -15,30 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.cassandra.notifications;
 
-import org.apache.cassandra.config.DurationSpec;
 import org.apache.cassandra.db.ColumnFamilyStore;
 
-/**
- * Fired during truncate, after the memtable has been flushed but before any
- * snapshot is taken and SSTables are discarded
- */
-public class TruncationNotification implements INotification
+public class TablePreScrubNotification
 {
     public final ColumnFamilyStore cfs;
-    public final boolean disableSnapshot;
-    public final long truncatedAt;
-    public final DurationSpec.IntSecondsBound ttl;
 
-    public TruncationNotification(ColumnFamilyStore cfs,
-                                  boolean disableSnapshot,
-                                  long truncatedAt,
-                                  DurationSpec.IntSecondsBound ttl)
+    public TablePreScrubNotification(ColumnFamilyStore cfs)
     {
         this.cfs = cfs;
-        this.disableSnapshot = disableSnapshot;
-        this.truncatedAt = truncatedAt;
-        this.ttl = ttl;
     }
 }

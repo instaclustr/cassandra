@@ -25,16 +25,16 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.apache.cassandra.config.CassandraRelevantProperties;
-import org.apache.cassandra.db.ColumnFamilyStore;
 import org.apache.cassandra.distributed.Cluster;
 import org.apache.cassandra.distributed.api.ConsistencyLevel;
 import org.apache.cassandra.distributed.api.Feature;
 import org.apache.cassandra.distributed.api.IInvokableInstance;
 import org.apache.cassandra.distributed.shared.WithProperties;
+import org.apache.cassandra.service.snapshot.TableSnapshot;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.cassandra.db.ColumnFamilyStore.SNAPSHOT_DROP_PREFIX;
-import static org.apache.cassandra.db.ColumnFamilyStore.SNAPSHOT_TRUNCATE_PREFIX;
+import static org.apache.cassandra.service.snapshot.TableSnapshot.SNAPSHOT_DROP_PREFIX;
+import static org.apache.cassandra.service.snapshot.TableSnapshot.SNAPSHOT_TRUNCATE_PREFIX;
 import static org.apache.cassandra.distributed.Cluster.build;
 import static org.apache.cassandra.distributed.shared.ClusterUtils.stopUnchecked;
 import static org.awaitility.Awaitility.await;
@@ -183,8 +183,8 @@ public class AutoSnapshotTtlTest extends TestBaseImpl
 
             // Check snapshot are *NOT* expired after 10s
             Thread.sleep(2 * FIVE_SECONDS * 1000L);
-            instance.nodetoolResult("listsnapshots").asserts().success().stdoutContains(ColumnFamilyStore.SNAPSHOT_TRUNCATE_PREFIX);
-            instance.nodetoolResult("listsnapshots").asserts().success().stdoutContains(ColumnFamilyStore.SNAPSHOT_DROP_PREFIX);
+            instance.nodetoolResult("listsnapshots").asserts().success().stdoutContains(TableSnapshot.SNAPSHOT_TRUNCATE_PREFIX);
+            instance.nodetoolResult("listsnapshots").asserts().success().stdoutContains(TableSnapshot.SNAPSHOT_DROP_PREFIX);
         }
     }
 

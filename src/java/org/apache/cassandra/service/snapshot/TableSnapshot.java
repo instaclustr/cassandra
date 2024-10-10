@@ -61,6 +61,9 @@ public class TableSnapshot
 {
     private static final Logger logger = LoggerFactory.getLogger(TableSnapshot.class);
 
+    public static final String SNAPSHOT_TRUNCATE_PREFIX = "truncated";
+    public static final String SNAPSHOT_DROP_PREFIX = "dropped";
+
     private final String keyspaceName;
     private final String tableName;
     private final String keyspaceTable;

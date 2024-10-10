@@ -47,6 +47,11 @@ import org.apache.cassandra.db.ColumnFamilyStore;
 import org.apache.cassandra.db.Keyspace;
 import org.apache.cassandra.io.util.File;
 import org.apache.cassandra.io.util.FileUtils;
+import org.apache.cassandra.notifications.INotification;
+import org.apache.cassandra.notifications.INotificationConsumer;
+import org.apache.cassandra.notifications.TableDroppedNotification;
+import org.apache.cassandra.notifications.TablePreScrubNotification;
+import org.apache.cassandra.notifications.TruncationNotification;
 import org.apache.cassandra.utils.Clock;
 import org.apache.cassandra.utils.ExecutorUtils;
 import org.apache.cassandra.utils.FBUtilities;
@@ -56,8 +61,10 @@ import static java.util.Comparator.comparing;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.cassandra.concurrent.ExecutorFactory.Global.executorFactory;
 import static org.apache.cassandra.schema.SchemaConstants.isLocalSystemKeyspace;
+import static org.apache.cassandra.service.snapshot.TableSnapshot.getTimestampedSnapshotNameWithPrefix;
+import static org.apache.cassandra.utils.FBUtilities.now;
 
-public class SnapshotManager implements SnapshotManagerMBean, AutoCloseable
+public class SnapshotManager implements SnapshotManagerMBean, INotificationConsumer, AutoCloseable
 {
     private static final Logger logger = LoggerFactory.getLogger(SnapshotManager.class);
 
@@ -462,21 +469,26 @@ public class SnapshotManager implements SnapshotManagerMBean, AutoCloseable
         };
     }
 
-    public List<TableSnapshot> takeSnapshot(TakeSnapshotTask takeSnapshotTask)
+    public TakeSnapshotTask.Builder takeSnapshot(String tag, String... entities)
+    {
+        return new TakeSnapshotTask.Builder(tag, entities);
+    }
+
+    List<TableSnapshot> takeSnapshot(TakeSnapshotTask takeSnapshotTask)
     {
         List<TableSnapshot> snapshots = takeSnapshotTask.call();
         addSnapshots(snapshots);
         return snapshots;
     }
 
-    public TableSnapshot takeSnapshot(String snapshotName, String keyspaceTable)
+    public TakeSnapshotTask.Builder snapshotBuilder(String tag, String... entities)
     {
-        return takeSnapshot(new TakeSnapshotTask.Builder(snapshotName, keyspaceTable).build()).get(0);
+        return new TakeSnapshotTask.Builder(tag, entities);
     }
 
     public TableSnapshot takeSnapshot(String snapshotName, String keyspace, String table)
     {
-        return takeSnapshot(new TakeSnapshotTask.Builder(snapshotName, keyspace + '.' + table).build()).get(0);
+        return snapshotBuilder(snapshotName, keyspace + '.' + table).takeSnapshot().get(0);
     }
 
     // MBean methods
@@ -484,11 +496,11 @@ public class SnapshotManager implements SnapshotManagerMBean, AutoCloseable
     @Override
     public void takeSnapshot(String tag, Map<String, String> options, String... entities)
     {
-        TakeSnapshotTask.Builder builder = new TakeSnapshotTask.Builder(tag, entities).ttl(options.get(TakeSnapshotTask.TTL));
+        TakeSnapshotTask.Builder builder = snapshotBuilder(tag, entities).ttl(options.get(TakeSnapshotTask.TTL));
         if (Boolean.parseBoolean(options.getOrDefault(TakeSnapshotTask.SKIP_FLUSH, Boolean.FALSE.toString())))
             builder.skipFlush();
 
-        takeSnapshot(builder.build());
+        builder.takeSnapshot();
     }
 
     @Override
@@ -584,6 +596,51 @@ public class SnapshotManager implements SnapshotManagerMBean, AutoCloseable
                     return; // ignore
                 throw ex;
             }
+        }
+    }
+
+    @Override
+    public void handleNotification(INotification notification, Object sender)
+    {
+        if (notification instanceof TruncationNotification)
+        {
+            TruncationNotification truncationNotification = (TruncationNotification) notification;
+            ColumnFamilyStore cfs = truncationNotification.cfs;
+
+            if (!truncationNotification.disableSnapshot && cfs.isAutoSnapshotEnabled())
+            {
+                String tag = getTimestampedSnapshotNameWithPrefix(cfs.name, TableSnapshot.SNAPSHOT_TRUNCATE_PREFIX);
+                SnapshotManager.instance.takeSnapshot(tag, cfs.getKeyspaceTableName())
+                                        .ttl(truncationNotification.ttl)
+                                        .takeSnapshot();
+            }
+        }
+        else if (notification instanceof TableDroppedNotification)
+        {
+            TableDroppedNotification tableDroppedNotification = (TableDroppedNotification) notification;
+            ColumnFamilyStore cfs = tableDroppedNotification.cfs;
+
+            if (cfs.isAutoSnapshotEnabled())
+            {
+                String tag = getTimestampedSnapshotNameWithPrefix(cfs.name, TableSnapshot.SNAPSHOT_DROP_PREFIX);
+                SnapshotManager.instance.snapshotBuilder(tag, cfs.getKeyspaceTableName())
+                                        .cfs(cfs)
+                                        .ttl(tableDroppedNotification.ttl)
+                                        .takeSnapshot();
+            }
+        }
+        else if (notification instanceof TablePreScrubNotification)
+        {
+            TablePreScrubNotification tablePreScrubNotification = (TablePreScrubNotification) notification;
+
+            String tableName = tablePreScrubNotification.cfs.getKeyspaceTableName();
+            Instant creationTime = now();
+            String snapshotName = "pre-scrub-" + creationTime.toEpochMilli();
+
+            SnapshotManager.instance.snapshotBuilder(snapshotName, tableName)
+                                    .skipFlush()
+                                    .creationTime(creationTime)
+                                    .takeSnapshot();
         }
     }
 }

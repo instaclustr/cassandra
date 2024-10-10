@@ -108,6 +108,11 @@ public class TakeSnapshotTask implements Callable<List<TableSnapshot>>
         private String[] entities;
         private ColumnFamilyStore cfs;
 
+        public List<TableSnapshot> takeSnapshot()
+        {
+            return SnapshotManager.instance.takeSnapshot(build());
+        }
+
         public Builder(String tag, String... entities)
         {
             this.tag = tag;
