@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.cassandra.db;
+package org.apache.cassandra.service.snapshot;
 
 import java.util.Set;
 import javax.management.openmbean.CompositeDataSupport;
@@ -27,11 +27,9 @@ import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
 
 import org.apache.cassandra.io.util.FileUtils;
-import org.apache.cassandra.service.snapshot.TableSnapshot;
 
 public class SnapshotDetailsTabularData
 {
-
     private static final String[] ITEM_NAMES = new String[]{"Snapshot name",
             "Keyspace name",
             "Column family name",

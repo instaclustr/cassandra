@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -151,8 +150,6 @@ import org.apache.cassandra.service.paxos.Ballot;
 import org.apache.cassandra.service.paxos.PaxosRepairHistory;
 import org.apache.cassandra.service.paxos.TablePaxosRepairHistory;
 import org.apache.cassandra.service.snapshot.SnapshotManager;
-import org.apache.cassandra.service.snapshot.TakeSnapshotTask;
-import org.apache.cassandra.service.snapshot.TakeSnapshotTask.Builder;
 import org.apache.cassandra.streaming.TableStreamManager;
 import org.apache.cassandra.tcm.ClusterMetadata;
 import org.apache.cassandra.tcm.Epoch;
@@ -176,10 +173,8 @@ import org.apache.cassandra.utils.concurrent.UncheckedInterruptedException;
 import static org.apache.cassandra.concurrent.ExecutorFactory.Global.executorFactory;
 import static org.apache.cassandra.config.DatabaseDescriptor.getFlushWriters;
 import static org.apache.cassandra.db.commitlog.CommitLogPosition.NONE;
-import static org.apache.cassandra.service.snapshot.TableSnapshot.getTimestampedSnapshotNameWithPrefix;
 import static org.apache.cassandra.utils.Clock.Global.currentTimeMillis;
 import static org.apache.cassandra.utils.Clock.Global.nanoTime;
-import static org.apache.cassandra.utils.FBUtilities.now;
 import static org.apache.cassandra.utils.Throwables.maybeFail;
 import static org.apache.cassandra.utils.Throwables.merge;
 import static org.apache.cassandra.utils.concurrent.CountDownLatch.newCountDownLatch;
@@ -254,8 +249,6 @@ public class ColumnFamilyStore implements ColumnFamilyStoreMBean, Memtable.Owner
 
     private static final String SAMPLING_RESULTS_NAME = "SAMPLING_RESULTS";
 
-    public static final String SNAPSHOT_TRUNCATE_PREFIX = "truncated";
-    public static final String SNAPSHOT_DROP_PREFIX = "dropped";
     static final String TOKEN_DELIMITER = ":";
 
     /** Special values used when the local ranges are not changed with ring changes (e.g. local tables). */
@@ -511,6 +504,7 @@ public class ColumnFamilyStore implements ColumnFamilyStoreMBean, Memtable.Owner
         // Note that this needs to happen before we load the first sstables, or the global sstable tracker will not
         // be notified on the initial loading.
         data.subscribe(StorageService.instance.sstablesTracker);
+        data.subscribe(SnapshotManager.instance);
 
         Collection<SSTableReader> sstables = null;
         // scan for sstables corresponding to this cf and load them
@@ -1753,16 +1747,8 @@ public class ColumnFamilyStore implements ColumnFamilyStoreMBean, Memtable.Owner
     public CompactionManager.AllSSTableOpStatus scrub(boolean disableSnapshot, boolean alwaysFail, IScrubber.Options options, int jobs) throws ExecutionException, InterruptedException
     {
         // skip snapshot creation during scrub, SEE JIRA 5891
-        if(!disableSnapshot)
-        {
-            Instant creationTime = now();
-            String snapshotName = "pre-scrub-" + creationTime.toEpochMilli();
-
-            SnapshotManager.instance.takeSnapshot(new Builder(snapshotName, getKeyspaceTableName())
-                                                  .skipFlush()
-                                                  .creationTime(creationTime)
-                                                  .build());
-        }
+        if (!disableSnapshot)
+            data.notifyPreScrubbed();
 
         try
         {
@@ -2515,19 +2501,12 @@ public class ColumnFamilyStore implements ColumnFamilyStoreMBean, Memtable.Owner
                 // stream in data that is actually supposed to have been deleted
                 ActiveRepairService.instance().abort((prs) -> prs.getTableIds().contains(metadata.id),
                                                    "Stopping parent sessions {} due to truncation of tableId="+metadata.id);
-                data.notifyTruncated(truncatedAt);
+                data.notifyTruncated(noSnapshot, truncatedAt, DatabaseDescriptor.getAutoSnapshotTtl());
 
-            if (!noSnapshot && isAutoSnapshotEnabled())
-            {
-                String tag = getTimestampedSnapshotNameWithPrefix(name, SNAPSHOT_TRUNCATE_PREFIX);
-                TakeSnapshotTask task = new Builder(tag, getKeyspaceTableName()).ttl(DatabaseDescriptor.getAutoSnapshotTtl()).build();
-                SnapshotManager.instance.takeSnapshot(task);
-            }
+                discardSSTables(truncatedAt);
 
-            discardSSTables(truncatedAt);
-
-            indexManager.truncateAllIndexesBlocking(truncatedAt);
-            viewManager.truncateBlocking(replayAfter, truncatedAt);
+                indexManager.truncateAllIndexesBlocking(truncatedAt);
+                viewManager.truncateBlocking(replayAfter, truncatedAt);
 
                 SystemKeyspace.saveTruncationRecord(ColumnFamilyStore.this, truncatedAt, replayAfter);
                 logger.trace("cleaning out row cache");
@@ -3184,15 +3163,7 @@ public class ColumnFamilyStore implements ColumnFamilyStoreMBean, Memtable.Owner
 
         CompactionManager.instance.interruptCompactionForCFs(concatWithIndexes(), (sstable) -> true, true);
 
-        if (isAutoSnapshotEnabled())
-        {
-            String tag = getTimestampedSnapshotNameWithPrefix(name, ColumnFamilyStore.SNAPSHOT_DROP_PREFIX);
-            TakeSnapshotTask task = new Builder(tag, getKeyspaceTableName())
-                                    .cfs(this)
-                                    .ttl(DatabaseDescriptor.getAutoSnapshotTtl())
-                                    .build();
-            SnapshotManager.instance.takeSnapshot(task);
-        }
+        data.notifyDropped(DatabaseDescriptor.getAutoSnapshotTtl());
 
         CommitLog.instance.forceRecycleAllSegments(Collections.singleton(metadata.id));
 

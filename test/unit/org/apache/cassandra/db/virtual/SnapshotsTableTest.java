@@ -33,7 +33,6 @@ import org.apache.cassandra.cql3.CQLTester;
 import org.apache.cassandra.cql3.UntypedResultSet;
 import org.apache.cassandra.service.StorageService;
 import org.apache.cassandra.service.snapshot.SnapshotManager;
-import org.apache.cassandra.service.snapshot.TakeSnapshotTask;
 import org.apache.cassandra.utils.Clock;
 
 public class SnapshotsTableTest extends CQLTester
@@ -73,8 +72,8 @@ public class SnapshotsTableTest extends CQLTester
         Date createdAt = new Date(now.toEpochMilli());
         Date expiresAt = new Date(now.plusSeconds(ttl.toSeconds()).toEpochMilli());
 
-        SnapshotManager.instance.takeSnapshot(new TakeSnapshotTask.Builder(SNAPSHOT_NO_TTL, getCurrentColumnFamilyStore(KEYSPACE).getKeyspaceTableName()).creationTime(now).build());
-        SnapshotManager.instance.takeSnapshot(new TakeSnapshotTask.Builder(SNAPSHOT_TTL, getCurrentColumnFamilyStore(KEYSPACE).getKeyspaceTableName()).ttl(ttl).creationTime(now).build());
+        SnapshotManager.instance.snapshotBuilder(SNAPSHOT_NO_TTL, getCurrentColumnFamilyStore(KEYSPACE).getKeyspaceTableName()).creationTime(now).takeSnapshot();
+        SnapshotManager.instance.snapshotBuilder(SNAPSHOT_TTL, getCurrentColumnFamilyStore(KEYSPACE).getKeyspaceTableName()).ttl(ttl).creationTime(now).takeSnapshot();
 
         // query all from snapshots virtual table
         UntypedResultSet result = execute("SELECT name, keyspace_name, table_name, created_at, expires_at, ephemeral FROM vts.snapshots");
