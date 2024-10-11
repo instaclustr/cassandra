@@ -300,7 +300,7 @@ public class CassandraDaemon
         {
             SystemKeyspace.snapshotOnVersionChange();
         }
-        catch (IOException e)
+        catch (Throwable e)
         {
             exitOrFail(StartupException.ERR_WRONG_DISK_STATE, e.getMessage(), e.getCause());
         }

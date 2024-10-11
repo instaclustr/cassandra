@@ -469,12 +469,6 @@ public class SnapshotManager implements SnapshotManagerMBean, INotificationConsu
         };
     }
 
-    // TODO - this is used just by tests now, replace it in test by snapshotBuilder method and remove this one
-    public TakeSnapshotTask.Builder takeSnapshot(String tag, String... entities)
-    {
-        return new TakeSnapshotTask.Builder(tag, entities);
-    }
-
     List<TableSnapshot> takeSnapshot(TakeSnapshotTask takeSnapshotTask)
     {
         List<TableSnapshot> snapshots = takeSnapshotTask.call();

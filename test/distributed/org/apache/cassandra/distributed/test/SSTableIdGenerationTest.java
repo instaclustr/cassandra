@@ -412,7 +412,8 @@ public class SSTableIdGenerationTest extends TestBaseImpl
             if (cfs == null)
                 return Set.of();
 
-            TableSnapshot tableSnapshot = SnapshotManager.instance.takeSnapshot(SNAPSHOT_TAG, cfs.getKeyspaceTableName());
+            TableSnapshot tableSnapshot = SnapshotManager.instance.snapshotBuilder(SNAPSHOT_TAG, cfs.getKeyspaceTableName())
+                                                                  .takeSnapshot().get(0);
 
             Set<String> dirs = new HashSet<>();
             for (File dir : tableSnapshot.getDirectories())

@@ -396,7 +396,7 @@ public class SchemaCQLHelperTest extends CQLTester
             execute("INSERT INTO %s (pk1, pk2, ck1, ck2, reg1, reg2) VALUES (?, ?, ?, ?, ?, ?)", i, i + 1, i + 2, i + 3, null, i + 5);
 
         ColumnFamilyStore cfs = Keyspace.open(keyspace()).getColumnFamilyStore(tableName);
-        SnapshotManager.instance.takeSnapshot(SNAPSHOT, cfs.getKeyspaceTableName());
+        SnapshotManager.instance.snapshotBuilder(SNAPSHOT, cfs.getKeyspaceTableName()).takeSnapshot();
 
         String schema = Files.toString(cfs.getDirectories().getSnapshotSchemaFile(SNAPSHOT).toJavaIOFile(), Charset.defaultCharset());
         assertThat(schema,
@@ -473,7 +473,7 @@ public class SchemaCQLHelperTest extends CQLTester
             execute("INSERT INTO %s (pk1, pk2, ck1, ck2, reg1) VALUES (?, ?, ?, ?, ?)", i, i + 1, i + 2, i + 3, null);
 
         ColumnFamilyStore cfs = Keyspace.open(keyspace()).getColumnFamilyStore(tableName);
-        SnapshotManager.instance.takeSnapshot(SNAPSHOT, cfs.getKeyspaceTableName());
+        SnapshotManager.instance.snapshotBuilder(SNAPSHOT, cfs.getKeyspaceTableName()).takeSnapshot();
 
         String schema = Files.toString(cfs.getDirectories().getSnapshotSchemaFile(SNAPSHOT).toJavaIOFile(), Charset.defaultCharset());
         schema = schema.substring(schema.indexOf("CREATE TABLE")); // trim to ensure order
@@ -516,7 +516,7 @@ public class SchemaCQLHelperTest extends CQLTester
             execute("INSERT INTO %s (pk1, reg1) VALUES (?, ?)", i, i + 1);
 
         ColumnFamilyStore cfs = Keyspace.open(keyspace()).getColumnFamilyStore(tableName);
-        SnapshotManager.instance.takeSnapshot(SNAPSHOT, cfs.getKeyspaceTableName());
+        SnapshotManager.instance.snapshotBuilder(SNAPSHOT, cfs.getKeyspaceTableName()).takeSnapshot();
 
         String schema = Files.toString(cfs.getDirectories().getSnapshotSchemaFile(SNAPSHOT).toJavaIOFile(), Charset.defaultCharset());
         schema = schema.substring(schema.indexOf("CREATE TABLE")); // trim to ensure order
@@ -542,7 +542,7 @@ public class SchemaCQLHelperTest extends CQLTester
     public void testSystemKsSnapshot()
     {
         ColumnFamilyStore cfs = Keyspace.open("system").getColumnFamilyStore("peers");
-        SnapshotManager.instance.takeSnapshot(SNAPSHOT, cfs.getKeyspaceTableName());
+        SnapshotManager.instance.snapshotBuilder(SNAPSHOT, cfs.getKeyspaceTableName()).takeSnapshot();
 
         Assert.assertTrue(cfs.getDirectories().getSnapshotManifestFile(SNAPSHOT).exists());
         Assert.assertFalse(cfs.getDirectories().getSnapshotSchemaFile(SNAPSHOT).exists());

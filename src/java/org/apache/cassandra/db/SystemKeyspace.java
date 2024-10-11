@@ -1809,10 +1809,8 @@ public final class SystemKeyspace
      * Compare the release version in the system.local table with the one included in the distro.
      * If they don't match, snapshot all tables in the system and schema keyspaces. This is intended
      * to be called at startup to create a backup of the system tables during an upgrade
-     *
-     * @throws IOException
      */
-    public static void snapshotOnVersionChange() throws IOException
+    public static void snapshotOnVersionChange()
     {
         String previous = getPreviousVersionString();
         String next = FBUtilities.getReleaseVersionString();

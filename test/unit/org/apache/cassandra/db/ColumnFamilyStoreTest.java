@@ -84,7 +84,6 @@ import org.apache.cassandra.service.reads.SpeculativeRetryPolicy;
 import org.apache.cassandra.service.snapshot.SnapshotManager;
 import org.apache.cassandra.service.snapshot.SnapshotManifest;
 import org.apache.cassandra.service.snapshot.TableSnapshot;
-import org.apache.cassandra.service.snapshot.TakeSnapshotTask;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.apache.cassandra.utils.FBUtilities;
 import org.apache.cassandra.utils.WrappedRunnable;
@@ -293,8 +292,8 @@ public class ColumnFamilyStoreTest
         }
         ScrubTest.fillIndexCF(cfs, false, colValues);
 
-        SnapshotManager.instance.takeSnapshot("nonEphemeralSnapshot", cfs.getKeyspaceTableName());
-        SnapshotManager.instance.takeSnapshot(new TakeSnapshotTask.Builder("ephemeralSnapshot", cfs.getKeyspaceTableName()).ephemeral().build());
+        SnapshotManager.instance.snapshotBuilder("nonEphemeralSnapshot", cfs.getKeyspaceTableName()).takeSnapshot();
+        SnapshotManager.instance.snapshotBuilder("ephemeralSnapshot", cfs.getKeyspaceTableName()).ephemeral().takeSnapshot();
 
         Map<String, TableSnapshot> snapshotDetails = Util.listSnapshots(cfs);
         assertEquals(2, snapshotDetails.size());
@@ -325,7 +324,7 @@ public class ColumnFamilyStoreTest
         Util.flush(cfs);
 
         // snapshot
-        SnapshotManager.instance.takeSnapshot("basic", cfs.getKeyspaceTableName());
+        SnapshotManager.instance.snapshotBuilder("basic", cfs.getKeyspaceTableName()).takeSnapshot();
 
         // check snapshot was created
         Map<String, TableSnapshot> snapshotDetails = Util.listSnapshots(cfs);
@@ -376,7 +375,7 @@ public class ColumnFamilyStoreTest
 
         assertThat(cfs.trueSnapshotsSize()).isZero();
 
-        SnapshotManager.instance.takeSnapshot("snapshot_without_index", cfs.getKeyspaceTableName());
+        SnapshotManager.instance.snapshotBuilder("snapshot_without_index", cfs.getKeyspaceTableName()).takeSnapshot();
 
         long firstSnapshotsSize = cfs.trueSnapshotsSize();
         Map<String, TableSnapshot> listedSnapshots = Util.listSnapshots(cfs);
@@ -408,7 +407,7 @@ public class ColumnFamilyStoreTest
 
         rebuildIndices(cfs);
 
-        SnapshotManager.instance.takeSnapshot("snapshot_with_index", cfs.getKeyspaceTableName());
+        SnapshotManager.instance.snapshotBuilder("snapshot_with_index", cfs.getKeyspaceTableName()).takeSnapshot();
 
         long secondSnapshotSize = cfs.trueSnapshotsSize();
         Map<String, TableSnapshot> secondListedSnapshots = Util.listSnapshots(cfs);
@@ -427,7 +426,7 @@ public class ColumnFamilyStoreTest
 
         // taking another one is basically a copy of the previous
 
-        SnapshotManager.instance.takeSnapshot("another_snapshot_with_index", cfs.getKeyspaceTableName());
+        SnapshotManager.instance.snapshotBuilder("another_snapshot_with_index", cfs.getKeyspaceTableName()).takeSnapshot();
 
         long thirdSnapshotSize = cfs.trueSnapshotsSize();
         Map<String, TableSnapshot> thirdListedSnapshots = Util.listSnapshots(cfs);
@@ -688,7 +687,7 @@ public class ColumnFamilyStoreTest
         Util.flush(cfs);
 
         String snapshotName = "newSnapshot";
-        SnapshotManager.instance.takeSnapshot(new TakeSnapshotTask.Builder(snapshotName, cfs.getKeyspaceTableName()).skipFlush().build());
+        SnapshotManager.instance.snapshotBuilder(snapshotName, cfs.getKeyspaceTableName()).skipFlush().takeSnapshot();
 
         File snapshotManifestFile = cfs.getDirectories().getSnapshotManifestFile(snapshotName);
         SnapshotManifest manifest = SnapshotManifest.deserializeFromJsonFile(snapshotManifestFile);
@@ -718,7 +717,7 @@ public class ColumnFamilyStoreTest
             writeData(cfs);
         }
 
-        TableSnapshot snapshot = SnapshotManager.instance.takeSnapshot("basic", cfs.getKeyspaceTableName());
+        TableSnapshot snapshot = SnapshotManager.instance.snapshotBuilder("basic", cfs.getKeyspaceTableName()).takeSnapshot().get(0);
 
         assertThat(snapshot.exists()).isTrue();
         assertThat(Util.listSnapshots(cfs).containsKey("basic")).isTrue();

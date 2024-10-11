@@ -684,7 +684,7 @@ public abstract class SAITester extends CQLTester.Fuzzed
     protected int snapshot(String snapshotName)
     {
         ColumnFamilyStore cfs = getCurrentColumnFamilyStore();
-        TableSnapshot snapshot = SnapshotManager.instance.takeSnapshot(snapshotName, cfs.getKeyspaceTableName());
+        TableSnapshot snapshot = SnapshotManager.instance.snapshotBuilder(snapshotName, cfs.getKeyspaceTableName()).takeSnapshot().get(0);
         return snapshot.getDirectories().size();
     }
 
