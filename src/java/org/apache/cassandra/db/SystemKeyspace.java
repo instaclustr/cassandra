@@ -1819,7 +1819,6 @@ public final class SystemKeyspace
 
         // if we're restarting after an upgrade, snapshot the system and schema keyspaces
         if (!previous.equals(NULL_VERSION.toString()) && !previous.equals(next))
-
         {
             logger.info("Detected version upgrade from {} to {}, snapshotting system keyspaces", previous, next);
             String snapshotName = TableSnapshot.getTimestampedSnapshotName(format("upgrade-%s-%s",
@@ -1830,10 +1829,12 @@ public final class SystemKeyspace
             for (String keyspace : SchemaConstants.LOCAL_SYSTEM_KEYSPACE_NAMES)
             {
                 for (ColumnFamilyStore cfs : Keyspace.open(keyspace).getColumnFamilyStores())
-                    entities.add(keyspace + '.' + cfs.name);
+                    entities.add(cfs.getKeyspaceTableName());
             }
 
-            SnapshotManager.instance.snapshotBuilder(snapshotName, entities.toArray(new String[0])).takeSnapshot();
+            SnapshotManager.instance.snapshotBuilder(snapshotName, entities.toArray(new String[0]))
+                                    .creationTime()
+                                    .takeSnapshot();
         }
     }
 

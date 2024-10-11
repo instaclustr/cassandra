@@ -113,7 +113,7 @@ public class TakeSnapshotTask implements Callable<List<TableSnapshot>>
             return SnapshotManager.instance.takeSnapshot(build());
         }
 
-        public Builder(String tag, String... entities)
+        Builder(String tag, String... entities)
         {
             this.tag = tag;
             this.entities = entities;

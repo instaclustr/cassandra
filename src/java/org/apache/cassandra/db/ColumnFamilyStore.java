@@ -504,6 +504,7 @@ public class ColumnFamilyStore implements ColumnFamilyStoreMBean, Memtable.Owner
         // Note that this needs to happen before we load the first sstables, or the global sstable tracker will not
         // be notified on the initial loading.
         data.subscribe(StorageService.instance.sstablesTracker);
+        data.subscribe(SnapshotManager.instance);
 
         Collection<SSTableReader> sstables = null;
         // scan for sstables corresponding to this cf and load them
