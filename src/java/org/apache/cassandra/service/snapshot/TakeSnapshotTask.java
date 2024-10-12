@@ -54,6 +54,7 @@ import org.apache.cassandra.io.util.File;
 import org.apache.cassandra.io.util.FileOutputStreamPlus;
 import org.apache.cassandra.schema.SchemaConstants;
 import org.apache.cassandra.service.StorageService;
+import org.apache.cassandra.utils.Clock;
 import org.apache.cassandra.utils.FBUtilities;
 
 import static java.lang.String.format;
@@ -151,7 +152,7 @@ public class TakeSnapshotTask implements Callable<List<TableSnapshot>>
             {
                 try
                 {
-                    this.creationTime = Instant.ofEpochMilli(Long.parseLong(creationTime));
+                    return creationTime(Long.parseLong(creationTime));
                 }
                 catch (Exception ex)
                 {
@@ -166,6 +167,11 @@ public class TakeSnapshotTask implements Callable<List<TableSnapshot>>
         {
             this.creationTime = creationTime;
             return this;
+        }
+
+        public Builder creationTime(long creationTime)
+        {
+            return creationTime(Instant.ofEpochMilli(creationTime));
         }
 
         public Builder skipFlush()
@@ -227,7 +233,7 @@ public class TakeSnapshotTask implements Callable<List<TableSnapshot>>
         // until the actual snapshot is taken. If we constructed a task and have not done anything with it for 5 minutes
         // then by the time a snapshot would be taken the creation time would be quite off
         if (creationTime == null)
-            creationTime = FBUtilities.now();
+            creationTime = Instant.ofEpochMilli(Clock.Global.currentTimeMillis());
 
         for (ColumnFamilyStore cfs : entitiesForSnapshot)
         {

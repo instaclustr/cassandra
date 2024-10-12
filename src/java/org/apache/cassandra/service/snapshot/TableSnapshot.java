@@ -55,15 +55,14 @@ import org.apache.cassandra.utils.Clock;
 import org.apache.cassandra.utils.Throwables;
 import org.apache.cassandra.utils.concurrent.Refs;
 
-import static org.apache.cassandra.utils.Clock.Global.currentTimeMillis;
-
 public class TableSnapshot
 {
     private static final Logger logger = LoggerFactory.getLogger(TableSnapshot.class);
 
     public static final String SNAPSHOT_TRUNCATE_PREFIX = "truncated";
     public static final String SNAPSHOT_DROP_PREFIX = "dropped";
-    public static final String SNAPHOT_PRE_SCRUB_PREFIX = "pre-scrub";
+    public static final String SNAPSHOT_PRE_SCRUB_PREFIX = "pre-scrub";
+    public static final String SNAPSHOT_UPGRADE_PREFIX = "upgrade";
 
     private final String keyspaceName;
     private final String tableName;
@@ -596,17 +595,17 @@ public class TableSnapshot
         return refs;
     }
 
-    public static String getTimestampedSnapshotName(String clientSuppliedName)
+    public static String getTimestampedSnapshotName(String clientSuppliedName, long timestamp)
     {
-        String snapshotName = Long.toString(currentTimeMillis());
+        String snapshotName = Long.toString(timestamp);
         if (clientSuppliedName != null && !clientSuppliedName.isEmpty())
             snapshotName = snapshotName + '-' + clientSuppliedName;
 
         return snapshotName;
     }
 
-    public static String getTimestampedSnapshotNameWithPrefix(String clientSuppliedName, String prefix)
+    public static String getTimestampedSnapshotNameWithPrefix(String clientSuppliedName, long timestamp, String prefix)
     {
-        return prefix + '-' + getTimestampedSnapshotName(clientSuppliedName);
+        return prefix + '-' + getTimestampedSnapshotName(clientSuppliedName, timestamp);
     }
 }

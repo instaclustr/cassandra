@@ -118,6 +118,7 @@ import org.apache.cassandra.tcm.membership.NodeState;
 import org.apache.cassandra.transport.ProtocolVersion;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.apache.cassandra.utils.CassandraVersion;
+import org.apache.cassandra.utils.Clock;
 import org.apache.cassandra.utils.FBUtilities;
 import org.apache.cassandra.utils.MD5Digest;
 import org.apache.cassandra.utils.Pair;
@@ -1821,9 +1822,6 @@ public final class SystemKeyspace
         if (!previous.equals(NULL_VERSION.toString()) && !previous.equals(next))
         {
             logger.info("Detected version upgrade from {} to {}, snapshotting system keyspaces", previous, next);
-            String snapshotName = TableSnapshot.getTimestampedSnapshotName(format("upgrade-%s-%s",
-                                                                                  previous,
-                                                                                  next));
 
             List<String> entities = new ArrayList<>();
             for (String keyspace : SchemaConstants.LOCAL_SYSTEM_KEYSPACE_NAMES)
@@ -1832,8 +1830,16 @@ public final class SystemKeyspace
                     entities.add(cfs.getKeyspaceTableName());
             }
 
+            long creationTime = Clock.Global.currentTimeMillis();
+            logger.info("Detected version upgrade from {} to {}, snapshotting system keyspaces", previous, next);
+            String snapshotName = TableSnapshot.getTimestampedSnapshotName(format("%s-%s-%s",
+                                                                                  TableSnapshot.SNAPSHOT_UPGRADE_PREFIX,
+                                                                                  previous,
+                                                                                  next),
+                                                                           creationTime);
+
             SnapshotManager.instance.snapshotBuilder(snapshotName, entities.toArray(new String[0]))
-                                    .creationTime()
+                                    .creationTime(creationTime)
                                     .takeSnapshot();
         }
     }

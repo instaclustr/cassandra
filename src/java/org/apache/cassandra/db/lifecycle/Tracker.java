@@ -513,24 +513,17 @@ public class Tracker
     {
         if (repairStatusesChanged.isEmpty())
             return;
-        INotification notification = new SSTableRepairStatusChanged(repairStatusesChanged);
-        for (INotificationConsumer subscriber : subscribers)
-            subscriber.handleNotification(notification, this);
+        notify(new SSTableRepairStatusChanged(repairStatusesChanged));
     }
 
     public void notifySSTableMetadataChanged(SSTableReader levelChanged, StatsMetadata oldMetadata)
     {
-        INotification notification = new SSTableMetadataChanged(levelChanged, oldMetadata);
-        for (INotificationConsumer subscriber : subscribers)
-            subscriber.handleNotification(notification, this);
-
+        notify(new SSTableMetadataChanged(levelChanged, oldMetadata));
     }
 
     public void notifyDeleting(SSTableReader deleting)
     {
-        INotification notification = new SSTableDeletingNotification(deleting);
-        for (INotificationConsumer subscriber : subscribers)
-            subscriber.handleNotification(notification, this);
+        notify(new SSTableDeletingNotification(deleting));
     }
 
     public void notifyTruncated(boolean disableSnapshot,

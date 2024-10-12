@@ -62,7 +62,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.cassandra.concurrent.ExecutorFactory.Global.executorFactory;
 import static org.apache.cassandra.schema.SchemaConstants.isLocalSystemKeyspace;
 import static org.apache.cassandra.service.snapshot.TableSnapshot.getTimestampedSnapshotNameWithPrefix;
-import static org.apache.cassandra.utils.FBUtilities.now;
 
 public class SnapshotManager implements SnapshotManagerMBean, INotificationConsumer, AutoCloseable
 {
@@ -592,7 +591,7 @@ public class SnapshotManager implements SnapshotManagerMBean, INotificationConsu
     @Override
     public void handleNotification(INotification notification, Object sender)
     {
-        Instant creationTime = now();
+        long creationTime = Clock.Global.currentTimeMillis();
 
         if (notification instanceof TruncationNotification)
         {
@@ -601,7 +600,7 @@ public class SnapshotManager implements SnapshotManagerMBean, INotificationConsu
 
             if (!truncationNotification.disableSnapshot && cfs.isAutoSnapshotEnabled())
             {
-                String tag = getTimestampedSnapshotNameWithPrefix(cfs.name, TableSnapshot.SNAPSHOT_TRUNCATE_PREFIX);
+                String tag = getTimestampedSnapshotNameWithPrefix(cfs.name, creationTime, TableSnapshot.SNAPSHOT_TRUNCATE_PREFIX);
                 SnapshotManager.instance.snapshotBuilder(tag, cfs.getKeyspaceTableName())
                                         .ttl(truncationNotification.ttl)
                                         .creationTime(creationTime)
@@ -615,7 +614,7 @@ public class SnapshotManager implements SnapshotManagerMBean, INotificationConsu
 
             if (cfs.isAutoSnapshotEnabled())
             {
-                String tag = getTimestampedSnapshotNameWithPrefix(cfs.name, TableSnapshot.SNAPSHOT_DROP_PREFIX);
+                String tag = getTimestampedSnapshotNameWithPrefix(cfs.name, creationTime, TableSnapshot.SNAPSHOT_DROP_PREFIX);
                 SnapshotManager.instance.snapshotBuilder(tag, cfs.getKeyspaceTableName())
                                         .cfs(cfs)
                                         .ttl(tableDroppedNotification.ttl)
@@ -628,7 +627,7 @@ public class SnapshotManager implements SnapshotManagerMBean, INotificationConsu
             TablePreScrubNotification tablePreScrubNotification = (TablePreScrubNotification) notification;
             ColumnFamilyStore cfs = tablePreScrubNotification.cfs;
 
-            String snapshotName = TableSnapshot.SNAPHOT_PRE_SCRUB_PREFIX + '-' + creationTime.toEpochMilli();
+            String snapshotName = TableSnapshot.SNAPSHOT_PRE_SCRUB_PREFIX + '-' + creationTime;
 
             SnapshotManager.instance.snapshotBuilder(snapshotName, cfs.getKeyspaceTableName())
                                     .skipFlush()
