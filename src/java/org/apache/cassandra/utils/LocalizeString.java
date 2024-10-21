@@ -44,7 +44,7 @@ public class LocalizeString {
      */
     public static String toLowerCaseLocalized(String input) {
         if (input == null) return null; // Return it because prevent to NullPointerException
-        return input.toLowerCase(Locale.US);
+        return input.toLowerCase(Locale.US); // checkstyle: permit this invocation
     }
 
     /**
@@ -55,7 +55,7 @@ public class LocalizeString {
      */
     public static String toLowerCaseLocalized(String input, Locale locale) {
         if (input == null || locale == null) return null; // Return it because prevent to NullPointerException
-        return input.toLowerCase(locale);
+        return input.toLowerCase(locale); // checkstyle: permit this invocation
     }
 
     /**
@@ -64,7 +64,7 @@ public class LocalizeString {
      */
     public static String toUpperCaseLocalized(String input) {
         if (input == null) return null; // Return it because prevent to NullPointerException
-        return input.toUpperCase(Locale.US);
+        return input.toUpperCase(Locale.US); // checkstyle: permit this invocation
     }
 
     /**
@@ -75,6 +75,6 @@ public class LocalizeString {
      */
     public static String toUpperCaseLocalized(String input, Locale locale) {
         if (input == null || locale == null) return null; // Return it because prevent to NullPointerException
-        return input.toUpperCase(locale);
+        return input.toUpperCase(locale); // checkstyle: permit this invocation
     }
 }
