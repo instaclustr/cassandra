@@ -25,6 +25,7 @@ import java.util.Set;
 import javax.management.openmbean.TabularData;
 
 import io.airlift.airline.Command;
+
 import io.airlift.airline.Option;
 import org.apache.cassandra.io.util.FileUtils;
 import org.apache.cassandra.tools.NodeProbe;
@@ -63,17 +64,15 @@ public class ListSnapshots extends NodeToolCmd
                 return;
             }
 
+            final long trueSnapshotsSize = probe.trueSnapshotsSize();
             TableBuilder table = new TableBuilder();
             // display column names only once
-            List<String> indexNames = snapshotDetails.entrySet().iterator().next().getValue().getTabularType().getIndexNames();
-            indexNames.subList(0, indexNames.size() - 1);
+            final List<String> indexNames = snapshotDetails.entrySet().iterator().next().getValue().getTabularType().getIndexNames();
 
             if (includeEphemeral)
-                table.add(indexNames.toArray(new String[indexNames.size() - 1]));
+                table.add(indexNames.toArray(new String[indexNames.size()]));
             else
-                table.add(indexNames.subList(0, indexNames.size() - 2).toArray(new String[indexNames.size() - 2]));
-
-            long totalTrueDiskSize = 0;
+                table.add(indexNames.subList(0, indexNames.size() - 1).toArray(new String[indexNames.size() - 1]));
 
             for (final Map.Entry<String, TabularData> snapshotDetail : snapshotDetails.entrySet())
             {
@@ -82,16 +81,14 @@ public class ListSnapshots extends NodeToolCmd
                 {
                     final List<?> value = (List<?>) eachValue;
                     if (includeEphemeral)
-                        table.add(value.subList(0, value.size() - 1).toArray(new String[value.size() - 1]));
+                        table.add(value.toArray(new String[value.size()]));
                     else
-                        table.add(value.subList(0, value.size() - 2).toArray(new String[value.size() - 2]));
-
-                    totalTrueDiskSize += (Long) value.get(value.size() - 1);
+                        table.add(value.subList(0, value.size() - 1).toArray(new String[value.size() - 1]));
                 }
             }
             table.printTo(out);
 
-            out.println("\nTotal TrueDiskSpaceUsed: " + FileUtils.stringifyFileSize(totalTrueDiskSize) + '\n');
+            out.println("\nTotal TrueDiskSpaceUsed: " + FileUtils.stringifyFileSize(trueSnapshotsSize) + '\n');
         }
         catch (Exception e)
         {
