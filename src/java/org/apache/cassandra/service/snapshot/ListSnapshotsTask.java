@@ -48,28 +48,16 @@ public class ListSnapshotsTask implements Callable<Map<String, TabularData>>
     {
         boolean skipExpiring = options != null && Boolean.parseBoolean(options.getOrDefault("no_ttl", "false"));
         boolean includeEphemeral = options != null && Boolean.parseBoolean(options.getOrDefault("include_ephemeral", "false"));
-        String selectedKeyspace = options != null ? options.get("keyspace") : null;
-        String selectedTable = options != null ? options.get("table") : null;
-        String selectedSnapshotName = options != null ? options.get("snapshot") : null;
 
         Map<String, TabularData> snapshotMap = new HashMap<>();
 
         Set<String> tags = new HashSet<>();
 
         List<TableSnapshot> snapshots = SnapshotManager.instance.getSnapshots(s -> {
-            if (selectedSnapshotName != null && !s.getTag().equals(selectedSnapshotName))
-                return false;
-
             if (skipExpiring && s.isExpiring())
                 return false;
 
             if (!includeEphemeral && s.isEphemeral())
-                return false;
-
-            if (selectedKeyspace != null && !s.getKeyspaceName().equals(selectedKeyspace))
-                return false;
-
-            if (selectedTable != null && !s.getTableName().equals(selectedTable))
                 return false;
 
             return true;
