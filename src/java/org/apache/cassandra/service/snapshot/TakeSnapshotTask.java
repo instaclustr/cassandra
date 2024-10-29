@@ -242,6 +242,9 @@ public class TakeSnapshotTask implements Callable<List<TableSnapshot>>
             snapshots.add(snapshot);
         }
 
+        for (TableSnapshot snapshot : snapshots)
+            SnapshotManager.instance.addSnapshot(snapshot);
+
         return snapshots;
     }
 

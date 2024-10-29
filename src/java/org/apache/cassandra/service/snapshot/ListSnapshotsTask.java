@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.function.Predicate;
 import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 
@@ -37,15 +38,14 @@ public class ListSnapshotsTask implements Callable<Map<String, TabularData>>
 {
     private static final Logger logger = LoggerFactory.getLogger(ListSnapshotsTask.class);
 
-    private final Map<String, String> options;
+    private final List<TableSnapshot> snapshots;
 
-    public ListSnapshotsTask(Map<String, String> options)
+    public ListSnapshotsTask(List<TableSnapshot> snapshots)
     {
-        this.options = options;
+        this.snapshots = snapshots;
     }
 
-    @Override
-    public Map<String, TabularData> call()
+    public static Predicate<TableSnapshot> getListingSnapshotsPredicate(Map<String, String> options)
     {
         boolean skipExpiring = options != null && Boolean.parseBoolean(options.getOrDefault("no_ttl", "false"));
         boolean includeEphemeral = options != null && Boolean.parseBoolean(options.getOrDefault("include_ephemeral", "false"));
@@ -53,11 +53,7 @@ public class ListSnapshotsTask implements Callable<Map<String, TabularData>>
         String selectedTable = options != null ? options.get("table") : null;
         String selectedSnapshotName = options != null ? options.get("snapshot") : null;
 
-        Map<String, TabularData> snapshotMap = new HashMap<>();
-
-        Set<String> tags = new HashSet<>();
-
-        List<TableSnapshot> snapshots = SnapshotManager.instance.getSnapshots(s -> {
+        return s -> {
             if (selectedSnapshotName != null && !s.getTag().equals(selectedSnapshotName))
                 return false;
 
@@ -74,7 +70,15 @@ public class ListSnapshotsTask implements Callable<Map<String, TabularData>>
                 return false;
 
             return true;
-        });
+        };
+    }
+
+    @Override
+    public Map<String, TabularData> call()
+    {
+        Map<String, TabularData> snapshotMap = new HashMap<>();
+
+        Set<String> tags = new HashSet<>();
 
         for (TableSnapshot t : snapshots)
             tags.add(t.getTag());
