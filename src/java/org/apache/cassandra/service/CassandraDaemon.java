@@ -269,7 +269,7 @@ public class CassandraDaemon
         CommitLog.instance.start();
 
         SnapshotManager.instance.registerMBean();
-        SnapshotManager.instance.start();
+        SnapshotManager.instance.start(false);
         SnapshotManager.instance.clearExpiredSnapshots();
         SnapshotManager.instance.clearEphemeralSnapshots();
         SnapshotManager.instance.resumeSnapshotCleanup();

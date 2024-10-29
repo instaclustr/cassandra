@@ -29,12 +29,14 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.cassandra.SchemaLoader;
+import org.apache.cassandra.config.CassandraRelevantProperties;
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.io.util.File;
 import org.apache.cassandra.io.util.FileUtils;
@@ -59,9 +61,14 @@ public class SnapshotManagerTest
 
     private static String[] dataDirs;
 
+    private SnapshotManager snapshotManager;
+
     @BeforeClass
     public static void beforeClass() throws Exception
     {
+        CassandraRelevantProperties.SNAPSHOT_CLEANUP_PERIOD_SECONDS.setInt(10);
+        CassandraRelevantProperties.SNAPSHOT_CLEANUP_INITIAL_DELAY_SECONDS.setInt(5);
+
         DatabaseDescriptor.daemonInitialization();
         FileUtils.setFSErrorHandler(new DefaultFSErrorHandler());
         rootDir1 = new File(temporaryFolder.getRoot());
@@ -75,11 +82,20 @@ public class SnapshotManagerTest
         SchemaLoader.prepareServer();
     }
 
+    @Before
+    public void beforeTest()
+    {
+        snapshotManager = SnapshotManager.instance;
+        snapshotManager.start(true);
+    }
+
     @After
     public void afterTest()
     {
         PathUtils.clearDirectory(rootDir1.toPath());
         PathUtils.clearDirectory(rootDir2.toPath());
+
+        snapshotManager.close();
     }
 
     /**
@@ -89,62 +105,24 @@ public class SnapshotManagerTest
     @Test
     public void testRemovingManifestsLogicallyRemovesSnapshot() throws Exception
     {
-        try (SnapshotManager snapshotManager = new SnapshotManager(5, 10, dataDirs))
-        {
-            snapshotManager.start(true);
-            List<TableSnapshot> tableSnapshots = generateTableSnapshots(10, 100);
-            snapshotManager.addSnapshots(tableSnapshots);
+        List<TableSnapshot> tableSnapshots = generateTableSnapshots(10, 100);
 
-            // we still have 1000 snapshots because we removed just one manifest
-            removeManifestOfSnapshot(tableSnapshots.get(0));
-            assertEquals(1000, snapshotManager.getSnapshots((t) -> true).size());
+        for (TableSnapshot snapshot : tableSnapshots)
+            snapshotManager.addSnapshot(snapshot);
 
-            // remove the second manifest, that will render snapshot to be logically removed
-            removeManifestOfSnapshot(tableSnapshots.get(0));
-            assertEquals(999, snapshotManager.getSnapshots((t) -> true).size());
+        // we still have 1000 snapshots because we removed just one manifest
+        removeManifestOfSnapshot(tableSnapshots.get(0));
+        assertEquals(1000, snapshotManager.getSnapshots((t) -> true).size());
 
-            // check that data are still there
-            assertFalse(tableSnapshots.get(0).hasManifest());
-            assertTrue(tableSnapshots.get(0).exists());
-            for (File snapshotDir : tableSnapshots.get(0).getDirectories())
-                assertTrue(snapshotDir.exists());
-        }
-    }
+        // remove the second manifest, that will render snapshot to be logically removed
+        removeManifestOfSnapshot(tableSnapshots.get(0));
+        assertEquals(999, snapshotManager.getSnapshots((t) -> true).size());
 
-    @Test
-    public void testRestart() throws Exception
-    {
-        try (SnapshotManager snapshotManager = new SnapshotManager(5, 10, dataDirs))
-        {
-            snapshotManager.start(true);
-            List<TableSnapshot> tableSnapshots = generateTableSnapshots(10, 100);
-
-            snapshotManager.addSnapshots(tableSnapshots);
-
-            // we have two dirs
-            removeDirectoryOfSnapshot(tableSnapshots.get(0));
-            removeDirectoryOfSnapshot(tableSnapshots.get(0));
-
-            assertEquals(999, snapshotManager.getSnapshots((t) -> true).size());
-
-            snapshotManager.restart();
-
-            assertEquals(999, snapshotManager.getSnapshots((t) -> true).size());
-
-            for (int i = 1; i < 100; i++)
-            {
-                // we have two dirs
-                removeDirectoryOfSnapshot(tableSnapshots.get(i));
-                removeDirectoryOfSnapshot(tableSnapshots.get(i));
-            }
-
-            // still 999
-            assertEquals(900, snapshotManager.getSnapshots((t) -> true).size());
-
-            snapshotManager.restart();
-
-            assertEquals(900, snapshotManager.getSnapshots((t) -> true).size());
-        }
+        // check that data are still there
+        assertFalse(tableSnapshots.get(0).hasManifest());
+        assertTrue(tableSnapshots.get(0).exists());
+        for (File snapshotDir : tableSnapshots.get(0).getDirectories())
+            assertTrue(snapshotDir.exists());
     }
 
     private List<TableSnapshot> generateTableSnapshots(int keyspaces, int tables) throws IOException

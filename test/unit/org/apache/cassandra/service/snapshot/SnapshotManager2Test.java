@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import org.apache.cassandra.SchemaLoader;
 import org.apache.cassandra.Util;
+import org.apache.cassandra.config.CassandraRelevantProperties;
 import org.apache.cassandra.db.ColumnFamilyStore;
 import org.apache.cassandra.db.Keyspace;
 import org.apache.cassandra.db.RowUpdateBuilder;
@@ -39,19 +40,21 @@ public class SnapshotManager2Test
 {
     static final String KEYSPACE = "KEYSPACE";
 
-    static int NUM_SSTABLES = 30;
+    static int NUM_SSTABLES = 10;
     static int NUM_KEYSPACES = 1;
     static int NUM_TABLES_PER_KEYSPACE = 10;
-    static int NUM_SNAPSHOTS_PER_TABLE = 10;
+    static int NUM_SNAPSHOTS_PER_TABLE = 50;
 
     static int NUM_RUNS = 100;
-
-    static SnapshotManager snapshotManager;
 
     @BeforeClass
     public static void beforeClass()
     {
+        CassandraRelevantProperties.SNAPSHOT_CLEANUP_INITIAL_DELAY_SECONDS.getInt(1000);
+        CassandraRelevantProperties.SNAPSHOT_CLEANUP_PERIOD_SECONDS.setInt(60);
+
         SchemaLoader.prepareServer();
+        SnapshotManager.instance.start(true);
 
         for (int i = 0; i < NUM_KEYSPACES; i++)
         {
@@ -92,10 +95,12 @@ public class SnapshotManager2Test
             }
         }
 
-        snapshotManager = new SnapshotManager(1000L, 60L);
-        assertEquals(snapshotManager.getSnapshots(KEYSPACE).size(), 0);
-        snapshotManager.addSnapshots(snapshotManager.loadSnapshots());
-        assertEquals(snapshotManager.getSnapshots(t -> true).size(), NUM_KEYSPACES * NUM_TABLES_PER_KEYSPACE * NUM_SNAPSHOTS_PER_TABLE);
+        assertEquals(SnapshotManager.instance.getSnapshots(KEYSPACE).size(), 0);
+
+        for (TableSnapshot snapshot : SnapshotManager.instance.loadSnapshots())
+            SnapshotManager.instance.addSnapshot(snapshot);
+
+        assertEquals(SnapshotManager.instance.getSnapshots(t -> true).size(), NUM_KEYSPACES * NUM_TABLES_PER_KEYSPACE * NUM_SNAPSHOTS_PER_TABLE);
     }
 
     private static String tableName(int i)
@@ -115,7 +120,7 @@ public class SnapshotManager2Test
         System.out.println(start);
         for (int i = 0; i < NUM_RUNS; i++)
         {
-            snapshotManager.listSnapshots(null);
+            SnapshotManager.instance.listSnapshots(null);
         }
         long end = new Date().getTime();
         System.out.println(end);

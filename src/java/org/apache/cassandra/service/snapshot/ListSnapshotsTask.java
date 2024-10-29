@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.function.Predicate;
 import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 
@@ -36,41 +37,66 @@ public class ListSnapshotsTask implements Callable<Map<String, TabularData>>
 {
     private static final Logger logger = LoggerFactory.getLogger(ListSnapshotsTask.class);
 
-    private final Map<String, String> options;
+    private final Predicate<TableSnapshot> predicate;
+    private final boolean shouldRemoveIfNotExists;
 
-    public ListSnapshotsTask(Map<String, String> options)
+    public ListSnapshotsTask(Predicate<TableSnapshot> predicate,
+                             boolean shouldRemoveIfNotExists)
     {
-        this.options = options;
+        this.predicate = predicate;
+        this.shouldRemoveIfNotExists = shouldRemoveIfNotExists;
     }
 
-    @Override
-    public Map<String, TabularData> call()
+    public static Predicate<TableSnapshot> getListingSnapshotsPredicate(Map<String, String> options)
     {
         boolean skipExpiring = options != null && Boolean.parseBoolean(options.getOrDefault("no_ttl", "false"));
         boolean includeEphemeral = options != null && Boolean.parseBoolean(options.getOrDefault("include_ephemeral", "false"));
+        String selectedKeyspace = options != null ? options.get("keyspace") : null;
+        String selectedTable = options != null ? options.get("table") : null;
+        String selectedSnapshotName = options != null ? options.get("snapshot") : null;
 
-        Map<String, TabularData> snapshotMap = new HashMap<>();
+        return s -> {
+            if (selectedSnapshotName != null && !s.getTag().equals(selectedSnapshotName))
+                return false;
 
-        Set<String> tags = new HashSet<>();
-
-        List<TableSnapshot> snapshots = SnapshotManager.instance.getSnapshots(s -> {
             if (skipExpiring && s.isExpiring())
                 return false;
 
             if (!includeEphemeral && s.isEphemeral())
                 return false;
 
-            return true;
-        });
+            if (selectedKeyspace != null && !s.getKeyspaceName().equals(selectedKeyspace))
+                return false;
 
-        for (TableSnapshot t : snapshots)
+            return selectedTable == null || s.getTableName().equals(selectedTable);
+        };
+    }
+
+    @Override
+    public Map<String, TabularData> call()
+    {
+        List<TableSnapshot> filteredSnapshots;
+
+        try
+        {
+            filteredSnapshots = new GetSnapshotsTask(predicate, shouldRemoveIfNotExists).call();
+        }
+        catch (Exception e)
+        {
+            return Map.of();
+        }
+
+        Map<String, TabularData> snapshotMap = new HashMap<>();
+        Set<String> tags = new HashSet<>();
+
+        for (TableSnapshot t : filteredSnapshots)
             tags.add(t.getTag());
 
         for (String tag : tags)
             snapshotMap.put(tag, new TabularDataSupport(SnapshotDetailsTabularData.TABULAR_TYPE));
 
         Map<String, Set<String>> keyspaceTables = new HashMap<>();
-        for (TableSnapshot s : snapshots)
+        for (TableSnapshot s : filteredSnapshots)
         {
             keyspaceTables.computeIfAbsent(s.getKeyspaceName(), ignore -> new HashSet<>());
             keyspaceTables.get(s.getKeyspaceName()).add(s.getTableName());
@@ -97,7 +123,7 @@ public class ListSnapshotsTask implements Callable<Map<String, TabularData>>
             }
         }
 
-        for (TableSnapshot snapshot : snapshots)
+        for (TableSnapshot snapshot : filteredSnapshots)
         {
             TabularDataSupport data = (TabularDataSupport) snapshotMap.get(snapshot.getTag());
             SnapshotDetailsTabularData.from(snapshot, data, cfsFiles.get(snapshot.getKeyspaceTable()));
