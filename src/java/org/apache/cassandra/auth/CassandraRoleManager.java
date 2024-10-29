@@ -21,6 +21,7 @@ import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -96,14 +97,20 @@ public class CassandraRoleManager implements IRoleManager
     static final ConsistencyLevel DEFAULT_SUPERUSER_CONSISTENCY_LEVEL = ConsistencyLevel.QUORUM;
 
     // Transform a row in the AuthKeyspace.ROLES to a Role instance
-    private static final Function<UntypedResultSet.Row, Role> ROW_TO_ROLE = row ->
+    private static final BiFunction<UntypedResultSet.Row, UntypedResultSet.Row, Role> ROW_TO_ROLE = (row, options) ->
     {
         try
         {
+            Map<String, String> roleOptions;
+            if (options != null)
+                roleOptions = options.getMap("options", UTF8Type.instance, UTF8Type.instance);
+            else
+                roleOptions = Collections.emptyMap();
+
             return new Role(row.getString("role"),
                             row.getBoolean("is_superuser"),
                             row.getBoolean("can_login"),
-                            Collections.emptyMap(),
+                            roleOptions,
                             row.has("member_of") ? row.getSet("member_of", UTF8Type.instance)
                                                  : Collections.<String>emptySet());
         }
@@ -588,7 +595,12 @@ public class CassandraRoleManager implements IRoleManager
         if (rows.result.isEmpty())
             return Roles.nullRole();
 
-        return ROW_TO_ROLE.apply(UntypedResultSet.create(rows.result).one());
+        ResultMessage.Rows optionsRow = select(loadRoleOptionsStatement, options);
+        UntypedResultSet.Row optionsRowResult = null;
+        if (!optionsRow.result.isEmpty())
+            optionsRowResult = UntypedResultSet.create(optionsRow.result).one();
+
+        return ROW_TO_ROLE.apply(UntypedResultSet.create(rows.result).one(), optionsRowResult);
     }
 
     /*
@@ -752,7 +764,7 @@ public class CassandraRoleManager implements IRoleManager
 
             // Create flat temporary lookup of name -> role mappings
             Map<String, Role> roles = new HashMap<>();
-            results.forEach(row -> roles.put(row.getString("role"), ROW_TO_ROLE.apply(row)));
+            results.forEach(row -> roles.put(row.getString("role"), ROW_TO_ROLE.apply(row, null)));
 
             // Iterate the flat structure and populate the fully hierarchical one
             roles.forEach((key, value) ->
