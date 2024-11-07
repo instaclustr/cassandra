@@ -47,6 +47,7 @@ import org.apache.cassandra.locator.SeedProvider;
 import org.apache.cassandra.locator.TokenMetadata;
 import org.apache.cassandra.service.StorageService;
 import org.apache.cassandra.utils.CassandraVersion;
+import org.apache.cassandra.utils.FBUtilities;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -417,6 +418,13 @@ public class GossiperTest
         Assert.assertEquals(disjointSize, gossiper.getSeeds().size());
         for (InetAddressAndPort a : disjointSeeds)
             assertTrue(gossiper.getSeeds().contains(a.toString()));
+
+        // We have three seeds in gossip, set seed provider to act as if we are going to set it to the node we are at.
+        // That should wipe out all other seeds and set seeds list to be empty
+        assertEquals(3, gossiper.getSeeds().size());
+        DatabaseDescriptor.setSeedProvider(new TestSeedProvider(Collections.singletonList(FBUtilities.getBroadcastAddressAndPort())));
+        gossiper.reloadSeeds();
+        assertTrue(gossiper.getSeeds().isEmpty());
     }
 
     @Test
