@@ -2101,7 +2101,7 @@ public class Gossiper implements IFailureDetectionEventListener, GossiperMBean, 
     /**
      * JMX interface for triggering an update of the seed node list.
      */
-    public List<String> reloadSeeds()
+    public synchronized List<String> reloadSeeds()
     {
         logger.trace("Triggering reload of seed node list");
 
