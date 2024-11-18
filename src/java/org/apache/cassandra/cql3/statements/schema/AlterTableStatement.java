@@ -718,22 +718,10 @@ public abstract class AlterTableStatement extends AlterSchemaStatement
         @Override
         public KeyspaceMetadata apply(Epoch epoch, KeyspaceMetadata keyspace, TableMetadata table, ClusterMetadata metadata)
         {
-            boolean removed = false;
-            TableMetadata.Builder tableBuilder = table.unbuild().epoch(epoch);
-            for (CqlConstraint constraint : tableBuilder.constraints())
-            {
-                if (constraint.constraintName == constraintName)
-                {
-                    tableBuilder.removeConstraint(constraint);
-                    removed = true;
-                    break;
-                }
-            }
-            if (!removed)
-            {
-                throw new ConstraintViolationException("Constraint '" + constraintName + "' does not exist");
-            }
+            ColumnMetadata columnMetadata = table.getColumn(constraintName);
+            columnMetadata.removeColumnConstraints();
 
+            TableMetadata.Builder tableBuilder = table.unbuild().epoch(epoch);
             Views.Builder viewsBuilder = keyspace.views.unbuild();
             TableMetadata tableMetadata = tableBuilder.build();
             tableMetadata.validate();
@@ -743,16 +731,16 @@ public abstract class AlterTableStatement extends AlterSchemaStatement
         }
     }
 
-    public static class AddConstraint extends AlterTableStatement
+    public static class AlterConstraints extends AlterTableStatement
     {
         final ColumnIdentifier constraintName;
-        final CqlConstraint constraint;
+        final List<CqlConstraint> constraints;
 
-        AddConstraint(String keyspaceName, String tableName, boolean ifTableExists, ColumnIdentifier constraintName, CqlConstraint constraint)
+        AlterConstraints(String keyspaceName, String tableName, boolean ifTableExists, ColumnIdentifier constraintName, List<CqlConstraint> constraints)
         {
             super(keyspaceName, tableName, ifTableExists);
             this.constraintName = constraintName;
-            this.constraint = constraint;
+            this.constraints = constraints;
         }
 
         @Override
@@ -760,13 +748,14 @@ public abstract class AlterTableStatement extends AlterSchemaStatement
         {
             TableMetadata.Builder tableBuilder = table.unbuild().epoch(epoch);
 
-            for (CqlConstraint con : tableBuilder.constraints())
+            for (ColumnMetadata column : tableBuilder.columns())
             {
-                if (con.constraintName.equals(constraintName))
-                    throw new ConstraintViolationException(format("Can't add an already existing constraint %s.", constraintName));
+                if (column.name == constraintName)
+                {
+                    column.setColumnConstraints(constraints);
+                    break;
+                }
             }
-
-            tableBuilder.addConstraint(constraint);
 
             Views.Builder viewsBuilder = keyspace.views.unbuild();
             TableMetadata tableMetadata = tableBuilder.build();
@@ -789,7 +778,7 @@ public abstract class AlterTableStatement extends AlterSchemaStatement
             ALTER_OPTIONS,
             DROP_COMPACT_STORAGE,
             DROP_CONSTRAINT,
-            ADD_CONSTRAINT
+            ALTER_CONSTRAINTS
         }
 
         private final QualifiedName name;
@@ -797,7 +786,7 @@ public abstract class AlterTableStatement extends AlterSchemaStatement
         private boolean ifColumnExists;
         private boolean ifColumnNotExists;
         private ColumnIdentifier constraintName;
-        private CqlConstraint constraint;
+        private List<CqlConstraint> constraints;
 
         private Kind kind;
 
@@ -845,7 +834,7 @@ public abstract class AlterTableStatement extends AlterSchemaStatement
                 case         ALTER_OPTIONS: return new AlterOptions(keyspaceName, tableName, attrs, ifTableExists);
                 case  DROP_COMPACT_STORAGE: return new DropCompactStorage(keyspaceName, tableName, ifTableExists);
                 case       DROP_CONSTRAINT: return new DropConstraint(keyspaceName, tableName, ifTableExists, constraintName);
-                case       ADD_CONSTRAINT: return new AddConstraint(keyspaceName, tableName, ifTableExists, constraintName, constraint);
+                case       ALTER_CONSTRAINTS: return new AlterConstraints(keyspaceName, tableName, ifTableExists, constraintName, constraints);
             }
 
             throw new AssertionError();
@@ -896,11 +885,16 @@ public abstract class AlterTableStatement extends AlterSchemaStatement
             this.constraintName = name;
         }
 
-        public void addConstraint(ColumnIdentifier name, CqlConstraint constraint)
+        public void alterConstraints(ColumnIdentifier name, List<CqlConstraint.Raw> rawConstraints)
         {
-            kind = Kind.ADD_CONSTRAINT;
+            kind = Kind.ALTER_CONSTRAINTS;
             this.constraintName = name;
-            this.constraint = constraint;
+
+            this.constraints = new ArrayList<>();
+            for (CqlConstraint.Raw rawConstraint : rawConstraints)
+            {
+                this.constraints.add(rawConstraint.prepare(constraintName));
+            }
         }
 
         public void timestamp(long timestamp)

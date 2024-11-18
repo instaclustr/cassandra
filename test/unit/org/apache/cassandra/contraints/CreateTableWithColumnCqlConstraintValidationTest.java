@@ -53,6 +53,27 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
     }
 
     @Test
+    public void testCreateTableWithColumnMultipleConstraintsDescribeTableNonFunction() throws Throwable
+    {
+        String table = createTable(KEYSPACE_PER_TEST, "CREATE TABLE %s (pk int, ck1 int CHECK ck1 < 100 AND ck1 > 10, ck2 int, v int, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
+
+        String tableCreateStatement = "CREATE TABLE " + KEYSPACE_PER_TEST + "." + table + " (\n" +
+                                      "    pk int,\n" +
+                                      "    ck1 int CHECK ck1 < 100 AND ck1 > 10,\n" +
+                                      "    ck2 int,\n" +
+                                      "    v int,\n" +
+                                      "    PRIMARY KEY (pk, ck1, ck2)\n" +
+                                      ") WITH CLUSTERING ORDER BY (ck1 ASC, ck2 ASC)\n" +
+                                      "    AND " + tableParametersCql();
+
+        assertRowsNet(executeDescribeNet("DESCRIBE TABLE " + KEYSPACE_PER_TEST + "." + table),
+                      row(KEYSPACE_PER_TEST,
+                          "table",
+                          table,
+                          tableCreateStatement));
+    }
+
+    @Test
     public void testCreateTableWithColumnNotNamedConstraintDescribeTableFunction() throws Throwable
     {
         String table = createTable(KEYSPACE_PER_TEST, "CREATE TABLE %s (pk int, ck1 text CHECK LENGTH(ck1) = 4, ck2 int, v int, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
@@ -203,6 +224,20 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
 
         // Invalid
         assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 4.2, 2, 3)");
+    }
+
+    @Test
+    public void testCreateTableWithColumnWithClusteringColumnMultipleScalarConstraints() throws Throwable
+    {
+        createTable("CREATE TABLE %s (pk int, ck1 int CHECK ck1 < 4 AND ck1 >= 2, ck2 int, v int, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
+
+        // Valid
+        execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 2, 3)");
+
+        // Invalid
+        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 4, 2, 3)");
+        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 5, 2, 3)");
+        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 1, 2, 3)");
     }
 
     // FUNCTION
@@ -466,6 +501,21 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         try
         {
             createTable("CREATE TABLE %s (pk text, ck1 int CHECK LENGTH(pk) = 4, ck2 int, v int, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
+            fail();
+        }
+        catch (InvalidRequestException e)
+        {
+            assertTrue(e.getCause() instanceof ConstraintInvalidException);
+            assertTrue(e.getMessage().contains("Error setting schema for test"));
+        }
+    }
+
+    @Test
+    public void testCreateTableWithWrongColumnMultipleConstraint() throws Throwable
+    {
+        try
+        {
+            createTable("CREATE TABLE %s (pk text, ck1 int CHECK LENGTH(pk) = 4 AND ck1 < 4, ck2 int, v int, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
             fail();
         }
         catch (InvalidRequestException e)

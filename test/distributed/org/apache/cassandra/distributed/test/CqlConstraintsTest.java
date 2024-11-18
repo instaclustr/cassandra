@@ -38,12 +38,12 @@ public class CqlConstraintsTest extends TestBaseImpl
 
         try (Cluster cluster = init(Cluster.build(3).start()))
         {
-            assertThrowsInvalidConstraintException(cluster, String.format("CREATE TABLE %s (pk int, ck1 text, ck2 int, v int, " +
-                                                                          "PRIMARY KEY ((pk), ck1, ck2), CONSTRAINT cons1 CHECK ck1 < 100);", tableName),
+            assertThrowsInvalidConstraintException(cluster, String.format("CREATE TABLE %s (pk int, ck1 text CHECK ck1 < 100, ck2 int, v int, " +
+                                                                          "PRIMARY KEY ((pk), ck1, ck2));", tableName),
                                                    "ck1 is not a number");
 
-            assertThrowsInvalidConstraintException(cluster, String.format("CREATE TABLE %s (pk int, ck1 int, ck2 int, v int, " +
-                                                                          "PRIMARY KEY ((pk), ck1, ck2), CONSTRAINT cons1 CHECK LENGTH(ck1) < 100);", tableName),
+            assertThrowsInvalidConstraintException(cluster, String.format("CREATE TABLE %s (pk int, ck1 int CHECK LENGTH(ck1) < 100, ck2 int, v int, " +
+                                                                          "PRIMARY KEY ((pk), ck1, ck2));", tableName),
                                                    "Column should be of type class org.apache.cassandra.db.marshal.UTF8Type or " +
                                                    "class org.apache.cassandra.db.marshal.AsciiType but got class org.apache.cassandra.db.marshal.Int32Type");
         }
@@ -56,33 +56,22 @@ public class CqlConstraintsTest extends TestBaseImpl
 
         try (Cluster cluster = init(Cluster.build(3).start()))
         {
-            String createTableStatement = "CREATE TABLE %s (pk int, ck1 int, ck2 int, v int, PRIMARY KEY ((pk), ck1, ck2), CONSTRAINT cons1 CHECK ck1 < 100);";
+            String createTableStatement = "CREATE TABLE %s (pk int, ck1 int CHECK ck1 < 100, ck2 int, v int, PRIMARY KEY ((pk), ck1, ck2));";
             cluster.schemaChange(String.format(createTableStatement, tableName));
-
-            // Can't create an existing constraint
-            assertThrowsConstraintViolationException(cluster,
-                                                     String.format("ALTER TABLE %s ADD CONSTRAINT cons1 CHECK ck2 < 100", tableName),
-                                                     "ck1 value length should be smaller than 100");
-
 
             String insertStatement = "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 200, 3)";
 
-            cluster.coordinator(1).execute(String.format("ALTER TABLE %s ADD CONSTRAINT cons2 CHECK ck2 < 100", tableName), ConsistencyLevel.ALL);
+            cluster.coordinator(1).execute(String.format("ALTER TABLE %s ALTER ck2 CHECK ck2 < 100", tableName), ConsistencyLevel.ALL);
 
             // Can't insert
             assertThrowsConstraintViolationException(cluster,
                                                      String.format(insertStatement, tableName),
                                                      "ck1 value length should be smaller than 100");
 
-            cluster.coordinator(1).execute(String.format("ALTER TABLE %s DROP CONSTRAINT cons2", tableName), ConsistencyLevel.ALL);
+            cluster.coordinator(1).execute(String.format("ALTER TABLE %s ALTER ck2 DROP CHECK", tableName), ConsistencyLevel.ALL);
 
             // Can insert after droping the constraint
             cluster.coordinator(1).execute(String.format(insertStatement, tableName), ConsistencyLevel.ALL);
-
-            // Can't drop a non existing constraint
-            assertThrowsConstraintViolationException(cluster,
-                                                     String.format("ALTER TABLE %s DROP CONSTRAINT cons2", tableName),
-                                                     "ck1 value length should be smaller than 100");
         }
     }
 
@@ -93,7 +82,7 @@ public class CqlConstraintsTest extends TestBaseImpl
 
         try (Cluster cluster = init(Cluster.build(3).start()))
         {
-            String createTableStatement = "CREATE TABLE %s (pk int, ck1 int, ck2 int, v uuid, PRIMARY KEY ((pk), ck1, ck2), CONSTRAINT cons1 CHECK ck1 < 100);";
+            String createTableStatement = "CREATE TABLE %s (pk int, ck1 int CHECK ck1 < 100, ck2 int, v uuid, PRIMARY KEY ((pk), ck1, ck2));";
             cluster.schemaChange(String.format(createTableStatement, tableName));
 
             cluster.coordinator(1).execute(String.format("INSERT INTO %s JSON '{\"pk\" : 1, \"ck1\" : 2, \"ck2\" : 2, \"v\" : \"ac064e40-0417-4a4a-bf53-b7cf145afdc2\" }'", tableName), ConsistencyLevel.ALL);
@@ -115,7 +104,7 @@ public class CqlConstraintsTest extends TestBaseImpl
 
         try (Cluster cluster = init(Cluster.build(3).start()))
         {
-            String createTableStatement = "CREATE TABLE %s (pk int, ck1 int, ck2 int, v int, PRIMARY KEY ((pk), ck1, ck2), CONSTRAINT cons1 CHECK ck1 < 100);";
+            String createTableStatement = "CREATE TABLE %s (pk int, ck1 int CHECK ck1 < 100, ck2 int, v int, PRIMARY KEY ((pk), ck1, ck2));";
             cluster.schemaChange(String.format(createTableStatement, tableName));
             cluster.coordinator(1).execute(String.format("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 2, 3)", tableName), ConsistencyLevel.ALL);
 
@@ -136,7 +125,7 @@ public class CqlConstraintsTest extends TestBaseImpl
 
         try (Cluster cluster = init(Cluster.build(3).start()))
         {
-            String createTableStatement = "CREATE TABLE %s (pk int, ck1 double, ck2 int, v int, PRIMARY KEY ((pk), ck1, ck2), CONSTRAINT cons1 CHECK ck1 < 100);";
+            String createTableStatement = "CREATE TABLE %s (pk int, ck1 double CHECK ck1 < 100, ck2 int, v int, PRIMARY KEY ((pk), ck1, ck2));";
             cluster.schemaChange(String.format(createTableStatement, tableName));
             cluster.coordinator(1).execute(String.format("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 2, 3)", tableName), ConsistencyLevel.ALL);
 
@@ -157,7 +146,7 @@ public class CqlConstraintsTest extends TestBaseImpl
 
         try (Cluster cluster = init(Cluster.build(3).start()))
         {
-            String createTableStatement = "CREATE TABLE %s (pk int, ck1 float, ck2 int, v int, PRIMARY KEY ((pk), ck1, ck2), CONSTRAINT cons1 CHECK ck1 < 100);";
+            String createTableStatement = "CREATE TABLE %s (pk int, ck1 float CHECK ck1 < 100, ck2 int, v int, PRIMARY KEY ((pk), ck1, ck2));";
             cluster.schemaChange(String.format(createTableStatement, tableName));
             cluster.coordinator(1).execute(String.format("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 2, 3)", tableName), ConsistencyLevel.ALL);
 
@@ -178,7 +167,7 @@ public class CqlConstraintsTest extends TestBaseImpl
 
         try (Cluster cluster = init(Cluster.build(3).start()))
         {
-            String createTableStatement = "CREATE TABLE %s (pk int, ck1 decimal, ck2 int, v int, PRIMARY KEY ((pk), ck1, ck2), CONSTRAINT cons1 CHECK ck1 < 100);";
+            String createTableStatement = "CREATE TABLE %s (pk int, ck1 decimal CHECK ck1 < 100, ck2 int, v int, PRIMARY KEY ((pk), ck1, ck2));";
             cluster.schemaChange(String.format(createTableStatement, tableName));
             cluster.coordinator(1).execute(String.format("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 2, 3)", tableName), ConsistencyLevel.ALL);
 
@@ -199,7 +188,7 @@ public class CqlConstraintsTest extends TestBaseImpl
 
         try (Cluster cluster = init(Cluster.build(3).start()))
         {
-            String createTableStatement = "CREATE TABLE %s (pk text, ck1 int, ck2 int, v int, PRIMARY KEY ((pk), ck1, ck2), CONSTRAINT cons1 CHECK LENGTH(pk) < 4);";
+            String createTableStatement = "CREATE TABLE %s (pk text CHECK LENGTH(pk) < 4, ck1 int, ck2 int, v int, PRIMARY KEY ((pk), ck1, ck2));";
             cluster.schemaChange(String.format(createTableStatement, tableName));
             cluster.coordinator(1).execute(String.format("INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foo', 2, 2, 3)", tableName), ConsistencyLevel.ALL);
 
@@ -220,7 +209,7 @@ public class CqlConstraintsTest extends TestBaseImpl
 
         try (Cluster cluster = init(Cluster.build(3).start()))
         {
-            String createTableStatement = "CREATE TABLE %s (pk varchar, ck1 int, ck2 int, v int, PRIMARY KEY ((pk), ck1, ck2), CONSTRAINT cons1 CHECK LENGTH(pk) < 4);";
+            String createTableStatement = "CREATE TABLE %s (pk varchar CHECK LENGTH(pk) < 4, ck1 int, ck2 int, v int, PRIMARY KEY ((pk), ck1, ck2));";
             cluster.schemaChange(String.format(createTableStatement, tableName));
             cluster.coordinator(1).execute(String.format("INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foo', 2, 2, 3)", tableName), ConsistencyLevel.ALL);
 
@@ -241,7 +230,7 @@ public class CqlConstraintsTest extends TestBaseImpl
 
         try (Cluster cluster = init(Cluster.build(3).start()))
         {
-            String createTableStatement = "CREATE TABLE %s (pk ascii, ck1 int, ck2 int, v int, PRIMARY KEY ((pk), ck1, ck2), CONSTRAINT cons1 CHECK LENGTH(pk) < 4);";
+            String createTableStatement = "CREATE TABLE %s (pk ascii CHECK LENGTH(pk) < 4, ck1 int, ck2 int, v int, PRIMARY KEY ((pk), ck1, ck2));";
             cluster.schemaChange(String.format(createTableStatement, tableName));
             cluster.coordinator(1).execute(String.format("INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foo', 2, 2, 3)", tableName), ConsistencyLevel.ALL);
 

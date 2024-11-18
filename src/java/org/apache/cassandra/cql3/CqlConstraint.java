@@ -20,7 +20,6 @@ package org.apache.cassandra.cql3;
 
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -84,7 +83,7 @@ public class CqlConstraint
 
     public void appendCqlTo(CqlBuilder builder)
     {
-        builder.append(" CHECK ").append(toString());
+        builder.append(toString());
     }
 
     public void checkConstraint(Map<String, Term.Raw> columnValues, ColumnMetadata columnMetadata, TableMetadata tableMetadata)
@@ -133,18 +132,6 @@ public class CqlConstraint
             cqlConstraint.constraintCondition.getSerializer().serialize(cqlConstraint.constraintCondition, out, version);
         }
 
-        public void serializeSet(Set<CqlConstraint> cqlConstraintSet, DataOutputPlus out, int version) throws IOException
-        {
-            if (cqlConstraintSet == null)
-                out.writeInt(0);
-            else
-            {
-                out.writeInt(cqlConstraintSet.size());
-                for (CqlConstraint constraint : cqlConstraintSet)
-                    serialize(constraint, out, version);
-            }
-        }
-
         @Override
         public CqlConstraint deserialize(DataInputPlus in, int version) throws IOException
         {
@@ -156,17 +143,6 @@ public class CqlConstraint
             ConstraintCondition condition = ConstraintSerializerFactory.getCqlConditionSerializer(columnConstraintClassName)
                                                                        .deserialize(in, version);
             return new CqlConstraint(identifier, columnNameIdentifier, condition);
-        }
-
-        public Set<CqlConstraint> deserializeSet(DataInputPlus in, int version) throws IOException
-        {
-            int numberOfConstraints = in.readInt();
-            Set<CqlConstraint> constraintSet = new HashSet<>();
-//            if (numberOfConstraints == 0)
-//                return constraintSet;
-            for (int i = 0; i < numberOfConstraints; i++)
-                constraintSet.add(CqlConstraint.serializer.deserialize(in, version));
-            return constraintSet;
         }
 
         @Override

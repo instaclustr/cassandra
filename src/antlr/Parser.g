@@ -779,11 +779,13 @@ tableDefinition[CreateTableStatement.Raw stmt]
     ;
 
 tableColumns[CreateTableStatement.Raw stmt]
-    @init { boolean isStatic = false; }
-    : k=ident v=comparatorType (K_STATIC { isStatic = true; })? (mask=columnMask)? (K_CHECK kconst=cqlConstraintExp[stmt])? { $stmt.addColumn(k, v, isStatic, mask, kconst == null ? null : kconst.prepare(k)); }
+    @init {
+        boolean isStatic = false;
+        List<CqlConstraint.Raw> columnConstraints = new ArrayList<>();
+    }
+    : k=ident v=comparatorType (K_STATIC { isStatic = true; })? (mask=columnMask)? (K_CHECK kconst=cqlConstraintExp[stmt] { columnConstraints.add(kconst); } (K_AND kconst=cqlConstraintExp[stmt] { columnConstraints.add(kconst); })* )? { $stmt.addColumn(k, v, isStatic, mask, columnConstraints); }
         (K_PRIMARY K_KEY { $stmt.setPartitionKeyColumn(k); })?
     | K_PRIMARY K_KEY '(' tablePartitionKey[stmt] (',' c=ident { $stmt.markClusteringColumn(c); } )* ')'
-    | K_CONSTRAINT (cn=ident)? K_CHECK expr=cqlConstraintExp[stmt] { $stmt.addTableConstraint(expr.prepareWithName(cn)); }
     ;
 
 cqlConstraintExp[CreateTableStatement.Raw stmt] returns [CqlConstraint.Raw cqlConstraint]
@@ -964,7 +966,10 @@ alterKeyspaceStatement returns [AlterKeyspaceStatement.Raw stmt]
  * ALTER TABLE [IF EXISTS] <table> WITH <property> = <value>;
  */
 alterTableStatement returns [AlterTableStatement.Raw stmt]
-    @init { boolean ifExists = false; }
+    @init {
+        boolean ifExists = false;
+        List<CqlConstraint.Raw> columnConstraints = new ArrayList<>();
+    }
     : K_ALTER K_COLUMNFAMILY (K_IF K_EXISTS { ifExists = true; } )?
       cf=columnFamilyName { $stmt = new AlterTableStatement.Raw(cf, ifExists); }
       (
@@ -972,7 +977,9 @@ alterTableStatement returns [AlterTableStatement.Raw stmt]
 
       | K_ALTER ( K_IF K_EXISTS { $stmt.ifColumnExists(true); } )? id=cident
               ( mask=columnMask { $stmt.mask(id, mask); }
-              | K_DROP K_MASKED { $stmt.mask(id, null); } )
+              | K_DROP K_MASKED { $stmt.mask(id, null); }
+              | K_DROP K_CHECK { $stmt.dropConstraint(id); }
+              | K_CHECK kconst=alterCqlConstraintExp[stmt] { columnConstraints.add(kconst); } (K_AND kconst=alterCqlConstraintExp[stmt] { columnConstraints.add(kconst); })* { $stmt.alterConstraints(id, columnConstraints); })
 
       | K_ADD ( K_IF K_NOT K_EXISTS { $stmt.ifColumnNotExists(true); } )?
               (        id=ident  v=comparatorType  b=isStaticColumn (m=columnMask)? { $stmt.add(id,  v,  b, m);  }
@@ -990,9 +997,6 @@ alterTableStatement returns [AlterTableStatement.Raw stmt]
                 ( K_AND idn=ident K_TO toIdn=ident { $stmt.rename(idn, toIdn); } )* )
 
       | K_DROP K_COMPACT K_STORAGE { $stmt.dropCompactStorage(); }
-
-      | K_DROP K_CONSTRAINT name=ident { $stmt.dropConstraint(name); }
-      | K_ADD K_CONSTRAINT (name=ident)? K_CHECK expr=alterCqlConstraintExp[stmt] { $stmt.addConstraint(name, expr.prepareWithName(name)); }
 
       | K_WITH properties[$stmt.attrs] { $stmt.attrs(); }
       )

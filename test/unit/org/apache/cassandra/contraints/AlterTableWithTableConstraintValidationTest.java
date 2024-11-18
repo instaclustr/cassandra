@@ -19,7 +19,6 @@
 package org.apache.cassandra.contraints;
 
 import org.junit.Test;
-import org.apache.cassandra.cql3.ConstraintViolationException;
 
 
 public class AlterTableWithTableConstraintValidationTest extends CqlConstraintValidationTester
@@ -28,9 +27,9 @@ public class AlterTableWithTableConstraintValidationTest extends CqlConstraintVa
     @Test
     public void testCreateTableWithColumnNamedConstraintDescribeTableNonFunction() throws Throwable
     {
-        String table = createTable("CREATE TABLE %s (pk int, ck1 int, ck2 int, v int, PRIMARY KEY ((pk),ck1, ck2), CONSTRAINT cons1 CHECK ck1 < 100) WITH CLUSTERING ORDER BY (ck1 ASC);");
+        String table = createTable("CREATE TABLE %s (pk int, ck1 int CHECK ck1 < 100, ck2 int, v int, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
 
-        execute("ALTER TABLE %s DROP CONSTRAINT cons1");
+        execute("ALTER TABLE %s ALTER ck1 DROP CHECK");
 
         String tableCreateStatement = "CREATE TABLE " + KEYSPACE + "." + table + " (\n" +
                                       "    pk int,\n" +
@@ -49,33 +48,18 @@ public class AlterTableWithTableConstraintValidationTest extends CqlConstraintVa
     }
 
     @Test
-    public void testCreateTableWithColumnDropNonExistingConstraint() throws Throwable
-    {
-        createTable("CREATE TABLE %s (pk int, ck1 int, ck2 int, v int, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
-        assertInvalidThrow(ConstraintViolationException.class, "ALTER TABLE %s DROP CONSTRAINT cons1");
-    }
-
-    @Test
-    public void testCreateTableWithColumnDropNonExistingConstraintWithAlternativeConstraint() throws Throwable
-    {
-        createTable("CREATE TABLE %s (pk int, ck1 int, ck2 int, v int, PRIMARY KEY ((pk),ck1, ck2), CONSTRAINT cons1 CHECK ck1 < 100) WITH CLUSTERING ORDER BY (ck1 ASC);");
-        assertInvalidThrow(ConstraintViolationException.class, "ALTER TABLE %s DROP CONSTRAINT cons2");
-    }
-
-    @Test
     public void testCreateTableAddConstraint() throws Throwable
     {
         String table = createTable("CREATE TABLE %s (pk int, ck1 int, ck2 int, v int, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
 
-        execute("ALTER TABLE %s ADD CONSTRAINT cons1 CHECK ck1 < 100");
+        execute("ALTER TABLE %s ALTER ck1 CHECK ck1 < 100 AND ck1 > 10");
 
         String tableCreateStatement = "CREATE TABLE " + KEYSPACE + "." + table + " (\n" +
                                       "    pk int,\n" +
-                                      "    ck1 int,\n" +
+                                      "    ck1 int CHECK ck1 < 100 AND ck1 > 10,\n" +
                                       "    ck2 int,\n" +
                                       "    v int,\n" +
-                                      "    PRIMARY KEY (pk, ck1, ck2),\n" +
-                                      "    CONSTRAINT cons1 CHECK ck1 < 100\n" +
+                                      "    PRIMARY KEY (pk, ck1, ck2)\n" +
                                       ") WITH CLUSTERING ORDER BY (ck1 ASC, ck2 ASC)\n" +
                                       "    AND " + tableParametersCql();
 
@@ -91,17 +75,15 @@ public class AlterTableWithTableConstraintValidationTest extends CqlConstraintVa
     {
         String table = createTable("CREATE TABLE %s (pk int, ck1 int, ck2 int, v int, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
 
-        execute("ALTER TABLE %s ADD CONSTRAINT cons1 CHECK ck1 < 100");
-        execute("ALTER TABLE %s ADD CONSTRAINT cons2 CHECK ck2 > 10");
+        execute("ALTER TABLE %s ALTER ck1 CHECK ck1 < 100");
+        execute("ALTER TABLE %s ALTER ck2 CHECK ck2 > 10");
 
         String tableCreateStatement = "CREATE TABLE " + KEYSPACE + "." + table + " (\n" +
                                       "    pk int,\n" +
-                                      "    ck1 int,\n" +
-                                      "    ck2 int,\n" +
+                                      "    ck1 int CHECK ck1 < 100,\n" +
+                                      "    ck2 int CHECK ck2 > 10,\n" +
                                       "    v int,\n" +
-                                      "    PRIMARY KEY (pk, ck1, ck2),\n" +
-                                      "    CONSTRAINT cons1 CHECK ck1 < 100,\n" +
-                                      "    CONSTRAINT cons2 CHECK ck2 > 10\n" +
+                                      "    PRIMARY KEY (pk, ck1, ck2)\n" +
                                       ") WITH CLUSTERING ORDER BY (ck1 ASC, ck2 ASC)\n" +
                                       "    AND " + tableParametersCql();
 
@@ -117,15 +99,14 @@ public class AlterTableWithTableConstraintValidationTest extends CqlConstraintVa
     {
         String table = createTable("CREATE TABLE %s (pk int, ck1 int, ck2 text, v int, PRIMARY KEY ((pk), ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
 
-        execute("ALTER TABLE %s ADD CONSTRAINT cons1 CHECK ck1 < 100");
+        execute("ALTER TABLE %s ALTER ck1 CHECK ck1 < 100");
 
         String tableCreateStatement = "CREATE TABLE " + KEYSPACE + "." + table + " (\n" +
                                       "    pk int,\n" +
-                                      "    ck1 int,\n" +
+                                      "    ck1 int CHECK ck1 < 100,\n" +
                                       "    ck2 text,\n" +
                                       "    v int,\n" +
-                                      "    PRIMARY KEY (pk, ck1, ck2),\n" +
-                                      "    CONSTRAINT cons1 CHECK ck1 < 100\n" +
+                                      "    PRIMARY KEY (pk, ck1, ck2)\n" +
                                       ") WITH CLUSTERING ORDER BY (ck1 ASC, ck2 ASC)\n" +
                                       "    AND " + tableParametersCql();
 
@@ -135,38 +116,12 @@ public class AlterTableWithTableConstraintValidationTest extends CqlConstraintVa
                           table,
                           tableCreateStatement));
 
-        execute("ALTER TABLE %s ADD CONSTRAINT cons2 CHECK LENGTH(ck2) = 4");
+        execute("ALTER TABLE %s ALTER ck2 CHECK LENGTH(ck2) = 4");
 
         tableCreateStatement = "CREATE TABLE " + KEYSPACE + "." + table + " (\n" +
                                       "    pk int,\n" +
-                                      "    ck1 int,\n" +
-                                      "    ck2 text,\n" +
-                                      "    v int,\n" +
-                                      "    PRIMARY KEY (pk, ck1, ck2),\n" +
-                                      "    CONSTRAINT cons1 CHECK ck1 < 100,\n" +
-                                      "    CONSTRAINT cons2 CHECK LENGTH(ck2) = 4\n" +
-                                      ") WITH CLUSTERING ORDER BY (ck1 ASC, ck2 ASC)\n" +
-                                      "    AND " + tableParametersCql();
-
-        assertRowsNet(executeDescribeNet(KEYSPACE, "DESCRIBE TABLE " + KEYSPACE + "." + table),
-                      row(KEYSPACE,
-                          "table",
-                          table,
-                          tableCreateStatement));
-    }
-
-    @Test
-    public void testCreateTableAddAndRemoveConstraint() throws Throwable
-    {
-        String table = createTable("CREATE TABLE %s (pk int, ck1 int, ck2 int, v int, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
-
-        execute("ALTER TABLE %s ADD CONSTRAINT cons1 CHECK ck1 < 100");
-        execute("ALTER TABLE %s DROP CONSTRAINT cons1");
-
-        String tableCreateStatement = "CREATE TABLE " + KEYSPACE + "." + table + " (\n" +
-                                      "    pk int,\n" +
-                                      "    ck1 int,\n" +
-                                      "    ck2 int,\n" +
+                                      "    ck1 int CHECK ck1 < 100,\n" +
+                                      "    ck2 text CHECK LENGTH(ck2) = 4,\n" +
                                       "    v int,\n" +
                                       "    PRIMARY KEY (pk, ck1, ck2)\n" +
                                       ") WITH CLUSTERING ORDER BY (ck1 ASC, ck2 ASC)\n" +
@@ -180,17 +135,42 @@ public class AlterTableWithTableConstraintValidationTest extends CqlConstraintVa
     }
 
     @Test
-    public void testCreateTableWithColumnAddExistingConstraint() throws Throwable
+    public void testCreateTableAddAndRemoveConstraint() throws Throwable
     {
-        createTable("CREATE TABLE %s (pk int, ck1 int, ck2 int, v int, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
-        execute("ALTER TABLE %s ADD CONSTRAINT cons1 CHECK ck1 < 100");
-        assertInvalidThrow(ConstraintViolationException.class, "ALTER TABLE %s ADD CONSTRAINT cons1 CHECK LENGTH(ck2) = 4");
-    }
+        String table = createTable("CREATE TABLE %s (pk int, ck1 int, ck2 text, v int, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
 
-    @Test
-    public void testCreateTableWithColumnAndConstraintAddExistingConstraint() throws Throwable
-    {
-        createTable("CREATE TABLE %s (pk int, ck1 text, ck2 int, v int, PRIMARY KEY ((pk),ck1, ck2), CONSTRAINT cons1 CHECK LENGTH(ck1) = 4) WITH CLUSTERING ORDER BY (ck1 ASC);");
-        assertInvalidThrow(ConstraintViolationException.class, "ALTER TABLE %s ADD CONSTRAINT cons1 CHECK LENGTH(ck2) = 4");
+        execute("ALTER TABLE %s ALTER ck1 CHECK ck1 < 100");
+
+        String tableCreateStatement = "CREATE TABLE " + KEYSPACE + "." + table + " (\n" +
+                                      "    pk int,\n" +
+                                      "    ck1 int CHECK ck1 < 100,\n" +
+                                      "    ck2 text,\n" +
+                                      "    v int,\n" +
+                                      "    PRIMARY KEY (pk, ck1, ck2)\n" +
+                                      ") WITH CLUSTERING ORDER BY (ck1 ASC, ck2 ASC)\n" +
+                                      "    AND " + tableParametersCql();
+
+        assertRowsNet(executeDescribeNet(KEYSPACE, "DESCRIBE TABLE " + KEYSPACE + "." + table),
+                      row(KEYSPACE,
+                          "table",
+                          table,
+                          tableCreateStatement));
+
+        execute("ALTER TABLE %s ALTER ck1 DROP CHECK");
+
+        String tableCreateStatement2 = "CREATE TABLE " + KEYSPACE + "." + table + " (\n" +
+                                      "    pk int,\n" +
+                                      "    ck1 int,\n" +
+                                      "    ck2 text,\n" +
+                                      "    v int,\n" +
+                                      "    PRIMARY KEY (pk, ck1, ck2)\n" +
+                                      ") WITH CLUSTERING ORDER BY (ck1 ASC, ck2 ASC)\n" +
+                                      "    AND " + tableParametersCql();
+
+        assertRowsNet(executeDescribeNet(KEYSPACE, "DESCRIBE TABLE " + KEYSPACE + "." + table),
+                      row(KEYSPACE,
+                          "table",
+                          table,
+                          tableCreateStatement2));
     }
 }

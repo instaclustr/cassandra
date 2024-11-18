@@ -57,7 +57,7 @@ public final class CreateTableStatement extends AlterSchemaStatement
     private final Map<ColumnIdentifier, ColumnProperties.Raw> rawColumns;
     private final Set<ColumnIdentifier> staticColumns;
     private final List<ColumnIdentifier> partitionKeyColumns;
-    Map<ColumnIdentifier, CqlConstraint> columnConstraints;
+    Map<ColumnIdentifier, List<CqlConstraint>> columnConstraints;
     private final List<ColumnIdentifier> clusteringColumns;
 
     private final LinkedHashMap<ColumnIdentifier, Boolean> clusteringOrder;
@@ -68,20 +68,17 @@ public final class CreateTableStatement extends AlterSchemaStatement
 
     private String expandedCql;
 
-    private Set<CqlConstraint> tableConstraints;
-
     public CreateTableStatement(String keyspaceName,
                                 String tableName,
                                 Map<ColumnIdentifier, ColumnProperties.Raw> rawColumns,
                                 Set<ColumnIdentifier> staticColumns,
                                 List<ColumnIdentifier> partitionKeyColumns,
                                 List<ColumnIdentifier> clusteringColumns,
-                                Map<ColumnIdentifier, CqlConstraint> columnConstraints,
+                                Map<ColumnIdentifier, List<CqlConstraint>> columnConstraints,
                                 LinkedHashMap<ColumnIdentifier, Boolean> clusteringOrder,
                                 TableAttributes attrs,
                                 boolean ifNotExists,
-                                boolean useCompactStorage,
-                                Set<CqlConstraint> tableConstraints)
+                                boolean useCompactStorage)
     {
         super(keyspaceName);
         this.tableName = tableName;
@@ -97,8 +94,6 @@ public final class CreateTableStatement extends AlterSchemaStatement
 
         this.ifNotExists = ifNotExists;
         this.useCompactStorage = useCompactStorage;
-
-        this.tableConstraints = tableConstraints;
     }
 
     @Override
@@ -374,7 +369,6 @@ public final class CreateTableStatement extends AlterSchemaStatement
             });
         }
 
-        builder.constraints(tableConstraints);
         return builder;
     }
 
@@ -507,14 +501,12 @@ public final class CreateTableStatement extends AlterSchemaStatement
         private final Map<ColumnIdentifier, ColumnProperties.Raw> rawColumns = new HashMap<>();
         private final Set<ColumnIdentifier> staticColumns = new HashSet<>();
         private final List<ColumnIdentifier> clusteringColumns = new ArrayList<>();
-        private final Map<ColumnIdentifier, CqlConstraint> columnConstraints = new HashMap<>();
+        private final Map<ColumnIdentifier, List<CqlConstraint>> columnConstraints = new HashMap<>();
 
         private List<ColumnIdentifier> partitionKeyColumns;
 
         private final LinkedHashMap<ColumnIdentifier, Boolean> clusteringOrder = new LinkedHashMap<>();
         public final TableAttributes attrs = new TableAttributes();
-
-        private Set<CqlConstraint> tableConstraints = new LinkedHashSet<>();
 
         public Raw(QualifiedName name, boolean ifNotExists)
         {
@@ -539,8 +531,7 @@ public final class CreateTableStatement extends AlterSchemaStatement
                                             clusteringOrder,
                                             attrs,
                                             ifNotExists,
-                                            useCompactStorage,
-                                            tableConstraints);
+                                            useCompactStorage);
         }
 
         public String keyspace()
@@ -559,22 +550,20 @@ public final class CreateTableStatement extends AlterSchemaStatement
             return name.getName();
         }
 
-        public void addColumn(ColumnIdentifier column, CQL3Type.Raw type, boolean isStatic, ColumnMask.Raw mask, CqlConstraint cqlConstraint)
+        public void addColumn(ColumnIdentifier column, CQL3Type.Raw type, boolean isStatic, ColumnMask.Raw mask, List<CqlConstraint.Raw> cqlConstraints)
         {
+            List<CqlConstraint> constraints = new ArrayList<>();
+            for (CqlConstraint.Raw c : cqlConstraints)
+            {
+                constraints.add(c.prepare(column));
+            }
+
             if (null != rawColumns.put(column, new ColumnProperties.Raw(type, mask)))
                 throw ire("Duplicate column '%s' declaration for table '%s'", column, name);
 
             if (isStatic)
                 staticColumns.add(column);
-
-            if (cqlConstraint != null)
-                columnConstraints.put(column, cqlConstraint);
-        }
-
-        public void addTableConstraint(CqlConstraint constraint)
-        {
-            if (!tableConstraints.add(constraint))
-                throw ire("Duplicate table constraint: '%s'", constraint);
+            columnConstraints.put(column, constraints);
         }
 
         public void setCompactStorage()

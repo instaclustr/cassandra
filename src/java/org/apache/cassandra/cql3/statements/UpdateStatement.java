@@ -375,10 +375,8 @@ public class UpdateStatement extends ModificationStatement
         for (ColumnMetadata column : tableMetadata.columns())
         {
             if (column.hasConstraint())
-                column.getColumnConstraint().checkConstraint(columnMap, column, tableMetadata);
+                for (CqlConstraint constraint : column.getColumnConstraints())
+                    constraint.checkConstraint(columnMap, column, tableMetadata);
         }
-
-        for (CqlConstraint constraint: tableMetadata.constraints())
-            constraint.checkConstraint(columnMap, null, tableMetadata);
     }
 }

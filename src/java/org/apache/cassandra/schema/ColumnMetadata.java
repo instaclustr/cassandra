@@ -47,6 +47,7 @@ import org.apache.cassandra.utils.ByteBufferUtil;
 import org.github.jamm.Unmetered;
 
 import static org.apache.cassandra.db.TypeSizes.BOOL_SIZE;
+import static org.apache.cassandra.db.TypeSizes.INT_SIZE;
 import static org.apache.cassandra.db.TypeSizes.sizeof;
 
 @Unmetered
@@ -117,7 +118,7 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
     private final ColumnMask mask;
 
     @Nullable
-    private final CqlConstraint cqlConstraint;
+    private List<CqlConstraint> cqlConstraints;
 
     private static long comparisonOrder(Kind kind, boolean isComplex, long position, ColumnIdentifier name)
     {
@@ -174,7 +175,7 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
                           int position,
                           Kind kind,
                           @Nullable ColumnMask mask,
-                          @Nullable CqlConstraint cqlConstraint)
+                          @Nullable List<CqlConstraint> cqlConstraints)
     {
         this(table.keyspace,
              table.name,
@@ -183,7 +184,7 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
              position,
              kind,
              mask,
-             cqlConstraint);
+             cqlConstraints);
     }
 
     public ColumnMetadata(TableMetadata table,
@@ -200,7 +201,7 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
              position,
              kind,
              mask,
-             null);
+             List.of());
     }
 
     @VisibleForTesting
@@ -212,7 +213,7 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
                           Kind kind,
                           @Nullable ColumnMask mask)
     {
-        this(ksName, cfName, name, type, position, kind, mask, null);
+        this(ksName, cfName, name, type, position, kind, mask, List.of());
     }
 
     @VisibleForTesting
@@ -223,7 +224,7 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
                           int position,
                           Kind kind,
                           @Nullable ColumnMask mask,
-                          @Nullable CqlConstraint cqlConstraint)
+                          List<CqlConstraint> cqlConstraints)
     {
         super(ksName, cfName, name, type);
         assert name != null && type != null && kind != null;
@@ -242,7 +243,7 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
         this.asymmetricCellPathComparator = cellPathComparator == null ? null : (a, b) -> cellPathComparator.compare(((Cell<?>)a).path(), (CellPath) b);
         this.comparisonOrder = comparisonOrder(kind, isComplex(), Math.max(0, position), name);
         this.mask = mask;
-        this.cqlConstraint = cqlConstraint;
+        this.cqlConstraints = cqlConstraints;
     }
 
     private static Comparator<CellPath> makeCellPathComparator(Kind kind, AbstractType<?> type)
@@ -274,27 +275,27 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
 
     public ColumnMetadata copy()
     {
-        return new ColumnMetadata(ksName, cfName, name, type, position, kind, mask, cqlConstraint);
+        return new ColumnMetadata(ksName, cfName, name, type, position, kind, mask, cqlConstraints);
     }
 
     public ColumnMetadata withNewName(ColumnIdentifier newName)
     {
-        return new ColumnMetadata(ksName, cfName, newName, type, position, kind, mask, cqlConstraint);
+        return new ColumnMetadata(ksName, cfName, newName, type, position, kind, mask, cqlConstraints);
     }
 
     public ColumnMetadata withNewType(AbstractType<?> newType)
     {
-        return new ColumnMetadata(ksName, cfName, name, newType, position, kind, mask, cqlConstraint);
+        return new ColumnMetadata(ksName, cfName, name, newType, position, kind, mask, cqlConstraints);
     }
 
     public ColumnMetadata withNewMask(@Nullable ColumnMask newMask)
     {
-        return new ColumnMetadata(ksName, cfName, name, type, position, kind, newMask, cqlConstraint);
+        return new ColumnMetadata(ksName, cfName, name, type, position, kind, newMask, cqlConstraints);
     }
 
-    public ColumnMetadata withNewColumnConstraint(@Nullable CqlConstraint newCqlConstraint)
+    public ColumnMetadata withNewColumnConstraint(@Nullable List<CqlConstraint> newCqlConstraints)
     {
-        return new ColumnMetadata(ksName, cfName, name, type, position, kind, mask, newCqlConstraint);
+        return new ColumnMetadata(ksName, cfName, name, type, position, kind, mask, newCqlConstraints);
     }
 
     public boolean isPartitionKey()
@@ -319,7 +320,7 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
 
     public boolean hasConstraint()
     {
-        return cqlConstraint != null;
+        return cqlConstraints != null && !cqlConstraints.isEmpty();
     }
 
     public boolean isRegular()
@@ -347,9 +348,21 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
     }
 
     @Nullable
-    public CqlConstraint getColumnConstraint()
+    public List<CqlConstraint> getColumnConstraints()
     {
-        return cqlConstraint;
+        return cqlConstraints;
+    }
+
+    @Nullable
+    public void setColumnConstraints(List<CqlConstraint> constraints)
+    {
+        this.cqlConstraints = constraints;
+    }
+
+    @Nullable
+    public void removeColumnConstraints()
+    {
+        cqlConstraints = null;
     }
 
     @Override
@@ -374,7 +387,7 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
             && ksName.equals(other.ksName)
             && cfName.equals(other.cfName)
             && Objects.equals(mask, other.mask)
-            && Objects.equals(cqlConstraint, other.cqlConstraint);
+            && Objects.equals(cqlConstraints, other.cqlConstraints);
     }
 
     Optional<Difference> compare(ColumnMetadata other)
@@ -405,7 +418,7 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
             result = 31 * result + (kind == null ? 0 : kind.hashCode());
             result = 31 * result + position;
             result = 31 * result + (mask == null ? 0 : mask.hashCode());
-            result = 31 * result + (cqlConstraint == null ? 0 : cqlConstraint.hashCode());
+            result = 31 * result + (cqlConstraints == null ? 0 : cqlConstraints.hashCode());
             hash = result;
         }
         return result;
@@ -572,8 +585,18 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
         if (isMasked())
             mask.appendCqlTo(builder);
 
-        if (hasConstraint())
-            cqlConstraint.appendCqlTo(builder);
+        if (cqlConstraints != null && !cqlConstraints.isEmpty())
+        {
+            builder.append(" CHECK ");
+            Iterator<CqlConstraint> constraintIterator = cqlConstraints.iterator();
+            constraintIterator.next().appendCqlTo(builder);
+
+            while (constraintIterator.hasNext())
+            {
+                builder.append(" AND ");
+                constraintIterator.next().appendCqlTo(builder);
+            }
+        }
     }
 
     public static String toCQLString(Iterable<ColumnMetadata> defs)
@@ -667,9 +690,14 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
             out.writeBoolean(t.mask != null);
             if (t.mask != null)
                 ColumnMask.serializer.serialize(t.mask, out, version);
-            out.writeBoolean(t.cqlConstraint != null);
-            if (t.cqlConstraint != null)
-                CqlConstraint.serializer.serialize(t.cqlConstraint, out, version.asInt());
+            if (t.cqlConstraints == null)
+                out.writeInt(0);
+            else
+            {
+                out.writeInt(t.cqlConstraints.size());
+                for (int i = 0; i < t.cqlConstraints.size(); i++)
+                    CqlConstraint.serializer.serialize(t.cqlConstraints.get(i), out, version.asInt());
+            }
         }
 
         public ColumnMetadata deserialize(DataInputPlus in, Types types, UserFunctions functions, Version version) throws IOException
@@ -688,16 +716,23 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
             boolean masked = in.readBoolean();
             if (masked)
                 mask = ColumnMask.serializer.deserialize(in, ksName, type, types, functions, version);
-            CqlConstraint cqlConstraint = null;
-            boolean hasConstraint = in.readBoolean();
-            if (hasConstraint)
-                cqlConstraint = CqlConstraint.serializer.deserialize(in, version.asInt());
-
-            return new ColumnMetadata(ksName, tableName, new ColumnIdentifier(nameBB, name), type, position, kind, mask, cqlConstraint);
+            int constraintsNumber = in.readInt();
+            List<CqlConstraint> constraints = new ArrayList<>();
+            for (int i = 0; i < constraintsNumber; i++)
+                constraints.add(CqlConstraint.serializer.deserialize(in, version.asInt()));
+            return new ColumnMetadata(ksName, tableName, new ColumnIdentifier(nameBB, name), type, position, kind, mask, constraints);
         }
 
         public long serializedSize(ColumnMetadata t, Version version)
         {
+
+            long constraintsSize = 0;
+            if (t.getColumnConstraints() != null)
+            {
+                for (CqlConstraint cqlConstraint : t.getColumnConstraints())
+                    constraintsSize += CqlConstraint.serializer.serializedSize(cqlConstraint, version.asInt());
+            }
+
             return sizeof(t.ksName) +
                    sizeof(t.cfName) +
                    sizeof(t.kind.name()) +
@@ -708,8 +743,8 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
                    ByteBufferUtil.serializedSizeWithShortLength(t.name.bytes) +
                    BOOL_SIZE +
                    ((t.mask == null) ? 0 : ColumnMask.serializer.serializedSize(t.mask, version)) +
-                   BOOL_SIZE +
-                   ((t.cqlConstraint == null) ? 0 : CqlConstraint.serializer.serializedSize(t.cqlConstraint, version.asInt()))
+                   INT_SIZE +
+                   constraintsSize
             ;
         }
     }
