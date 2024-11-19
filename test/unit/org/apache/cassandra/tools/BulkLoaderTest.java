@@ -20,6 +20,10 @@ package org.apache.cassandra.tools;
 
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.tools.ToolRunner.ToolResult;
@@ -30,17 +34,31 @@ import static org.junit.Assert.assertThat;
 
 public class BulkLoaderTest extends OfflineToolUtils
 {
+    private static final String[] ALLOWED_BULK_LOADER_THREADS = new String[]{
+            "ObjectCleanerThread",
+            "globalEventExecutor-[1-9]-[1-9]",
+            "globalEventExecutor-[1-9]-[1-9]",
+            "Shutdown-checker",
+            "cluster[0-9]-connection-reaper-[0-9]",
+            "Attach Listener",
+            "process reaper",
+            "JNA Cleaner",
+    };
+
+    // the driver isn't expected to terminate threads on close synchronously (CASSANDRA-19000)
+    private static final String SYNC_DRIVER_THREAD = "cluster[0-9]-nio-worker-[0-9]";
+
     @Test
     public void testBulkLoader_NoArgs()
     {
         ToolResult tool = ToolRunner.invokeClass(BulkLoader.class);
         assertEquals(1, tool.getExitCode());
         assertThat(tool.getCleanedStderr(), CoreMatchers.containsString("Missing sstable directory argument"));
-        
-        assertNoUnexpectedThreadsStarted(new String[] { "ObjectCleanerThread",
-                                                        "Shutdown-checker",
-                                                        "cluster[0-9]-connection-reaper-[0-9]" },
-                                         false);
+
+        assertNoUnexpectedThreadsStarted(false, "ObjectCleanerThread",
+                "Shutdown-checker",
+                "cluster[0-9]-connection-reaper-[0-9]");
+
         assertSchemaNotLoaded();
         assertCLSMNotLoaded();
         assertSystemKSNotLoaded();
@@ -62,15 +80,8 @@ public class BulkLoaderTest extends OfflineToolUtils
         if (!(tool.getException().getCause().getCause().getCause() instanceof NoHostAvailableException))
             throw tool.getException();
 
-        assertNoUnexpectedThreadsStarted(new String[] { "ObjectCleanerThread",
-                                                        "globalEventExecutor-[1-9]-[1-9]",
-                                                        "globalEventExecutor-[1-9]-[1-9]",
-                                                        "Shutdown-checker",
-                                                        "cluster[0-9]-connection-reaper-[0-9]",
-                                                        "Attach Listener",
-                                                        "process reaper",
-                                                        "JNA Cleaner"},
-                                         false);
+
+        assertNoUnexpectedThreadsStarted(false, ALLOWED_BULK_LOADER_THREADS);
         assertSchemaNotLoaded();
         assertCLSMNotLoaded();
         assertSystemKSNotLoaded();
@@ -94,21 +105,11 @@ public class BulkLoaderTest extends OfflineToolUtils
         if (!(tool.getException().getCause().getCause().getCause() instanceof NoHostAvailableException))
             throw tool.getException();
 
-        assertNoUnexpectedThreadsStarted(new String[] { "ObjectCleanerThread",
-                                                        "globalEventExecutor-[1-9]-[1-9]",
-                                                        "globalEventExecutor-[1-9]-[1-9]",
-                                                        "Shutdown-checker",
-                                                        "cluster[0-9]-connection-reaper-[0-9]",
-                                                        "Attach Listener",
-                                                        "process reaper",
-                                                        "JNA Cleaner",
-                                                        // the driver isn't expected to terminate threads on close synchronously (CASSANDRA-19000)
-                                                        "cluster[0-9]-nio-worker-[0-9]" },
-                                         false);
-    assertSchemaNotLoaded();
-    assertCLSMNotLoaded();
-    assertSystemKSNotLoaded();
-    assertKeyspaceNotLoaded();
+        assertNoUnexpectedThreadsStarted(false, appendToAllowedThreads(SYNC_DRIVER_THREAD));
+        assertSchemaNotLoaded();
+        assertCLSMNotLoaded();
+        assertSystemKSNotLoaded();
+        assertKeyspaceNotLoaded();
         assertServerNotLoaded();
     }
 
@@ -128,17 +129,7 @@ public class BulkLoaderTest extends OfflineToolUtils
         if (!(tool.getException().getCause().getCause().getCause() instanceof NoHostAvailableException))
             throw tool.getException();
 
-        assertNoUnexpectedThreadsStarted(new String[] { "ObjectCleanerThread",
-                                                        "globalEventExecutor-[1-9]-[1-9]",
-                                                        "globalEventExecutor-[1-9]-[1-9]",
-                                                        "Shutdown-checker",
-                                                        "cluster[0-9]-connection-reaper-[0-9]",
-                                                        "Attach Listener",
-                                                        "process reaper",
-                                                        "JNA Cleaner",
-                                                        // the driver isn't expected to terminate threads on close synchronously (CASSANDRA-19000)
-                                                        "cluster[0-9]-nio-worker-[0-9]" },
-                                         false);
+        assertNoUnexpectedThreadsStarted(false, appendToAllowedThreads(SYNC_DRIVER_THREAD));
         assertSchemaNotLoaded();
         assertCLSMNotLoaded();
         assertSystemKSNotLoaded();
@@ -214,5 +205,12 @@ public class BulkLoaderTest extends OfflineToolUtils
         assertEquals(5, DatabaseDescriptor.getEntireSSTableStreamThroughputOutboundMebibytesPerSec(), 0.0);
         assertEquals(6, DatabaseDescriptor.getEntireSSTableInterDCStreamThroughputOutboundMebibytesPerSec(), 0.0);
         throw tool.getException().getCause().getCause().getCause();
+    }
+
+    private String[] appendToAllowedThreads(String... optionalThreads)
+    {
+        var result = new ArrayList<>(Arrays.asList(ALLOWED_BULK_LOADER_THREADS));
+        Collections.addAll(result, optionalThreads);
+        return result.toArray(String[]::new);
     }
 }

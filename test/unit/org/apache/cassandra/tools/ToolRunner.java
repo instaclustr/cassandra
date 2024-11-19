@@ -57,6 +57,7 @@ public class ToolRunner
     protected static final Logger logger = LoggerFactory.getLogger(ToolRunner.class);
 
     public static final ImmutableList<String> DEFAULT_CLEANERS = ImmutableList.of("(?im)^picked up.*\\R",
+                                                                                  "(?im)^.*package jdk.internal.util.jar not in java.base*\\R",
                                                                                   "(?im)^.*`USE <keyspace>` with prepared statements is.*\\R");
 
     public static int runClassAsTool(String clazz, String... args)

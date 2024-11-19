@@ -49,7 +49,7 @@ public class EnableAuditLog extends NodeToolCmd
     @Option(title = "excluded_users", name = { "--excluded-users" }, description = "Comma separated list of users to be excluded for audit log. If not set the value from cassandra.yaml will be used")
     private String excluded_users = null;
 
-    @Option(title = "roll_cycle", name = {"--roll-cycle"}, description = "How often to roll the log file (MINUTELY, HOURLY, DAILY).")
+    @Option(title = "roll_cycle", name = {"--roll-cycle"}, description = "How often to roll the log file (FIVE_MINUTELY, FAST_HOURLY, FAST_DAILY).")
     private String rollCycle = null;
 
     @Option(title = "blocking", name = {"--blocking"}, description = "If the queue is full whether to block producers or drop samples [true|false].")

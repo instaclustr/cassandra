@@ -58,8 +58,8 @@ public class Dump implements Runnable
     @Arguments(usage = "<path1> [<path2>...<pathN>]", description = "Path containing the full query logs to dump.", required = true)
     private List<String> arguments = new ArrayList<>();
 
-    @Option(title = "roll_cycle", name = {"--roll-cycle"}, description = "How often to roll the log file was rolled. May be necessary for Chronicle to correctly parse file names. (MINUTELY, HOURLY, DAILY). Default HOURLY.")
-    private String rollCycle = "HOURLY";
+    @Option(title = "roll_cycle", name = {"--roll-cycle"}, description = "How often to roll the log file was rolled. May be necessary for Chronicle to correctly parse file names. (FIVE_MINUTELY, FAST_HOURLY, FAST_DAILY). Default FAST_HOURLY.")
+    private String rollCycle = "FAST_HOURLY";
 
     @Option(title = "follow", name = {"--follow"}, description = "Upon reacahing the end of the log continue indefinitely waiting for more records")
     private boolean follow = false;

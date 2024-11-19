@@ -26,7 +26,7 @@ import org.apache.cassandra.tools.NodeTool.NodeToolCmd;
 @Command(name = "enablefullquerylog", description = "Enable full query logging, defaults for the options are configured in cassandra.yaml")
 public class EnableFullQueryLog extends NodeToolCmd
 {
-    @Option(title = "roll_cycle", name = {"--roll-cycle"}, description = "How often to roll the log file (MINUTELY, HOURLY, DAILY).")
+    @Option(title = "roll_cycle", name = {"--roll-cycle"}, description = "How often to roll the log file (FIVE_MINUTELY, FAST_HOURLY, FAST_DAILY).")
     private String rollCycle = null;
 
     @Option(title = "blocking", name = {"--blocking"}, description = "If the queue is full whether to block producers or drop samples [true|false].")

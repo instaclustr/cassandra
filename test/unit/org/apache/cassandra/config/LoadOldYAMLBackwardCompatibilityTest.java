@@ -100,8 +100,8 @@ public class LoadOldYAMLBackwardCompatibilityTest
         assertNull(config.networking_cache_size);
         assertNull(config.file_cache_size);
         assertNull(config.index_summary_capacity);
-        assertEquals(new DurationSpec.IntMillisecondsBound(200), config.gc_log_threshold);
-        assertEquals(new DurationSpec.IntMillisecondsBound(1000), config.gc_warn_threshold);
+        assertEquals(new DurationSpec.IntMillisecondsBound(20000), config.gc_log_threshold);
+        assertEquals(new DurationSpec.IntMillisecondsBound(30000), config.gc_warn_threshold);
         assertEquals(new DurationSpec.IntSecondsBound(86400), config.trace_type_query_ttl);
         assertEquals(new DurationSpec.IntSecondsBound(604800), config.trace_type_repair_ttl);
         assertNull(config.prepared_statements_cache_size);

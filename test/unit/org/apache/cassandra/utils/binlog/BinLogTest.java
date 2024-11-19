@@ -38,7 +38,7 @@ import org.junit.Test;
 import net.openhft.chronicle.queue.ChronicleQueue;
 import net.openhft.chronicle.queue.impl.single.SingleChronicleQueueBuilder;
 import net.openhft.chronicle.queue.ExcerptTailer;
-import net.openhft.chronicle.queue.RollCycles;
+import net.openhft.chronicle.queue.rollcycles.TestRollCycles;
 import net.openhft.chronicle.wire.WireOut;
 import org.apache.cassandra.Util;
 
@@ -74,7 +74,7 @@ public class BinLogTest
     {
         path = tempDir();
         binLog = new BinLog.Builder().path(path)
-                                     .rollCycle(RollCycles.TEST_SECONDLY.toString())
+                                     .rollCycle(TestRollCycles.TEST_SECONDLY.toString())
                                      .maxQueueWeight(10)
                                      .maxLogSize(1024 * 1024 * 128)
                                      .blocking(false)
@@ -109,13 +109,13 @@ public class BinLogTest
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorZeroWeight() throws Exception
     {
-        new BinLog.Builder().path(tempDir()).rollCycle(RollCycles.TEST_SECONDLY.toString()).maxQueueWeight(0).build(false);
+        new BinLog.Builder().path(tempDir()).rollCycle(TestRollCycles.TEST_SECONDLY.toString()).maxQueueWeight(0).build(false);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorLogSize() throws Exception
     {
-        new BinLog.Builder().path(tempDir()).rollCycle(RollCycles.TEST_SECONDLY.toString()).maxLogSize(0).build(false);
+        new BinLog.Builder().path(tempDir()).rollCycle(TestRollCycles.TEST_SECONDLY.toString()).maxLogSize(0).build(false);
     }
 
     /**
@@ -382,7 +382,7 @@ public class BinLogTest
     public void testCleanupOnOversize() throws Exception
     {
         tearDown();
-        binLog = new BinLog.Builder().path(path).rollCycle(RollCycles.TEST_SECONDLY.toString()).maxQueueWeight(1).maxLogSize(10000).blocking(false).build(false);
+        binLog = new BinLog.Builder().path(path).rollCycle(TestRollCycles.TEST_SECONDLY.toString()).maxQueueWeight(1).maxLogSize(10000).blocking(false).build(false);
         for (int ii = 0; ii < 5; ii++)
         {
             binLog.put(record(String.valueOf(ii)));
@@ -495,7 +495,7 @@ public class BinLogTest
     List<String> readBinLogRecords(Path path)
     {
         List<String> records = new ArrayList<String>();
-        try (ChronicleQueue queue = SingleChronicleQueueBuilder.single(path.toFile()).rollCycle(RollCycles.TEST_SECONDLY).build())
+        try (ChronicleQueue queue = SingleChronicleQueueBuilder.single(path.toFile()).rollCycle(TestRollCycles.TEST_SECONDLY).build())
         {
             ExcerptTailer tailer = queue.createTailer();
             while (true)

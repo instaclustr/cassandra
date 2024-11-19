@@ -1,0 +1,108 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+###########################################################################
+#                         jvm21-server.options                            #
+#                                                                         #
+# See jvm-server.options. This file is specific for Java 21 and newer.    #
+###########################################################################
+
+#################
+#  GC SETTINGS  #
+#################
+
+
+### Generational ZGC settings
+-XX:+UseZGC
+-XX:+ZGenerational
+# Temporary workaround for jamm's incorrect default CompressedOops; if you're using ZGC this needs to be set
+-XX:-UseCompressedOops
+
+# Blanket enabling of all the THP / large pages available in the env
+# -XX:+UseLargePages
+# Max size ZGC will _attempt_ to stay below
+# -XX:+SoftMaxHeapSize=12G
+# Don't let ZGC return unclaimed memory to the OS by setting min and max ==
+# -Xms12G </string>
+# -Xmx12G </string>
+# Alternatively, can use this to disable returning memory to OS
+# -XX:-ZUncommit</string>
+# -XX:ZUncommitDelay=300</string>
+# -XX:+AlwaysPreTouch</string>
+
+### JPMS
+
+-Djdk.attach.allowAttachSelf=true
+--add-exports java.base/jdk.internal.misc=ALL-UNNAMED
+--add-exports java.management.rmi/com.sun.jmx.remote.internal.rmi=ALL-UNNAMED
+--add-exports java.rmi/sun.rmi.registry=ALL-UNNAMED
+--add-exports java.rmi/sun.rmi.server=ALL-UNNAMED
+--add-exports java.sql/java.sql=ALL-UNNAMED
+--add-exports java.base/java.lang.ref=ALL-UNNAMED
+--add-exports jdk.unsupported/sun.misc=ALL-UNNAMED
+
+--add-opens java.base/java.lang.module=ALL-UNNAMED
+--add-opens java.base/jdk.internal.loader=ALL-UNNAMED
+--add-opens java.base/jdk.internal.ref=ALL-UNNAMED
+--add-opens java.base/jdk.internal.reflect=ALL-UNNAMED
+--add-opens java.base/jdk.internal.math=ALL-UNNAMED
+--add-opens java.base/jdk.internal.module=ALL-UNNAMED
+--add-opens java.base/jdk.internal.util.jar=ALL-UNNAMED
+--add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED
+--add-opens java.base/sun.nio.ch=ALL-UNNAMED
+--add-opens java.base/java.io=ALL-UNNAMED
+--add-opens java.base/java.lang.reflect=ALL-UNNAMED
+--add-opens java.base/java.lang=ALL-UNNAMED
+--add-opens java.base/java.util=ALL-UNNAMED
+--add-opens java.base/java.nio=ALL-UNNAMED
+
+
+### GC logging options -- uncomment to enable
+
+# Java 11 (and newer) GC logging options:
+# See description of https://bugs.openjdk.java.net/browse/JDK-8046148 for details about the syntax
+# The following is the equivalent to -XX:+PrintGCDetails -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=10 -XX:GCLogFileSize=10M
+#-Xlog:gc=info,heap*=trace,age*=debug,safepoint=info,promotion*=trace:file=/var/log/cassandra/gc.log:time,uptime,pid,tid,level:filecount=10,filesize=10485760
+
+# Notes for Java 8 migration:
+#
+# -XX:+PrintGCDetails                   maps to -Xlog:gc*:... - i.e. add a '*' after "gc"
+# -XX:+PrintGCDateStamps                maps to decorator 'time'
+#
+# -XX:+PrintHeapAtGC                    maps to 'heap' with level 'trace'
+# -XX:+PrintTenuringDistribution        maps to 'age' with level 'debug'
+# -XX:+PrintGCApplicationStoppedTime    maps to 'safepoint' with level 'info'
+# -XX:+PrintPromotionFailure            maps to 'promotion' with level 'trace'
+# -XX:PrintFLSStatistics=1              maps to 'freelist' with level 'trace'
+
+### Netty Options
+
+# On Java >= 9 Netty requires the io.netty.tryReflectionSetAccessible system property to be set to true to enable
+# creation of direct buffers using Unsafe. Without it, this falls back to ByteBuffer.allocateDirect which has
+# inferior performance and risks exceeding MaxDirectMemory
+-Dio.netty.tryReflectionSetAccessible=true
+
+# Revert changes in defaults introduced in https://netty.io/news/2022/03/10/4-1-75-Final.html
+-Dio.netty.allocator.useCacheForAllThreads=true
+-Dio.netty.allocator.maxOrder=11
+
+
+# Need to explicitly allow security manager on JDK21; deprecated for removal
+-Djava.security.manager=allow
+
+# The newline in the end of file is intentional

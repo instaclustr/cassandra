@@ -59,9 +59,9 @@ public class CommitlogShutdownTest
 
     @Test
     @BMRule(name = "Make removing commitlog segments slow",
-    targetClass = "CommitLogSegment",
-    targetMethod = "discard",
-    action = "Thread.sleep(50)")
+            targetClass = "CommitLogSegment",
+            targetMethod = "discard",
+            action = "Thread.sleep(50)")
     public void testShutdownWithPendingTasks() throws Exception
     {
         new Random().nextBytes(entropy);
@@ -73,17 +73,17 @@ public class CommitlogShutdownTest
         DatabaseDescriptor.initializeCommitLogDiskAccessMode();
         SchemaLoader.prepareServer();
         SchemaLoader.createKeyspace(KEYSPACE1,
-                                    KeyspaceParams.simple(1),
-                                    SchemaLoader.standardCFMD(KEYSPACE1, STANDARD1, 0, AsciiType.instance, BytesType.instance));
+                KeyspaceParams.simple(1),
+                SchemaLoader.standardCFMD(KEYSPACE1, STANDARD1, 0, AsciiType.instance, BytesType.instance));
 
-                                    CompactionManager.instance.disableAutoCompaction();
+        CompactionManager.instance.disableAutoCompaction();
 
         ColumnFamilyStore cfs1 = Keyspace.open(KEYSPACE1).getColumnFamilyStore(STANDARD1);
 
         final Mutation m = new RowUpdateBuilder(cfs1.metadata.get(), 0, "k")
-                           .clustering("bytes")
-                           .add("val", ByteBuffer.wrap(entropy))
-                           .build();
+                .clustering("bytes")
+                .add("val", ByteBuffer.wrap(entropy))
+                .build();
 
         // force creating several commitlog files
         for (int i = 0; i < 10; i++)
@@ -101,10 +101,10 @@ public class CommitlogShutdownTest
         for (CommitLogSegment segment : segmentsToCheck)
         {
             Assert.assertFalse("An unused segment is left after drain: " + segment.getName()
-                               + ", dirty tables: " + segment.dirtyString()
-                               + ", total segments: " + CommitLog.instance.segmentManager.getActiveSegments().size()
-                               + ", commit log files: " + Arrays.toString(new File(DatabaseDescriptor.getCommitLogLocation()).listFiles()),
-                               segment.isUnused());
+                            + ", dirty tables: " + segment.dirtyString()
+                            + ", total segments: " + CommitLog.instance.segmentManager.getActiveSegments().size()
+                            + ", commit log files: " + Arrays.toString(new File(DatabaseDescriptor.getCommitLogLocation()).listFiles()),
+                    segment.isUnused());
         }
     }
 }

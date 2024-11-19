@@ -169,6 +169,27 @@
 # By default, this setting is half of max heap size
 #-XX:MaxDirectMemorySize=
 
+#### end of heap settings
+
+# Need experimental bytebuddy for JDK21
+-Dnet.bytebuddy.experimental
+
+# Young generation size is automatically calculated by cassandra-env
+# based on this formula: min(100 * num_cores, 1/4 * heap size)
+#
+# The main trade-off for the young generation is that the larger it
+# is, the longer GC pause times will be. The shorter it is, the more
+# expensive GC will be (usually).
+#
+# It is not recommended to set the young generation size if using the
+# G1 GC, since that will override the target pause-time goal.
+# More info: http://www.oracle.com/technetwork/articles/java/g1gc-1984535.html
+#
+# The example below assumes a modern 8-core+ machine for decent
+# times. If in doubt, and if you do not particularly want to tweak, go
+# 100 MB per physical CPU core.
+#-Xmn800M
+
 ###################################
 # EXPIRATION DATE OVERFLOW POLICY #
 ###################################

@@ -58,9 +58,9 @@ public class ParseAndConvertUnitsTest
         assertEquals(new DurationSpec.IntMillisecondsBound(250), config.cdc_free_space_check_interval);
         assertEquals(new DurationSpec.IntMillisecondsBound(100), config.dynamic_snitch_update_interval);
         assertEquals(new DurationSpec.IntMillisecondsBound(600000), config.dynamic_snitch_reset_interval);
-        assertEquals(new DurationSpec.IntMillisecondsBound(200), config.gc_log_threshold);
+        assertEquals(new DurationSpec.IntMillisecondsBound(20000), config.gc_log_threshold);
         assertEquals(new DurationSpec.IntMillisecondsBound(10000), config.hints_flush_period);
-        assertEquals(new DurationSpec.IntMillisecondsBound(1000), config.gc_warn_threshold);
+        assertEquals(new DurationSpec.IntMillisecondsBound(30000), config.gc_warn_threshold);
         assertEquals(new DurationSpec.IntSecondsBound(86400), config.trace_type_query_ttl);
         assertEquals(new DurationSpec.IntSecondsBound(604800), config.trace_type_repair_ttl);
         assertEquals(new DurationSpec.IntMillisecondsBound(2000), config.permissions_validity);

@@ -65,13 +65,13 @@ public class GCInspectorTest
         gcInspector.setGcWarnThresholdInMs(0);
         Assert.assertEquals(gcInspector.getStatusThresholdInMs(), gcInspector.getGcLogThresholdInMs());
         Assert.assertEquals(0, DatabaseDescriptor.getGCWarnThreshold());
-        Assert.assertEquals(200, DatabaseDescriptor.getGCLogThreshold());
+        Assert.assertEquals(20000, DatabaseDescriptor.getGCLogThreshold());
     }
     
     @Test(expected=IllegalArgumentException.class)
     public void ensureLogLessThanWarn()
     {
-        Assert.assertEquals(200, gcInspector.getGcLogThresholdInMs());
+        Assert.assertEquals(20000, gcInspector.getGcLogThresholdInMs());
         gcInspector.setGcWarnThresholdInMs(1000);
         Assert.assertEquals(1000, gcInspector.getGcWarnThresholdInMs());
         gcInspector.setGcLogThresholdInMs(gcInspector.getGcWarnThresholdInMs() + 1);
@@ -82,10 +82,16 @@ public class GCInspectorTest
     {
         gcInspector.setGcLogThresholdInMs(200);
         gcInspector.setGcWarnThresholdInMs(1000);
+        gcInspector.setGcPauseLogThresholdInMs(5);
+        gcInspector.setGcPauseWarnThresholdInMs(10);
         Assert.assertEquals(200, DatabaseDescriptor.getGCLogThreshold());
         Assert.assertEquals(200, gcInspector.getGcLogThresholdInMs());
         Assert.assertEquals(1000, DatabaseDescriptor.getGCWarnThreshold());
         Assert.assertEquals(1000, gcInspector.getGcWarnThresholdInMs());
+        Assert.assertEquals(5, DatabaseDescriptor.getGCPauseLogThreshold());
+        Assert.assertEquals(5, gcInspector.getGcPauseLogThresholdInMs());
+        Assert.assertEquals(10, DatabaseDescriptor.getGCPauseWarnThreshold());
+        Assert.assertEquals(10, gcInspector.getGcPauseWarnThresholdInMs());
     }
 
     @Test(expected=IllegalArgumentException.class)

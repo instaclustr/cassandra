@@ -108,7 +108,7 @@ public class GetAuditLogTest extends CQLTester
         final String output = getAuditLogOutput.replaceAll("( )+", " ").trim();
         assertThat(output).startsWith("enabled true");
         assertThat(output).contains("logger BinAuditLogger");
-        assertThat(output).contains("roll_cycle HOURLY");
+        assertThat(output).contains("roll_cycle FAST_HOURLY");
         assertThat(output).contains("block true");
         assertThat(output).contains("max_log_size 17179869184");
         assertThat(output).contains("max_queue_weight 268435456");
@@ -127,7 +127,7 @@ public class GetAuditLogTest extends CQLTester
         final String output = getAuditLogOutput.replaceAll("( )+", " ").trim();
         assertThat(output).startsWith("enabled true");
         assertThat(output).contains("logger BinAuditLogger");
-        assertThat(output).contains("roll_cycle HOURLY");
+        assertThat(output).contains("roll_cycle FAST_HOURLY");
         assertThat(output).contains("block true");
         assertThat(output).contains("max_log_size 17179869184");
         assertThat(output).contains("max_queue_weight 268435456");
@@ -146,7 +146,7 @@ public class GetAuditLogTest extends CQLTester
         final String output = getAuditLogOutput.replaceAll("( )+", " ").trim();
         assertThat(output).startsWith("enabled false");
         assertThat(output).contains("logger BinAuditLogger");
-        assertThat(output).contains("roll_cycle HOURLY");
+        assertThat(output).contains("roll_cycle FAST_HOURLY");
         assertThat(output).contains("block true");
         assertThat(output).contains("max_log_size 17179869184");
         assertThat(output).contains("max_queue_weight 268435456");

@@ -28,5 +28,9 @@ public interface GCInspectorMXBean
     long getGcWarnThresholdInMs();
     void setGcLogThresholdInMs(long threshold);
     long getGcLogThresholdInMs();
+    void setGcPauseWarnThresholdInMs(long threshold);
+    long getGcPauseWarnThresholdInMs();
+    void setGcPauseLogThresholdInMs(long threshold);
+    long getGcPauseLogThresholdInMs();
     long getStatusThresholdInMs();
 }
