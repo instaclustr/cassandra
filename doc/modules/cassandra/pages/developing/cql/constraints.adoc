@@ -23,7 +23,7 @@ CREATE TABLE keyspace.table (
 
 [source,bnf]
 ----
-ALTER TABLE keyspace.table ALTER [columnName] CHECK (condition)
+ALTER TABLE [IF EXISTS] <table> ALTER [IF EXISTS] <column> CHECK <condition>;
 ----
 
 == DROP CONSTRAINT
