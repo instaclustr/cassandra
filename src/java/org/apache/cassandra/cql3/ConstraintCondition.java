@@ -18,7 +18,6 @@
 
 package org.apache.cassandra.cql3;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.cassandra.cql3.terms.Term;
