@@ -30,7 +30,7 @@ ALTER TABLE keyspace.table ALTER [columnName] CHECK (condition)
 
 [source,bnf]
 ----
-ALTER TABLE keyspace.table ALTER DROP [columnName] CHECK
+ALTER TABLE [IF EXISTS] <table> ALTER [IF EXISTS] <column> DROP CHECK;
 ----
 
 == AVAILABLE CONSTRAINTS
