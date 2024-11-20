@@ -20,10 +20,8 @@ package org.apache.cassandra.cql3;
 
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import com.google.common.base.Objects;
 
@@ -37,7 +35,6 @@ import org.apache.cassandra.schema.TableMetadata;
 
 public class CqlConstraint
 {
-    public ColumnIdentifier constraintName;
     public final ColumnIdentifier columnName;
     public final ConstraintCondition constraintCondition;
 
@@ -45,38 +42,22 @@ public class CqlConstraint
 
     public final static class Raw
     {
-        public final ColumnIdentifier constraintName;
         public final ConstraintCondition constraintCondition;
         public ColumnIdentifier columnName;
 
         public Raw(ConstraintCondition constraintCondition)
         {
-            this.constraintName = null;
             this.constraintCondition = constraintCondition;
         }
 
         public CqlConstraint prepare(ColumnIdentifier columnName)
         {
-            return new CqlConstraint(constraintName, columnName, constraintCondition);
-        }
-
-        public CqlConstraint prepareWithName(ColumnIdentifier constraintName)
-        {
-            return new CqlConstraint(constraintName, null, constraintCondition);
+            return new CqlConstraint(columnName, constraintCondition);
         }
     }
 
-    public CqlConstraint(ColumnIdentifier constraintName, ColumnIdentifier columnName, ConstraintCondition constraintCondition)
+    public CqlConstraint(ColumnIdentifier columnName, ConstraintCondition constraintCondition)
     {
-        if (constraintName == null)
-        {
-            final String randomConstraintName = UUID.randomUUID().toString().replace("-", "");
-            this.constraintName = new ColumnIdentifier(randomConstraintName, false);
-        }
-        else
-        {
-            this.constraintName = constraintName;
-        }
         this.columnName = columnName;
         this.constraintCondition = constraintCondition;
     }
@@ -110,13 +91,12 @@ public class CqlConstraint
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(constraintName);
+        return Objects.hashCode(constraintCondition);
     }
 
     @Override
     public boolean equals(final Object obj) {
         return obj instanceof CqlConstraint
-               && Objects.equal(constraintName, ((CqlConstraint) obj).constraintName)
                && Objects.equal(constraintCondition, ((CqlConstraint) obj).constraintCondition);
     }
 
@@ -126,7 +106,6 @@ public class CqlConstraint
         @Override
         public void serialize(CqlConstraint cqlConstraint, DataOutputPlus out, int version) throws IOException
         {
-            out.writeUTF(cqlConstraint.constraintName.toString());
             out.writeUTF(cqlConstraint.columnName.toString());
             out.writeUTF(cqlConstraint.constraintCondition.getClass().toString());
             cqlConstraint.constraintCondition.getSerializer().serialize(cqlConstraint.constraintCondition, out, version);
@@ -135,21 +114,18 @@ public class CqlConstraint
         @Override
         public CqlConstraint deserialize(DataInputPlus in, int version) throws IOException
         {
-            String nameText = in.readUTF();
             String columnName = in.readUTF();
-            ColumnIdentifier identifier = new ColumnIdentifier(nameText, true);
             ColumnIdentifier columnNameIdentifier = new ColumnIdentifier(columnName, true);
             String columnConstraintClassName = in.readUTF();
             ConstraintCondition condition = ConstraintSerializerFactory.getCqlConditionSerializer(columnConstraintClassName)
                                                                        .deserialize(in, version);
-            return new CqlConstraint(identifier, columnNameIdentifier, condition);
+            return new CqlConstraint(columnNameIdentifier, condition);
         }
 
         @Override
         public long serializedSize(CqlConstraint cqlConstraint, int version)
         {
-            return TypeSizes.sizeof(cqlConstraint.constraintName.toString())
-                   + TypeSizes.sizeof(cqlConstraint.columnName.toString())
+            return TypeSizes.sizeof(cqlConstraint.columnName.toString())
                    + TypeSizes.sizeof(cqlConstraint.constraintCondition.getClass().toString())
                    + cqlConstraint.constraintCondition.getSerializer().serializedSize(cqlConstraint.constraintCondition, version);
         }

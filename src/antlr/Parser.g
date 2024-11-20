@@ -781,11 +781,15 @@ tableDefinition[CreateTableStatement.Raw stmt]
 tableColumns[CreateTableStatement.Raw stmt]
     @init {
         boolean isStatic = false;
-        List<CqlConstraint.Raw> columnConstraints = new ArrayList<>();
+        List<CqlConstraint.Raw> constraints = new ArrayList<>();
     }
-    : k=ident v=comparatorType (K_STATIC { isStatic = true; })? (mask=columnMask)? (K_CHECK kconst=cqlConstraintExp[stmt] { columnConstraints.add(kconst); } (K_AND kconst=cqlConstraintExp[stmt] { columnConstraints.add(kconst); })* )? { $stmt.addColumn(k, v, isStatic, mask, columnConstraints); }
+    : k=ident v=comparatorType (K_STATIC { isStatic = true; })? (mask=columnMask)? (constraints=columnConstraints[stmt, constraints])? { $stmt.addColumn(k, v, isStatic, mask, constraints); }
         (K_PRIMARY K_KEY { $stmt.setPartitionKeyColumn(k); })?
     | K_PRIMARY K_KEY '(' tablePartitionKey[stmt] (',' c=ident { $stmt.markClusteringColumn(c); } )* ')'
+    ;
+
+columnConstraints[CreateTableStatement.Raw stmt, List<CqlConstraint.Raw> constraints]
+    : K_CHECK kconst=cqlConstraintExp[stmt] { constraints.add(kconst); } (K_AND kconst=cqlConstraintExp[stmt] { constraints.add(kconst); })*
     ;
 
 cqlConstraintExp[CreateTableStatement.Raw stmt] returns [CqlConstraint.Raw cqlConstraint]

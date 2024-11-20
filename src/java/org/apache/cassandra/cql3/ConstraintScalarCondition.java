@@ -21,7 +21,6 @@ package org.apache.cassandra.cql3;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.cassandra.cql3.terms.Term;
@@ -31,7 +30,6 @@ import org.apache.cassandra.io.util.DataInputPlus;
 import org.apache.cassandra.io.util.DataOutputPlus;
 import org.apache.cassandra.schema.ColumnMetadata;
 import org.apache.cassandra.schema.TableMetadata;
-import org.apache.cassandra.utils.ByteBufferUtil;
 
 public class ConstraintScalarCondition implements ConstraintCondition
 {
