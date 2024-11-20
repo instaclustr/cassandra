@@ -555,7 +555,7 @@ public final class CreateTableStatement extends AlterSchemaStatement
             List<CqlConstraint> constraints = new ArrayList<>();
             for (CqlConstraint.Raw c : cqlConstraints)
             {
-                constraints.add(c.prepare(column));
+                constraints.add(c.prepare());
             }
 
             if (null != rawColumns.put(column, new ColumnProperties.Raw(type, mask)))

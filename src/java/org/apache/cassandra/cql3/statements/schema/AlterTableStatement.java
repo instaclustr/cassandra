@@ -44,7 +44,6 @@ import org.apache.cassandra.cql3.CQL3Type;
 import org.apache.cassandra.cql3.CQLStatement;
 import org.apache.cassandra.cql3.CqlConstraint;
 import org.apache.cassandra.cql3.ColumnIdentifier;
-import org.apache.cassandra.cql3.ConstraintViolationException;
 import org.apache.cassandra.cql3.QualifiedName;
 import org.apache.cassandra.cql3.functions.masking.ColumnMask;
 import org.apache.cassandra.db.guardrails.Guardrails;
@@ -889,11 +888,10 @@ public abstract class AlterTableStatement extends AlterSchemaStatement
         {
             kind = Kind.ALTER_CONSTRAINTS;
             this.constraintName = name;
-
             this.constraints = new ArrayList<>();
             for (CqlConstraint.Raw rawConstraint : rawConstraints)
             {
-                this.constraints.add(rawConstraint.prepare(constraintName));
+                this.constraints.add(rawConstraint.prepare());
             }
         }
 
