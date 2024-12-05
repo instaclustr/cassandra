@@ -20,12 +20,17 @@
  */
 package org.apache.cassandra.db.transform;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.nicoulaj.compilecommand.annotations.DontInline;
 import org.apache.cassandra.db.rows.BaseRowIterator;
 
 // A Transformation that can stop an iterator earlier than its natural exhaustion
 public abstract class StoppingTransformation<I extends BaseRowIterator<?>> extends Transformation<I>
 {
+    private static final Logger logger = LoggerFactory.getLogger(StoppingTransformation.class);
+
     private BaseIterator rows;
     private BaseIterator partitions;
 
@@ -69,6 +74,7 @@ public abstract class StoppingTransformation<I extends BaseRowIterator<?>> exten
     @Override
     protected void attachTo(BaseRows rows)
     {
+        logger.debug("Attaching, rows are null: {}", this.rows == null);
         assert this.rows == null;
         this.rows = rows;
     }
@@ -77,6 +83,7 @@ public abstract class StoppingTransformation<I extends BaseRowIterator<?>> exten
     protected void onClose()
     {
         partitions = null;
+        rows = null;
     }
 
     @Override
