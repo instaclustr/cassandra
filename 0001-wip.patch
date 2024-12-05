@@ -1,0 +1,530 @@
+From 80ce9ae0d25bbf3ba835af2883b00e6691512afc Mon Sep 17 00:00:00 2001
+From: Stefan Miklosovic <smiklosovic@apache.org>
+Date: Wed, 13 Nov 2024 16:14:58 +0100
+Subject: [PATCH 1/1] wip
+
+---
+ .../cassandra/auth/CassandraAuthorizer.java   |   3 +-
+ .../cassandra/config/SchemaConstants.java     |   4 +
+ .../apache/cassandra/service/ClientState.java | 157 ++++++++---
+ .../cassandra/distributed/test/GrantTest.java | 257 ++++++++++++++++++
+ 4 files changed, 383 insertions(+), 38 deletions(-)
+ create mode 100644 test/distributed/org/apache/cassandra/distributed/test/GrantTest.java
+
+diff --git a/src/java/org/apache/cassandra/auth/CassandraAuthorizer.java b/src/java/org/apache/cassandra/auth/CassandraAuthorizer.java
+index 516caed00c..d9e34b3eff 100644
+--- a/src/java/org/apache/cassandra/auth/CassandraAuthorizer.java
++++ b/src/java/org/apache/cassandra/auth/CassandraAuthorizer.java
+@@ -358,7 +358,8 @@ public class CassandraAuthorizer implements IAuthorizer
+ 
+     public Set<DataResource> protectedResources()
+     {
+-        return ImmutableSet.of(DataResource.table(SchemaConstants.AUTH_KEYSPACE_NAME, AuthKeyspace.ROLE_PERMISSIONS));
++        return ImmutableSet.of(DataResource.table(SchemaConstants.AUTH_KEYSPACE_NAME, AuthKeyspace.ROLE_PERMISSIONS),
++                               DataResource.table(SchemaConstants.AUTH_KEYSPACE_NAME, AuthKeyspace.RESOURCE_ROLE_INDEX));
+     }
+ 
+     public void validateConfiguration() throws ConfigurationException
+diff --git a/src/java/org/apache/cassandra/config/SchemaConstants.java b/src/java/org/apache/cassandra/config/SchemaConstants.java
+index 9e60b60dca..7409ec2d8b 100644
+--- a/src/java/org/apache/cassandra/config/SchemaConstants.java
++++ b/src/java/org/apache/cassandra/config/SchemaConstants.java
+@@ -34,6 +34,10 @@ public final class SchemaConstants
+     public static final String AUTH_KEYSPACE_NAME = "system_auth";
+     public static final String DISTRIBUTED_KEYSPACE_NAME = "system_distributed";
+ 
++    public static final Set<String> ALL_SYSTEM_KEYSPACES =
++        ImmutableSet.of(SYSTEM_KEYSPACE_NAME, SCHEMA_KEYSPACE_NAME,
++                        TRACE_KEYSPACE_NAME, AUTH_KEYSPACE_NAME, DISTRIBUTED_KEYSPACE_NAME);
++
+     /* system keyspace names (the ones with LocalStrategy replication strategy) */
+     public static final Set<String> LOCAL_SYSTEM_KEYSPACE_NAMES =
+         ImmutableSet.of(SYSTEM_KEYSPACE_NAME, SCHEMA_KEYSPACE_NAME);
+diff --git a/src/java/org/apache/cassandra/service/ClientState.java b/src/java/org/apache/cassandra/service/ClientState.java
+index 52ab7938bf..7dceea2a3c 100644
+--- a/src/java/org/apache/cassandra/service/ClientState.java
++++ b/src/java/org/apache/cassandra/service/ClientState.java
+@@ -24,6 +24,7 @@ import java.util.HashSet;
+ import java.util.Set;
+ import java.util.concurrent.atomic.AtomicLong;
+ 
++import com.google.common.annotations.VisibleForTesting;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ 
+@@ -64,9 +65,14 @@ public class ClientState
+     private static final Logger logger = LoggerFactory.getLogger(ClientState.class);
+     public static final CassandraVersion DEFAULT_CQL_VERSION = org.apache.cassandra.cql3.QueryProcessor.CQL_VERSION;
+ 
+-    private static final Set<IResource> READABLE_SYSTEM_RESOURCES = new HashSet<>();
+-    private static final Set<IResource> PROTECTED_AUTH_RESOURCES = new HashSet<>();
+-    private static final Set<IResource> DROPPABLE_SYSTEM_AUTH_TABLES = new HashSet<>();
++    @VisibleForTesting
++    public static final Set<IResource> READABLE_SYSTEM_RESOURCES = new HashSet<>();
++    @VisibleForTesting
++    public static final Set<IResource> SYSTEM_RESOURCES = new HashSet<>();
++    @VisibleForTesting
++    public static final Set<IResource> PROTECTED_AUTH_RESOURCES = new HashSet<>();
++    @VisibleForTesting
++    public static final Set<IResource> DROPPABLE_SYSTEM_AUTH_TABLES = new HashSet<>();
+     static
+     {
+         // We want these system cfs to be always readable to authenticated users since many tools rely on them
+@@ -76,6 +82,8 @@ public class ClientState
+ 
+         SchemaKeyspaceTables.ALL.forEach(table -> READABLE_SYSTEM_RESOURCES.add(DataResource.table(SchemaConstants.SCHEMA_KEYSPACE_NAME, table)));
+ 
++        SchemaConstants.ALL_SYSTEM_KEYSPACES.forEach(ks -> SYSTEM_RESOURCES.add(DataResource.keyspace(ks)));
++
+         // neither clients nor tools need authentication/authorization
+         if (DatabaseDescriptor.isDaemonInitialized())
+         {
+@@ -332,7 +340,8 @@ public class ClientState
+         hasAccess(cfm.ksName, perm, cfm.resource);
+     }
+ 
+-    private void hasAccess(String keyspace, Permission perm, DataResource resource)
++    @VisibleForTesting
++    public void hasAccess(String keyspace, Permission perm, DataResource resource)
+     throws UnauthorizedException, InvalidRequestException
+     {
+         validateKeyspace(keyspace);
+@@ -342,28 +351,99 @@ public class ClientState
+ 
+         validateLogin();
+ 
+-        preventSystemKSSchemaModification(keyspace, resource, perm);
+-
+         if ((perm == Permission.SELECT) && READABLE_SYSTEM_RESOURCES.contains(resource))
+             return;
+ 
+-        if (PROTECTED_AUTH_RESOURCES.contains(resource))
+-            if ((perm == Permission.CREATE) || (perm == Permission.ALTER) || (perm == Permission.DROP))
+-                throw new UnauthorizedException(String.format("%s schema is protected", resource));
++        DataResource keyspaceDataResource = DataResource.keyspace(keyspace);
++
++        if (SYSTEM_RESOURCES.contains(keyspaceDataResource) || PROTECTED_AUTH_RESOURCES.contains(keyspaceDataResource))
++        {
++            if (perm == Permission.CREATE || perm == Permission.ALTER || perm == Permission.DROP)
++            {
++                // prevent ALL local system keyspace modification
++                if (SchemaConstants.isLocalSystemKeyspace(keyspace))
++                    throw new UnauthorizedException(keyspace + " keyspace is not user-modifiable.");
++
++                if (SchemaConstants.isReplicatedSystemKeyspace(keyspace))
++                {
++                    // allow users with sufficient privileges to alter replication params of replicated system keyspaces
++                    if (perm == Permission.ALTER && resource.isKeyspaceLevel())
++                    {
++                        if (isOrdinaryUser())
++                        {
++                            if (hasPermissionOnResource(DataResource.root(), Permission.ALTER) &&
++                                !hasPermissionOnResource(DataResource.keyspace(keyspace), Permission.ALTER))
++                            {
++                                throw new UnauthorizedException(String.format("%s is protected", resource));
++                            }
++                        }
++                    }
++                    // allow users with sufficient privileges to drop legacy tables in replicated system keyspaces
++                    else if (perm == Permission.DROP && resource.isTableLevel() && DROPPABLE_SYSTEM_AUTH_TABLES.contains(resource))
++                    {
++                        if (isOrdinaryUser())
++                        {
++                            if (hasPermissionOnResource(DataResource.root(), Permission.DROP) &&
++                                !hasPermissionOnResource(resource, Permission.DROP))
++                            {
++                                throw new UnauthorizedException(String.format("%s is protected", resource));
++                            }
++                        }
++                    }
++                    else
++                    {
++                        // prevent all other modifications of replicated system keyspaces
++                        throw new UnauthorizedException(String.format("Cannot %s %s", perm, resource));
++                    }
++                }
++            }
++            else if (perm == Permission.MODIFY && isOrdinaryUser())
++            {
++                throw new UnauthorizedException(String.format("%s is protected", resource));
++            }
++            else if (perm == Permission.SELECT && resource.isTableLevel() && isOrdinaryUser())
++            {
++                if (hasPermissionOnResource(DataResource.root(), Permission.SELECT))
++                {
++                    if (!hasPermissionOnResource(resource, Permission.SELECT))
++                        throw new UnauthorizedException(String.format("%s is protected", resource));
++                }
++            }
++        }
+ 
+         ensureHasPermission(perm, resource);
+     }
+ 
++    public boolean hasPermissionOnResource(IResource resource, Permission permission)
++    {
++        if (!DatabaseDescriptor.getAuthorizer().requireAuthorization())
++            return true;
++
++        return authorize(resource).contains(permission);
++    }
++
+     public void ensureHasPermission(Permission perm, IResource resource) throws UnauthorizedException
+     {
+         if (!DatabaseDescriptor.getAuthorizer().requireAuthorization())
+             return;
+ 
+-        // Access to built in functions is unrestricted
+-        if(resource instanceof FunctionResource && resource.hasParent())
+-            if (((FunctionResource)resource).getKeyspace().equals(SchemaConstants.SYSTEM_KEYSPACE_NAME))
++        if (resource instanceof FunctionResource && resource.hasParent())
++        {
++            FunctionResource functionResource = (FunctionResource) resource;
++            // Access to built-in functions is unrestricted
++            if (functionResource.getKeyspace().equals(SchemaConstants.SYSTEM_KEYSPACE_NAME))
+                 return;
+ 
++            if (hasPermissionOnResource(FunctionResource.root(), perm))
++            {
++                if (!hasPermissionOnResource(functionResource, perm) &&
++                    !hasPermissionOnResource(FunctionResource.keyspace(functionResource.getKeyspace()), perm))
++                {
++                    throw new UnauthorizedException(String.format("%s is protected", resource));
++                }
++            }
++        }
++
+         checkPermissionOnResourceChain(perm, resource);
+     }
+ 
+@@ -396,31 +476,6 @@ public class ClientState
+                                                       resource));
+     }
+ 
+-    private void preventSystemKSSchemaModification(String keyspace, DataResource resource, Permission perm) throws UnauthorizedException
+-    {
+-        // we only care about DDL statements
+-        if (perm != Permission.ALTER && perm != Permission.DROP && perm != Permission.CREATE)
+-            return;
+-
+-        // prevent ALL local system keyspace modification
+-        if (SchemaConstants.isLocalSystemKeyspace(keyspace))
+-            throw new UnauthorizedException(keyspace + " keyspace is not user-modifiable.");
+-
+-        if (SchemaConstants.isReplicatedSystemKeyspace(keyspace))
+-        {
+-            // allow users with sufficient privileges to alter replication params of replicated system keyspaces
+-            if (perm == Permission.ALTER && resource.isKeyspaceLevel())
+-                return;
+-
+-            // allow users with sufficient privileges to drop legacy tables in replicated system keyspaces
+-            if (perm == Permission.DROP && DROPPABLE_SYSTEM_AUTH_TABLES.contains(resource))
+-                return;
+-
+-            // prevent all other modifications of replicated system keyspaces
+-            throw new UnauthorizedException(String.format("Cannot %s %s", perm, resource));
+-        }
+-    }
+-
+     public void validateLogin() throws UnauthorizedException
+     {
+         if (user == null)
+@@ -472,4 +527,32 @@ public class ClientState
+             issuedPreparedStatementsUseWarning = true;
+         }
+     }
++
++    /**
++     * Checks if this user is an ordinary user (not a super or system user).
++     *
++     * @return {@code true} if this user is an ordinary user, {@code false} otherwise.
++     */
++    public boolean isOrdinaryUser()
++    {
++        return !isSuper() && !isSystem();
++    }
++
++    /**
++     * Checks if this user is a super user.
++     */
++    public boolean isSuper()
++    {
++        return !DatabaseDescriptor.getAuthenticator().requireAuthentication() || (user != null && user.isSuper());
++    }
++
++    /**
++     * Checks if the user is the system user.
++     *
++     * @return {@code true} if this user is the system user, {@code false} otherwise.
++     */
++    public boolean isSystem()
++    {
++        return isInternal;
++    }
+ }
+diff --git a/test/distributed/org/apache/cassandra/distributed/test/GrantTest.java b/test/distributed/org/apache/cassandra/distributed/test/GrantTest.java
+new file mode 100644
+index 0000000000..dd2a2faae9
+--- /dev/null
++++ b/test/distributed/org/apache/cassandra/distributed/test/GrantTest.java
+@@ -0,0 +1,257 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one
++ * or more contributor license agreements.  See the NOTICE file
++ * distributed with this work for additional information
++ * regarding copyright ownership.  The ASF licenses this file
++ * to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance
++ * with the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.cassandra.distributed.test;
++
++import java.net.InetSocketAddress;
++import java.util.HashMap;
++import java.util.HashSet;
++import java.util.Map;
++import java.util.Set;
++import java.util.concurrent.Callable;
++import java.util.function.Consumer;
++
++import com.google.common.collect.Iterables;
++import org.junit.Test;
++
++import com.datastax.driver.core.PlainTextAuthProvider;
++import com.datastax.driver.core.Session;
++import com.datastax.driver.core.policies.DCAwareRoundRobinPolicy;
++import org.apache.cassandra.auth.AuthenticatedUser;
++import org.apache.cassandra.auth.CassandraRoleManager;
++import org.apache.cassandra.auth.DataResource;
++import org.apache.cassandra.auth.Permission;
++import org.apache.cassandra.config.SchemaConstants;
++import org.apache.cassandra.db.ColumnFamilyStore;
++import org.apache.cassandra.db.Keyspace;
++import org.apache.cassandra.distributed.Cluster;
++import org.apache.cassandra.distributed.api.Feature;
++import org.apache.cassandra.distributed.api.IInvokableInstance;
++import org.apache.cassandra.distributed.api.IIsolatedExecutor;
++import org.apache.cassandra.distributed.api.IIsolatedExecutor.SerializableQuadFunction;
++import org.apache.cassandra.distributed.api.TokenSupplier;
++import org.apache.cassandra.service.ClientState;
++import org.apache.cassandra.service.StorageService;
++import org.apache.cassandra.utils.FBUtilities;
++
++import static com.google.common.collect.ImmutableSet.of;
++import static org.assertj.core.api.Assertions.assertThatThrownBy;
++
++public class GrantTest extends TestBaseImpl
++{
++    @Test
++    public void testProtectedResources() throws Throwable
++    {
++        Map<String, Object> config = new HashMap<>();
++        config.put("authenticator", "org.apache.cassandra.auth.PasswordAuthenticator");
++        config.put("authorizer", "org.apache.cassandra.auth.CassandraAuthorizer");
++        config.put("role_manager", "org.apache.cassandra.auth.CassandraRoleManager");
++        config.put("permissions_validity_in_ms", 0);
++        config.put("roles_validity_in_ms", 0);
++
++        try (Cluster cluster = Cluster.build()
++                                      .withDCs(1)
++                                      .withNodes(1)
++                                      .withTokenSupplier(TokenSupplier.evenlyDistributedTokens(1, 1))
++                                      .withConfig(c -> {
++                                          config.forEach(c::set);
++                                          c.with(Feature.GOSSIP, Feature.NETWORK, Feature.NATIVE_PROTOCOL);
++                                      })
++                                      .start())
++        {
++            waitFor(() -> cluster.get(1).callOnInstance(CassandraRoleManager::hasExistingRoles));
++            waitFor(() -> cluster.get(1).callOnInstance(() -> StorageService.instance.isAuthSetupComplete()));
++
++            IInvokableInstance instance = cluster.get(1);
++
++            doWithSession(s -> s.execute("CREATE ROLE auser WITH PASSWORD = '123' AND LOGIN = true"));
++
++            Map<String, Set<String>> systemTables = getSystemTables(instance);
++            ensurePermission(instance, systemTables, of(), of(), of());
++
++            doWithSession(s -> s.execute("GRANT ALTER ON ALL KEYSPACES TO auser"));
++            ensurePermission(instance, systemTables, of(), of(), of("ALL_KEYSPACES"));
++
++            doWithSession(s -> s.execute("GRANT ALTER ON KEYSPACE system_auth TO auser"));
++            ensurePermission(instance, systemTables, of("system_auth"), of(), of("ALL_KEYSPACES", "KEYSPACE"));
++
++            doWithSession(s -> s.execute("REVOKE ALTER ON ALL KEYSPACES FROM auser"));
++            doWithSession(s -> s.execute("REVOKE ALTER ON KEYSPACE system_auth FROM auser"));
++
++            doWithSession(s -> s.execute("GRANT SELECT ON TABLE system_auth.roles TO auser"));
++            ensurePermission(instance, systemTables, of(), of("system_auth.roles"), of("TABLE"));
++
++            doWithSession(s -> s.execute("REVOKE SELECT ON TABLE system_auth.roles FROM auser"));
++            ensurePermission(instance, systemTables, of(), of(), of());
++        }
++    }
++
++    private static ClientState makeFakeClientState()
++    {
++        return ClientState.forExternalCalls(new InetSocketAddress(FBUtilities.getBroadcastAddress(), 9042));
++    }
++
++    private void ensurePermission(IInvokableInstance instance,
++                                  Map<String, Set<String>> systemTables,
++                                  Set<String> permittedKeyspaces,
++                                  Set<String> permittedTables,
++                                  Set<String> levels)
++    {
++        instance.applyOnInstance((SerializableQuadFunction<Map<String, Set<String>>, Set<String>, Set<String>, Set<String>, Void>)
++                                 (systemTbl, permittedKs, permittedTbls, lvls) -> {
++
++                                     ClientState state = makeFakeClientState();
++                                     state.login(new AuthenticatedUser("auser"));
++
++                                     // populate all data resources of tables
++                                     Set<DataResource> tableDataResources = new HashSet<>();
++                                     for (Map.Entry<String, Set<String>> entry : systemTbl.entrySet())
++                                     {
++                                         for (String table : entry.getValue())
++                                             tableDataResources.add(DataResource.table(entry.getKey(), table));
++                                     }
++
++                                     Set<DataResource> keyspaceDataResources = new HashSet<>();
++                                     for (String keyspace : systemTbl.keySet())
++                                         keyspaceDataResources.add(DataResource.keyspace(keyspace));
++
++                                     for (DataResource resource : Iterables.concat(keyspaceDataResources, tableDataResources))
++                                     {
++                                         for (Permission permission : Permission.ALL)
++                                         {
++                                             if (of(Permission.CREATE, Permission.ALTER, Permission.DROP).contains(permission))
++                                             {
++                                                 if (SchemaConstants.isLocalSystemKeyspace(resource.getKeyspace()))
++                                                 {
++                                                     assertThatThrownBy(() -> state.hasAccess(resource.getKeyspace(), permission, resource),
++                                                                        String.format("Expected error for %s on %s", resource.getKeyspace(), permission))
++                                                     .isInstanceOf(org.apache.cassandra.exceptions.UnauthorizedException.class);
++                                                 }
++                                                 else if (SchemaConstants.isReplicatedSystemKeyspace(resource.getKeyspace()))
++                                                 {
++                                                     if (permission == Permission.ALTER && resource.isKeyspaceLevel())
++                                                     {
++                                                         if (!lvls.containsAll(of("ALL_KEYSPACES", "KEYSPACE")))
++                                                         {
++                                                             assertThatThrownBy(() -> state.hasAccess(resource.getKeyspace(), permission, resource),
++                                                                                String.format("Expected error for %s on %s", resource.getKeyspace(), permission))
++                                                             .isInstanceOf(org.apache.cassandra.exceptions.UnauthorizedException.class);
++                                                         }
++                                                         else
++                                                         {
++                                                             if (permittedKs.contains(resource.getKeyspace()))
++                                                             {
++                                                                 state.hasAccess(resource.getKeyspace(), permission, resource);
++                                                             }
++                                                             else
++                                                             {
++                                                                 assertThatThrownBy(() -> state.hasAccess(resource.getKeyspace(), permission, resource),
++                                                                                    String.format("Expected error for %s on %s", resource.getKeyspace(), permission))
++                                                                 .isInstanceOf(org.apache.cassandra.exceptions.UnauthorizedException.class);
++                                                             }
++                                                         }
++                                                     }
++                                                     else
++                                                     {
++                                                         assertThatThrownBy(() -> state.hasAccess(resource.getKeyspace(), permission, resource),
++                                                                            String.format("Expected error for %s on %s", resource.getKeyspace(), permission))
++                                                         .isInstanceOf(org.apache.cassandra.exceptions.UnauthorizedException.class);
++                                                     }
++                                                 }
++                                             }
++                                             else if (permission == Permission.MODIFY)
++                                             {
++                                                 assertThatThrownBy(() -> state.hasAccess(resource.getKeyspace(), permission, resource),
++                                                                    String.format("Expected error for %s on %s", resource.getKeyspace(), permission))
++                                                 .isInstanceOf(org.apache.cassandra.exceptions.UnauthorizedException.class);
++                                             }
++                                             else if (permission == Permission.SELECT)
++                                             {
++                                                 if (resource.isTableLevel())
++                                                 {
++                                                     if (!ClientState.READABLE_SYSTEM_RESOURCES.contains(DataResource.table(resource.getKeyspace(), resource.getTable())))
++                                                     {
++                                                         if (!lvls.equals(of("TABLE")))
++                                                         {
++                                                             assertThatThrownBy(() -> state.hasAccess(resource.getKeyspace(), permission, resource),
++                                                                                String.format("Expected error for %s on %s", resource.getKeyspace(), permission))
++                                                             .isInstanceOf(org.apache.cassandra.exceptions.UnauthorizedException.class);
++                                                         }
++                                                         else
++                                                         {
++                                                             if (permittedTbls.contains(resource.getKeyspace() + '.' + resource.getTable()))
++                                                                 state.hasAccess(resource.getKeyspace(), permission, resource);
++                                                             else
++                                                             {
++                                                                 assertThatThrownBy(() -> state.hasAccess(resource.getKeyspace(), permission, resource),
++                                                                                    String.format("Expected error for %s on %s", resource.getKeyspace(), permission))
++                                                                 .isInstanceOf(org.apache.cassandra.exceptions.UnauthorizedException.class);
++                                                             }
++                                                         }
++                                                     }
++                                                 }
++                                             }
++                                         }
++                                     }
++
++                                     return null;
++                                 }, systemTables, permittedKeyspaces, permittedTables, levels);
++    }
++
++    private Map<String, Set<String>> getSystemTables(IInvokableInstance instance)
++    {
++        return instance.callOnInstance((IIsolatedExecutor.SerializableCallable<Map<String, Set<String>>>) () -> {
++            Map<String, Set<String>> systemTables = new HashMap<>();
++
++            Set<String> keyspaces = new HashSet<>(SchemaConstants.ALL_SYSTEM_KEYSPACES);
++
++            for (String systemKeyspace : keyspaces)
++            {
++                systemTables.put(systemKeyspace, new HashSet<>());
++                for (ColumnFamilyStore systemCfs : Keyspace.open(systemKeyspace).getColumnFamilyStores())
++                    systemTables.get(systemKeyspace).add(systemCfs.getTableName());
++            }
++
++            return systemTables;
++        });
++    }
++
++    private void doWithSession(Consumer<Session> consumer)
++    {
++        com.datastax.driver.core.Cluster.Builder builder = com.datastax.driver.core.Cluster.builder()
++                                                                                           .withLoadBalancingPolicy(new DCAwareRoundRobinPolicy.Builder().withLocalDc("datacenter1").build())
++                                                                                           .withAuthProvider(new PlainTextAuthProvider("cassandra", "cassandra"))
++                                                                                           .addContactPoint("127.0.0.1");
++
++        try (com.datastax.driver.core.Cluster c = builder.build(); Session session = c.connect())
++        {
++            consumer.accept(session);
++        }
++    }
++
++    private void waitFor(Callable<Boolean> action) throws Throwable
++    {
++        for (int i = 0; i < 10; i++)
++        {
++            if (action.call())
++                break;
++
++            Thread.sleep(1000);
++        }
++    }
++}
+-- 
+2.43.2
+
