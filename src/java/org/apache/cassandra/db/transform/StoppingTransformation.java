@@ -74,7 +74,7 @@ public abstract class StoppingTransformation<I extends BaseRowIterator<?>> exten
     @Override
     protected void attachTo(BaseRows rows)
     {
-        logger.debug("Attaching, rows are null: {}", this.rows == null);
+        logger.debug("Attaching, rows are null: {}, class {}", this.rows == null, this.getClass().getName());
         assert this.rows == null;
         this.rows = rows;
     }
