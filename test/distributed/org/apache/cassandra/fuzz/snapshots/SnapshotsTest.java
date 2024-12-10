@@ -32,11 +32,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import javax.management.openmbean.TabularData;
 
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.MapDifference.ValueDifference;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.Uninterruptibles;
 import org.junit.Test;
 
 import accord.utils.Property.StateOnlyCommand;
@@ -114,6 +116,15 @@ public class SnapshotsTest
         {
             return state.getNode();
         }
+
+        @Override
+        public void applyUnit(State state)
+        {
+            Uninterruptibles.sleepUninterruptibly(Generators.TINY_TIME_SPAN_NANOS.generate(state.randomnessSource), TimeUnit.NANOSECONDS);
+            doWork(state);
+        }
+
+        public abstract void doWork(State state);
     }
 
     public static class ListSnapshots extends AbstractCommand
@@ -127,7 +138,7 @@ public class SnapshotsTest
         }
 
         @Override
-        public void applyUnit(State state)
+        public void doWork(State state)
         {
             assertEquals(listingParams.left, categorize(list(listingParams.right)));
         }
@@ -306,7 +317,7 @@ public class SnapshotsTest
         }
 
         @Override
-        public void applyUnit(State state)
+        public void doWork(State state)
         {
             createKeypace(state);
             assertEquals(state.schema.keySet(), state.getKeyspaces());
@@ -362,7 +373,7 @@ public class SnapshotsTest
         }
 
         @Override
-        public void applyUnit(State state)
+        public void doWork(State state)
         {
             if (!shouldApply)
                 return;
@@ -396,7 +407,7 @@ public class SnapshotsTest
         }
 
         @Override
-        public void applyUnit(State state)
+        public void doWork(State state)
         {
             Map<String, List<String>> expected = state.schema;
             createTable(state);
@@ -474,7 +485,7 @@ public class SnapshotsTest
         }
 
         @Override
-        public void applyUnit(State state)
+        public void doWork(State state)
         {
             if (!shouldApply)
                 return;
@@ -519,7 +530,7 @@ public class SnapshotsTest
         }
 
         @Override
-        public void applyUnit(State state)
+        public void doWork(State state)
         {
             if (!shouldApply)
                 return;
@@ -568,7 +579,7 @@ public class SnapshotsTest
         }
 
         @Override
-        public void applyUnit(State state)
+        public void doWork(State state)
         {
             // create missing tables if any
             createKeypace(state);
@@ -601,7 +612,7 @@ public class SnapshotsTest
         }
 
         @Override
-        public void applyUnit(State state)
+        public void doWork(State state)
         {
             // see what snapshots are to be taken
             Set<TestSnapshot> existing = state.getSnapshots();
@@ -714,7 +725,7 @@ public class SnapshotsTest
         }
 
         @Override
-        public void applyUnit(State state)
+        public void doWork(State state)
         {
             clearSnapshot(state, normalDiff);
             clearSnapshot(state, truncatedDiff, TRUNCATED_SNAPSHOT_PREFIX);
