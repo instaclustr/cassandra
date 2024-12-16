@@ -28,6 +28,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import javax.management.openmbean.TabularData;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -47,6 +48,7 @@ import org.apache.cassandra.utils.Clock;
 import org.apache.cassandra.utils.ExecutorUtils;
 import org.apache.cassandra.utils.FBUtilities;
 import org.apache.cassandra.utils.MBeanWrapper;
+import oshi.PlatformEnum;
 
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -57,6 +59,7 @@ import static org.apache.cassandra.service.snapshot.ClearSnapshotTask.getPredica
 public class SnapshotManager implements SnapshotManagerMBean, INotificationConsumer, AutoCloseable
 {
     private static final Logger logger = LoggerFactory.getLogger(SnapshotManager.class);
+    private static final Pattern SNAPSHOT_CONTAINS_UPPER_CASE = Pattern.compile(".*[A-Z].*");
 
     private ScheduledExecutorPlus snapshotCleanupExecutor;
 
@@ -561,6 +564,17 @@ public class SnapshotManager implements SnapshotManagerMBean, INotificationConsu
         Map<ColumnFamilyStore, TableSnapshot> snapshotsToCreate = task.getSnapshotsToCreate();
         for (Map.Entry<ColumnFamilyStore, TableSnapshot> toCreateEntry : snapshotsToCreate.entrySet())
         {
+            if (FBUtilities.getSystemInfo().platform() == PlatformEnum.MACOS)
+            {
+                if (SNAPSHOT_CONTAINS_UPPER_CASE.matcher(toCreateEntry.getValue().getTag()).matches())
+                {
+                    throw new RuntimeException("Creation of a snapshot on Mac OS platform with snapshot name " +
+                                               "containing an upper case character " +
+                                               '(' + toCreateEntry.getValue().getTag() + ") " +
+                                               "is not supported.");
+                }
+            }
+
             if (snapshots.contains(toCreateEntry.getValue()))
             {
                 throw new RuntimeException(format("Snapshot %s for %s.%s already exists.",
