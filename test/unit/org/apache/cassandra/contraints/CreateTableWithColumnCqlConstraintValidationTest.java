@@ -1106,4 +1106,19 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             assertTrue(e.getMessage().contains("Error setting schema for test"));
         }
     }
+
+    @Test
+    public void testCreateTableInvalidFunction() throws Throwable
+    {
+        try
+        {
+            createTable("CREATE TABLE %s (pk text CHECK not_a_function(pk) = 4, ck1 int, ck2 int, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
+            fail();
+        }
+        catch (InvalidRequestException e)
+        {
+            assertTrue(e.getCause() instanceof ConstraintInvalidException);
+            assertTrue(e.getMessage().contains("Error setting schema for test"));
+        }
+    }
 }
