@@ -42,7 +42,7 @@ import org.apache.cassandra.auth.Permission;
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.cql3.CQL3Type;
 import org.apache.cassandra.cql3.CQLStatement;
-import org.apache.cassandra.cql3.CqlConstraint;
+import org.apache.cassandra.cql3.ColumnConstraints;
 import org.apache.cassandra.cql3.ColumnIdentifier;
 import org.apache.cassandra.cql3.QualifiedName;
 import org.apache.cassandra.cql3.functions.masking.ColumnMask;
@@ -733,9 +733,9 @@ public abstract class AlterTableStatement extends AlterSchemaStatement
     public static class AlterConstraints extends AlterTableStatement
     {
         final ColumnIdentifier constraintName;
-        final List<CqlConstraint> constraints;
+        final ColumnConstraints constraints;
 
-        AlterConstraints(String keyspaceName, String tableName, boolean ifTableExists, ColumnIdentifier constraintName, List<CqlConstraint> constraints)
+        AlterConstraints(String keyspaceName, String tableName, boolean ifTableExists, ColumnIdentifier constraintName, ColumnConstraints constraints)
         {
             super(keyspaceName, tableName, ifTableExists);
             this.constraintName = constraintName;
@@ -785,7 +785,7 @@ public abstract class AlterTableStatement extends AlterSchemaStatement
         private boolean ifColumnExists;
         private boolean ifColumnNotExists;
         private ColumnIdentifier constraintName;
-        private List<CqlConstraint> constraints;
+        private ColumnConstraints constraints;
 
         private Kind kind;
 
@@ -884,15 +884,11 @@ public abstract class AlterTableStatement extends AlterSchemaStatement
             this.constraintName = name;
         }
 
-        public void alterConstraints(ColumnIdentifier name, List<CqlConstraint.Raw> rawConstraints)
+        public void alterConstraints(ColumnIdentifier name, ColumnConstraints.Raw rawConstraints)
         {
             kind = Kind.ALTER_CONSTRAINTS;
             this.constraintName = name;
-            this.constraints = new ArrayList<>();
-            for (CqlConstraint.Raw rawConstraint : rawConstraints)
-            {
-                this.constraints.add(rawConstraint.prepare());
-            }
+            this.constraints = Objects.requireNonNullElseGet(rawConstraints.prepare(), ColumnConstraints.Noop::new);
         }
 
         public void timestamp(long timestamp)

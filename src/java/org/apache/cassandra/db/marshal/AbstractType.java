@@ -31,6 +31,7 @@ import java.util.Objects;
 import org.apache.cassandra.cql3.AssignmentTestable;
 import org.apache.cassandra.cql3.CQL3Type;
 import org.apache.cassandra.cql3.ColumnSpecification;
+import org.apache.cassandra.cql3.ColumnConstraints;
 import org.apache.cassandra.cql3.terms.Term;
 import org.apache.cassandra.cql3.functions.ArgumentDeserializer;
 import org.apache.cassandra.db.rows.Cell;
@@ -202,6 +203,17 @@ public abstract class AbstractType<T> implements Comparator<ByteBuffer>, Assignm
     public <V> void validate(V value, ValueAccessor<V> accessor) throws MarshalException
     {
         getSerializer().validate(value, accessor);
+    }
+
+    public void checkConstraints(ByteBuffer bytes, ColumnConstraints constraints) throws ConstraintViolationException
+    {
+        if (constraints.isEmpty())
+        {
+            return;
+        }
+
+        T value = getSerializer().deserialize(bytes);
+        constraints.evaluate(value);
     }
 
     public final int compare(ByteBuffer left, ByteBuffer right)

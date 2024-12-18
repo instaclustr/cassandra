@@ -763,7 +763,7 @@ public abstract class ModificationStatement implements CQLStatement.SingleKeyspa
                           long nowInSeconds,
                           Dispatcher.RequestTime requestTime)
     {
-        if (hasSlices())
+        if (hasSlices()) // range deletion
         {
             Slices slices = createSlices(options);
 
@@ -803,7 +803,7 @@ public abstract class ModificationStatement implements CQLStatement.SingleKeyspa
 
             for (ByteBuffer key : keys)
             {
-                Validation.validateKey(metadata(), key);
+                Validation.validateKeyAndCheckConstraints(metadata(), key);
                 DecoratedKey dk = metadata().partitioner.decorateKey(key);
 
                 PartitionUpdate.Builder updateBuilder = collector.getPartitionUpdateBuilder(metadata(), dk, options.getConsistency());

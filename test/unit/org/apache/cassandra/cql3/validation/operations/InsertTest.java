@@ -132,12 +132,13 @@ public class InsertTest extends CQLTester.Fuzzed
     private void testInsert(boolean forceFlush) throws Throwable
     {
         createTable("CREATE TABLE %s (partitionKey int," +
+                                      "pk2 int," +
                                       "clustering int," +
                                       "value int," +
-                                      " PRIMARY KEY (partitionKey, clustering))");
+                                      " PRIMARY KEY ((partitionKey, pk2), clustering))");
 
-        execute("INSERT INTO %s (partitionKey, clustering) VALUES (0, 0)");
-        execute("INSERT INTO %s (partitionKey, clustering, value) VALUES (0, 1, 1)");
+        execute("INSERT INTO %s (partitionKey, pk2, clustering) VALUES (0, 99, 0)");
+        execute("INSERT INTO %s (partitionKey, pk2, clustering, value) VALUES (0, 99, 1, 1)");
         flush(forceFlush);
 
         assertRows(execute("SELECT * FROM %s"),

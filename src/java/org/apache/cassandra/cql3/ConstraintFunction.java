@@ -19,10 +19,6 @@
 package org.apache.cassandra.cql3;
 
 
-import java.util.List;
-import java.util.Map;
-
-import org.apache.cassandra.cql3.terms.Term;
 import org.apache.cassandra.schema.TableMetadata;
 
 /**
@@ -40,23 +36,23 @@ public interface ConstraintFunction
     /**
      * Method that provides the execution of the condition. It can either succeed or throw a {@link ConstraintViolationException}.
      *
-     * @param args
+     * @param columnName
      * @param relationType
      * @param term
      * @param tableMetadata
-     * @param columnValues
+     * @param columnValue
      */
-    void evaluate(List<ColumnIdentifier> args, Operator relationType, String term, TableMetadata tableMetadata, Map<String, Term.Raw> columnValues) throws ConstraintViolationException;
+    void evaluate(ColumnIdentifier columnName, Operator relationType, String term, Object columnValue) throws ConstraintViolationException;
 
     /**
      * Method that validates that a condition is valid. This method is called when the CQL constraint is created to determine
      * if the CQL statement is valid or needs to be rejected as invalid throwing a {@link ConstraintInvalidException}
-     * @param args
+     * @param columnName
      * @param relationType
      * @param term
      * @param tableMetadata
      */
-    void validate(List<ColumnIdentifier> args, Operator relationType, String term, TableMetadata tableMetadata) throws ConstraintInvalidException;
+    void validate(ColumnIdentifier columnName, Operator relationType, String term, TableMetadata tableMetadata) throws ConstraintInvalidException;
 
     /**
      * Removes initial and ending quotes from a column value

@@ -20,18 +20,16 @@ package org.apache.cassandra.cql3;
 
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.Map;
 
-import org.apache.cassandra.cql3.terms.Term;
 import org.apache.cassandra.db.TypeSizes;
-import org.apache.cassandra.io.IVersionedAsymmetricSerializer;
+import org.apache.cassandra.io.IVersionedSerializer;
 import org.apache.cassandra.io.util.DataInputPlus;
 import org.apache.cassandra.io.util.DataOutputPlus;
 import org.apache.cassandra.schema.ColumnMetadata;
 import org.apache.cassandra.schema.TableMetadata;
 
-public class ConstraintScalarCondition implements ConstraintCondition
+
+public class ColumnConstraintScalar implements ColumnConstraint
 {
     public final ColumnIdentifier param;
     public final Operator relationType;
@@ -52,27 +50,28 @@ public class ConstraintScalarCondition implements ConstraintCondition
             this.term = term;
         }
 
-        public ConstraintScalarCondition prepare()
+        public ColumnConstraintScalar prepare()
         {
-            return new ConstraintScalarCondition(param, relationType, term);
+            return new ColumnConstraintScalar(param, relationType, term);
         }
     }
 
-    public ConstraintScalarCondition(ColumnIdentifier param, Operator relationType, String term)
+    public ColumnConstraintScalar(ColumnIdentifier param, Operator relationType, String term)
     {
         this.param = param;
         this.relationType = relationType;
         this.term = term;
     }
 
-    public void evaluate(Map<String, Term.Raw> columnValues, ColumnMetadata columnMetadata, TableMetadata tableMetadata)
+    public void evaluate(Object columnValue)
     {
-        BigDecimal columnValue;
-        BigDecimal sizeConstraint;
+        Number columnValueNumber;
+        float sizeConstraint;
+
         try
         {
-            columnValue = new BigDecimal(columnValues.get(param.toString()).getText());
-            sizeConstraint = new BigDecimal(term);
+            columnValueNumber = (Number) columnValue;
+            sizeConstraint = Float.parseFloat(term);
         }
         catch (final NumberFormatException exception)
         {
@@ -82,27 +81,27 @@ public class ConstraintScalarCondition implements ConstraintCondition
         switch (relationType)
         {
             case EQ:
-                if (!columnValue.equals(sizeConstraint))
+                if (Float.compare(columnValueNumber.floatValue(), sizeConstraint) != 0)
                     throw new ConstraintViolationException(param + " value length should be exactly " + sizeConstraint);
                 break;
             case NEQ:
-                if (columnValue.equals(sizeConstraint))
+                if (Double.compare(columnValueNumber.floatValue(), sizeConstraint) == 0)
                     throw new ConstraintViolationException(param + " value length different than " + sizeConstraint);
                 break;
             case GT:
-                if (columnValue.compareTo(sizeConstraint) <= 0)
+                if (columnValueNumber.floatValue() <= sizeConstraint)
                     throw new ConstraintViolationException(param + " value length should be larger than " + sizeConstraint);
                 break;
             case LT:
-                if (columnValue.compareTo(sizeConstraint) >= 0)
+                if (columnValueNumber.floatValue() >= sizeConstraint)
                     throw new ConstraintViolationException(param + " value length should be smaller than " + sizeConstraint);
                 break;
             case GTE:
-                if (columnValue.compareTo(sizeConstraint) < 0)
+                if (columnValueNumber.floatValue() < sizeConstraint)
                     throw new ConstraintViolationException(param + " value length should be larger or equal than " + sizeConstraint);
                 break;
             case LTE:
-                if (columnValue.compareTo(sizeConstraint) > 0)
+                if (columnValueNumber.floatValue() > sizeConstraint)
                     throw new ConstraintViolationException(param + " value length should be smaller or equal than " + sizeConstraint);
                 break;
             default:
@@ -110,9 +109,10 @@ public class ConstraintScalarCondition implements ConstraintCondition
         }
     }
 
-    public void validate(Map<String, ColumnMetadata> columnMetadata, TableMetadata tableMetadata)
+    @Override
+    public void validate(ColumnMetadata columnMetadata, TableMetadata tableMetadata) throws ConstraintInvalidException
     {
-        if (!(tableMetadata.getColumn(param).type instanceof org.apache.cassandra.db.marshal.NumberType))
+        if (!(columnMetadata.type instanceof org.apache.cassandra.db.marshal.NumberType))
             throw new ConstraintInvalidException(param + " is not a number");
     }
 
@@ -123,34 +123,39 @@ public class ConstraintScalarCondition implements ConstraintCondition
     }
 
     @Override
-    public IVersionedAsymmetricSerializer<ConstraintCondition, ConstraintCondition> getSerializer()
+    public IVersionedSerializer<ColumnConstraint> getSerializer()
     {
         return serializer;
     }
 
-    public static class Serializer implements IVersionedAsymmetricSerializer<ConstraintCondition, ConstraintCondition>
+    @Override
+    public void appendCqlTo(CqlBuilder builder) {
+        builder.append(toString());
+    }
+
+    public static class Serializer implements IVersionedSerializer<ColumnConstraint>
     {
         @Override
-        public void serialize(ConstraintCondition constraintCondition, DataOutputPlus out, int version) throws IOException
+        public void serialize(ColumnConstraint columnConstraint, DataOutputPlus out, int version) throws IOException
         {
-            ConstraintScalarCondition condition = (ConstraintScalarCondition) constraintCondition;
+            ColumnConstraintScalar condition = (ColumnConstraintScalar) columnConstraint;
             out.writeUTF(condition.param.toString());
             out.writeUTF(condition.relationType.toString());
             out.writeUTF(condition.term);
         }
 
         @Override
-        public ConstraintCondition deserialize(DataInputPlus in, int version) throws IOException
+        public ColumnConstraint deserialize(DataInputPlus in, int version) throws IOException
         {
             ColumnIdentifier param = new ColumnIdentifier(in.readUTF(), true);
             Operator relationType = Operator.valueOf(in.readUTF());
-            return new ConstraintScalarCondition(param, relationType, in.readUTF());
+            return new ColumnConstraintScalar(param, relationType, in.readUTF());
         }
 
         @Override
-        public long serializedSize(ConstraintCondition constraintCondition, int version)
+        public long serializedSize(ColumnConstraint columnConstraint, int version)
         {
-            ConstraintScalarCondition condition = (ConstraintScalarCondition) constraintCondition;
+            ColumnConstraintScalar condition = (ColumnConstraintScalar) columnConstraint;
             return TypeSizes.sizeof(condition.term)
                    + TypeSizes.sizeof(condition.relationType.toString())
                    + TypeSizes.sizeof(condition.param.toString());

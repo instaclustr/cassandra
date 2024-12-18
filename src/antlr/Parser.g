@@ -781,33 +781,23 @@ tableDefinition[CreateTableStatement.Raw stmt]
 tableColumns[CreateTableStatement.Raw stmt]
     @init {
         boolean isStatic = false;
-        List<CqlConstraint.Raw> constraints = new ArrayList<>();
     }
-    : k=ident v=comparatorType (K_STATIC { isStatic = true; })? (mask=columnMask)? (constraints=columnConstraints[stmt, constraints])? { $stmt.addColumn(k, v, isStatic, mask, constraints); }
+    : k=ident v=comparatorType (K_STATIC { isStatic = true; })? (mask=columnMask)? (constraints=columnConstraints)? { $stmt.addColumn(k, v, isStatic, mask, constraints); }
         (K_PRIMARY K_KEY { $stmt.setPartitionKeyColumn(k); })?
     | K_PRIMARY K_KEY '(' tablePartitionKey[stmt] (',' c=ident { $stmt.markClusteringColumn(c); } )* ')'
     ;
 
-columnConstraints[CreateTableStatement.Raw stmt, List<CqlConstraint.Raw> constraints]
-    : K_CHECK kconst=cqlConstraintExp[stmt] { constraints.add(kconst); } (K_AND kconst=cqlConstraintExp[stmt] { constraints.add(kconst); })*
+columnConstraints returns [ColumnConstraints.Raw constraints]
+    @init {
+        boolean isStatic = false;
+        List constraintsList = new ArrayList();
+    }
+    : K_CHECK cc=columnConstraint { constraintsList.add(cc); } (K_AND cc=columnConstraint { constraintsList.add(cc); })* { $constraints = new ColumnConstraints.Raw(constraintsList); }
     ;
 
-cqlConstraintExp[CreateTableStatement.Raw stmt] returns [CqlConstraint.Raw cqlConstraint]
-    : f=constraintFunctionExpression op=relationType t=value { cqlConstraint = new CqlConstraint.Raw(new CqlConstraintFunctionCondition.Raw(f, op, t.getText()).prepare());}
-        | k=ident op=relationType t=value { cqlConstraint = new CqlConstraint.Raw(new ConstraintScalarCondition.Raw(k, op, t.getText()).prepare());}
-    ;
-
-constraintFunctionName returns [ConstraintFunction e]
-    : K_LENGTH                       { $e = new LengthConstraint(); }
-    ;
-
-constraintFunctionExpression returns [ConstraintFunctionExpression t]
-    : f=constraintFunctionName '(' args=constraintFunctionArgs ')' { $t = new ConstraintFunctionExpression(f, args); }
-    ;
-
-constraintFunctionArgs returns [List<ColumnIdentifier> args]
-    @init{ $args = new ArrayList<ColumnIdentifier>(); }
-    : t1=ident { args.add(t1); }
+columnConstraint returns [ColumnConstraint columnConstraint]
+    : name=ident '(' k=ident ')' op=relationType t=value { $columnConstraint = new FunctionColumnConstraint.Raw(name, k, op, t.getText()).prepare(); }
+    | k=ident op=relationType t=value { $columnConstraint = new ColumnConstraintScalar.Raw(k, op, t.getText()).prepare(); }
     ;
 
 columnMask returns [ColumnMask.Raw mask]
@@ -972,7 +962,6 @@ alterKeyspaceStatement returns [AlterKeyspaceStatement.Raw stmt]
 alterTableStatement returns [AlterTableStatement.Raw stmt]
     @init {
         boolean ifExists = false;
-        List<CqlConstraint.Raw> columnConstraints = new ArrayList<>();
     }
     : K_ALTER K_COLUMNFAMILY (K_IF K_EXISTS { ifExists = true; } )?
       cf=columnFamilyName { $stmt = new AlterTableStatement.Raw(cf, ifExists); }
@@ -983,7 +972,7 @@ alterTableStatement returns [AlterTableStatement.Raw stmt]
               ( mask=columnMask { $stmt.mask(id, mask); }
               | K_DROP K_MASKED { $stmt.mask(id, null); }
               | K_DROP K_CHECK { $stmt.dropConstraint(id); }
-              | K_CHECK kconst=alterCqlConstraintExp[stmt] { columnConstraints.add(kconst); } (K_AND kconst=alterCqlConstraintExp[stmt] { columnConstraints.add(kconst); })* { $stmt.alterConstraints(id, columnConstraints); })
+              | (constraints=columnConstraints) { $stmt.alterConstraints(id, constraints); })
 
       | K_ADD ( K_IF K_NOT K_EXISTS { $stmt.ifColumnNotExists(true); } )?
               (        id=ident  v=comparatorType  b=isStaticColumn (m=columnMask)? { $stmt.add(id,  v,  b, m);  }
@@ -1004,15 +993,6 @@ alterTableStatement returns [AlterTableStatement.Raw stmt]
 
       | K_WITH properties[$stmt.attrs] { $stmt.attrs(); }
       )
-    ;
-
-alterCqlConstraintExp[AlterTableStatement.Raw stmt] returns [CqlConstraint.Raw cqlConstraint]
-    : cond=alterConstraintFunctionCondition[stmt] { cqlConstraint = new CqlConstraint.Raw(cond); }
-    ;
-
-alterConstraintFunctionCondition[AlterTableStatement.Raw stmt] returns [ConstraintCondition cond]
-    : f=constraintFunctionExpression op=relationType t=value { cond = new CqlConstraintFunctionCondition.Raw(f, op, t.getText()).prepare(); }
-    | k=ident op=relationType t=value { cond = new ConstraintScalarCondition.Raw(k, op, t.getText()).prepare(); }
     ;
 
 isStaticColumn returns [boolean isStaticColumn]

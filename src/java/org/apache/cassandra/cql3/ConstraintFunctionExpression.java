@@ -19,11 +19,8 @@
 package org.apache.cassandra.cql3;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
-import org.apache.cassandra.cql3.terms.Term;
 import org.apache.cassandra.db.TypeSizes;
 import org.apache.cassandra.io.IVersionedAsymmetricSerializer;
 import org.apache.cassandra.io.util.DataInputPlus;
@@ -32,8 +29,8 @@ import org.apache.cassandra.schema.TableMetadata;
 
 public class ConstraintFunctionExpression
 {
-    public final ConstraintFunction executor;
-    public final List<ColumnIdentifier> arg;
+    public final ConstraintFunction constraintFunction;
+    public final ColumnIdentifier columnName;
 
     public static final Serializer serializer = new Serializer();
 
@@ -41,21 +38,21 @@ public class ConstraintFunctionExpression
         LengthConstraint.class.getName(), new LengthConstraint()
     );
 
-    public ConstraintFunctionExpression(ConstraintFunction executor, List<ColumnIdentifier> arg)
+    public ConstraintFunctionExpression(ConstraintFunction constraintFunction, ColumnIdentifier columnName)
     {
-        this.executor = executor;
-        this.arg = arg;
+        this.constraintFunction = constraintFunction;
+        this.columnName = columnName;
     }
 
 
-    public void checkConstraint(Operator relationType, String term, TableMetadata tableMetadata, Map<String, Term.Raw> columnValues)
+    public void evaluate(Operator relationType, String term, Object columnValues)
     {
-        executor.evaluate(this.arg, relationType, term, tableMetadata, columnValues);
+        constraintFunction.evaluate(columnName, relationType, term, columnValues);
     }
 
     public void validateConstraint(Operator relationType, String term, TableMetadata tableMetadata)
     {
-        executor.validate(this.arg, relationType, term, tableMetadata);
+        constraintFunction.validate(columnName, relationType, term, tableMetadata);
     }
 
     public String toCqlString()
@@ -66,13 +63,7 @@ public class ConstraintFunctionExpression
     @Override
     public String toString()
     {
-        List<String> argsString = new ArrayList<>();
-        for (ColumnIdentifier columnIdentifier : arg)
-        {
-            argsString.add(columnIdentifier.toCQLString());
-        }
-        String args = String.join(", ", argsString);
-        return String.format("%s(%s)", executor.getName(), args);
+        return String.format("%s(%s)", constraintFunction.getName(), columnName);
     }
 
     public final static class Serializer implements IVersionedAsymmetricSerializer<ConstraintFunctionExpression, ConstraintFunctionExpression>
@@ -80,10 +71,8 @@ public class ConstraintFunctionExpression
         @Override
         public void serialize(ConstraintFunctionExpression constraintFunctionExpression, DataOutputPlus out, int version) throws IOException
         {
-            out.writeUTF(constraintFunctionExpression.executor.getClass().getName());
-            out.writeUnsignedVInt32(constraintFunctionExpression.arg.size());
-            for (ColumnIdentifier arg : constraintFunctionExpression.arg)
-                out.writeUTF(arg.toString());
+            out.writeUTF(constraintFunctionExpression.constraintFunction.getClass().getName());
+            out.writeUTF(constraintFunctionExpression.columnName.toCQLString());
         }
 
         @Override
@@ -99,27 +88,15 @@ public class ConstraintFunctionExpression
             {
                 throw new IOException(e);
             }
-            int argCount = in.readUnsignedVInt32();
-            List<ColumnIdentifier> arg = new ArrayList<>();
-            for (int i = 0; i < argCount; i++)
-            {
-                arg.add(new ColumnIdentifier(in.readUTF(), true));
-            }
-            return new ConstraintFunctionExpression(executor, arg);
+            ColumnIdentifier columnName = new ColumnIdentifier(in.readUTF(), true);
+            return new ConstraintFunctionExpression(executor, columnName);
         }
 
         @Override
         public long serializedSize(ConstraintFunctionExpression constraintFunctionExpression, int version)
         {
-            long sizeInBytes = TypeSizes.sizeof(constraintFunctionExpression.executor.getClass().getName())
-            + TypeSizes.sizeof(constraintFunctionExpression.arg.size());
-
-            for (ColumnIdentifier id : constraintFunctionExpression.arg)
-            {
-                sizeInBytes += TypeSizes.sizeof(id.toString());
-            }
-
-            return sizeInBytes;
+            return TypeSizes.sizeof(constraintFunctionExpression.constraintFunction.getClass().getName())
+                    + TypeSizes.sizeof(constraintFunctionExpression.columnName.toCQLString());
         }
     }
 }

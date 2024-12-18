@@ -20,17 +20,17 @@ package org.apache.cassandra.cql3;
 
 
 import java.io.IOException;
-import java.util.Map;
 
-import org.apache.cassandra.cql3.terms.Term;
+import org.apache.cassandra.cql3.terms.Constants;
 import org.apache.cassandra.db.TypeSizes;
-import org.apache.cassandra.io.IVersionedAsymmetricSerializer;
+import org.apache.cassandra.io.IVersionedSerializer;
 import org.apache.cassandra.io.util.DataInputPlus;
 import org.apache.cassandra.io.util.DataOutputPlus;
 import org.apache.cassandra.schema.ColumnMetadata;
 import org.apache.cassandra.schema.TableMetadata;
 
-public class CqlConstraintFunctionCondition implements ConstraintCondition
+
+public class FunctionColumnConstraint implements ColumnConstraint
 {
     public final ConstraintFunctionExpression function;
     public final Operator relationType;
@@ -44,20 +44,28 @@ public class CqlConstraintFunctionCondition implements ConstraintCondition
         public final Operator relationType;
         public final String term;
 
-        public Raw(ConstraintFunctionExpression function, Operator relationType, String term)
+        public Raw(ColumnIdentifier functionName, ColumnIdentifier columnName, Operator relationType, String term)
         {
-            this.function = function;
             this.relationType = relationType;
             this.term = term;
+            if (LengthConstraint.FUNCTION_NAME.equals(functionName.toCQLString().toUpperCase()))
+                this.function = new ConstraintFunctionExpression(new LengthConstraint(), columnName);
+            else
+                throw new ConstraintInvalidException("Invalid constraint function");
         }
 
-        public CqlConstraintFunctionCondition prepare()
+        public FunctionColumnConstraint prepare()
         {
-            return new CqlConstraintFunctionCondition(function, relationType, term);
+            return new FunctionColumnConstraint(function, relationType, term);
         }
     }
 
-    public CqlConstraintFunctionCondition(ConstraintFunctionExpression function, Operator relationType, String term)
+    @Override
+    public void appendCqlTo(CqlBuilder builder) {
+        builder.append(toString());
+    }
+
+    public FunctionColumnConstraint(ConstraintFunctionExpression function, Operator relationType, String term)
     {
         this.function = function;
         this.relationType = relationType;
@@ -65,20 +73,20 @@ public class CqlConstraintFunctionCondition implements ConstraintCondition
     }
 
     @Override
-    public IVersionedAsymmetricSerializer<ConstraintCondition, ConstraintCondition> getSerializer()
+    public IVersionedSerializer<ColumnConstraint> getSerializer()
     {
         return serializer;
     }
 
     @Override
-    public void evaluate(Map<String, Term.Raw> columnValues, ColumnMetadata columnMetadata, TableMetadata tableMetadata)
+    public void evaluate(Object columnValue)
     {
         if (function != null)
-            function.checkConstraint(relationType, term, tableMetadata, columnValues);
+            function.evaluate(relationType, term, columnValue);
     }
 
     @Override
-    public void validate(Map<String, ColumnMetadata> columnMetadata, TableMetadata tableMetadata)
+    public void validate(ColumnMetadata columnMetadata, TableMetadata tableMetadata)
     {
         if (columnMetadata != null)
             validateArgs(columnMetadata);
@@ -86,14 +94,13 @@ public class CqlConstraintFunctionCondition implements ConstraintCondition
             function.validateConstraint(relationType, term, tableMetadata);
     }
 
-    void validateArgs(Map<String, ColumnMetadata> columnMetadata)
+    void validateArgs(ColumnMetadata columnMetadata)
     {
         if (function == null)
             throw new ConstraintInvalidException("Function parameter should be the column name");
 
-        for (ColumnIdentifier param : function.arg)
-            if (!columnMetadata.containsKey(param.toString()))
-                throw new ConstraintInvalidException("Function parameter should be the column name");
+        if (!columnMetadata.name.equals(function.columnName))
+            throw new ConstraintInvalidException("Function parameter should be the column name");
     }
 
     @Override
@@ -102,30 +109,30 @@ public class CqlConstraintFunctionCondition implements ConstraintCondition
         return String.format("%s %s %s", function, relationType, term);
     }
 
-    public static class Serializer implements IVersionedAsymmetricSerializer<ConstraintCondition, ConstraintCondition>
+    public static class Serializer implements IVersionedSerializer<ColumnConstraint>
     {
         @Override
-        public void serialize(ConstraintCondition constraintCondition, DataOutputPlus out, int version) throws IOException
+        public void serialize(ColumnConstraint columnConstraint, DataOutputPlus out, int version) throws IOException
         {
-            CqlConstraintFunctionCondition condition = (CqlConstraintFunctionCondition) constraintCondition;
+            FunctionColumnConstraint condition = (FunctionColumnConstraint) columnConstraint;
             ConstraintFunctionExpression.serializer.serialize(condition.function, out, version);
             out.writeUTF(condition.relationType.toString());
             out.writeUTF(condition.term);
         }
 
         @Override
-        public ConstraintCondition deserialize(DataInputPlus in, int version) throws IOException
+        public ColumnConstraint deserialize(DataInputPlus in, int version) throws IOException
         {
             ConstraintFunctionExpression constraintFunctionExpression = ConstraintFunctionExpression.serializer.deserialize(in, version);
             Operator relationType = Operator.valueOf(in.readUTF());
             final String term = in.readUTF();
-            return new CqlConstraintFunctionCondition(constraintFunctionExpression, relationType, term);
+            return new FunctionColumnConstraint(constraintFunctionExpression, relationType, term);
         }
 
         @Override
-        public long serializedSize(ConstraintCondition constraintCondition, int version)
+        public long serializedSize(ColumnConstraint columnConstraint, int version)
         {
-            CqlConstraintFunctionCondition condition = (CqlConstraintFunctionCondition) constraintCondition;
+            FunctionColumnConstraint condition = (FunctionColumnConstraint) columnConstraint;
             return TypeSizes.sizeof(condition.term)
                    + TypeSizes.sizeof(condition.relationType.toString())
                    + ConstraintFunctionExpression.serializer.serializedSize(condition.function, version);

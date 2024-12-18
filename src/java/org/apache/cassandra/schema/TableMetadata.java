@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
 
 import org.apache.cassandra.auth.DataResource;
 import org.apache.cassandra.config.DatabaseDescriptor;
-import org.apache.cassandra.cql3.CqlConstraint;
+import org.apache.cassandra.cql3.ColumnConstraints;
 import org.apache.cassandra.cql3.ColumnIdentifier;
 import org.apache.cassandra.cql3.CqlBuilder;
 import org.apache.cassandra.cql3.SchemaElement;
@@ -531,11 +531,10 @@ public class TableMetadata implements SchemaElement
 
         for (ColumnMetadata columnMetadata : this.columns())
         {
-            List<CqlConstraint> constraints = columnMetadata.getColumnConstraints();
+            ColumnConstraints constraints = columnMetadata.getColumnConstraints();
             if (constraints != null)
             {
-                for (CqlConstraint constraint : constraints)
-                    constraint.validateConstraint(Map.of(columnMetadata.name.toString(), columnMetadata), this);
+                constraints.validate(columnMetadata, this);
             }
         }
     }
@@ -1033,7 +1032,7 @@ public class TableMetadata implements SchemaElement
             return addPartitionKeyColumn(name, type, mask, null);
         }
 
-        public Builder addPartitionKeyColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nullable List<CqlConstraint> cqlConstraints)
+        public Builder addPartitionKeyColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nullable ColumnConstraints cqlConstraints)
         {
             return addColumn(new ColumnMetadata(keyspace, this.name, name, type, partitionKeyColumns.size(), ColumnMetadata.Kind.PARTITION_KEY, mask, cqlConstraints));
         }
@@ -1058,7 +1057,7 @@ public class TableMetadata implements SchemaElement
             return addClusteringColumn(name, type, mask, null);
         }
 
-        public Builder addClusteringColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nullable List<CqlConstraint> cqlConstraints)
+        public Builder addClusteringColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nullable ColumnConstraints cqlConstraints)
         {
             return addColumn(new ColumnMetadata(keyspace, this.name, name, type, clusteringColumns.size(), ColumnMetadata.Kind.CLUSTERING, mask, cqlConstraints));
         }
@@ -1083,7 +1082,7 @@ public class TableMetadata implements SchemaElement
             return addRegularColumn(name, type, mask, null);
         }
 
-        public Builder addRegularColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nullable List<CqlConstraint> cqlConstraints)
+        public Builder addRegularColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nullable ColumnConstraints cqlConstraints)
         {
             return addColumn(new ColumnMetadata(keyspace, this.name, name, type, ColumnMetadata.NO_POSITION, ColumnMetadata.Kind.REGULAR, mask, cqlConstraints));
         }
@@ -1108,7 +1107,7 @@ public class TableMetadata implements SchemaElement
             return addStaticColumn(name, type, mask, null);
         }
 
-        public Builder addStaticColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nullable List<CqlConstraint> cqlConstraints)
+        public Builder addStaticColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nullable ColumnConstraints cqlConstraints)
         {
             return addColumn(new ColumnMetadata(keyspace, this.name, name, type, ColumnMetadata.NO_POSITION, ColumnMetadata.Kind.STATIC, mask, cqlConstraints));
         }

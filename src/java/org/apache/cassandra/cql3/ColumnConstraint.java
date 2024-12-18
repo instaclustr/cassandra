@@ -18,10 +18,7 @@
 
 package org.apache.cassandra.cql3;
 
-import java.util.Map;
-
-import org.apache.cassandra.cql3.terms.Term;
-import org.apache.cassandra.io.IVersionedAsymmetricSerializer;
+import org.apache.cassandra.io.IVersionedSerializer;
 import org.apache.cassandra.schema.ColumnMetadata;
 import org.apache.cassandra.schema.TableMetadata;
 
@@ -29,25 +26,26 @@ import org.apache.cassandra.schema.TableMetadata;
  * Common class for the conditions that a CQL Constraint needs to implement to be integrated in the
  * CQL Constraints framework.
  */
-public interface ConstraintCondition
+public interface ColumnConstraint
 {
-    IVersionedAsymmetricSerializer<ConstraintCondition, ConstraintCondition> getSerializer();
+    IVersionedSerializer<ColumnConstraint> getSerializer();
 
-    /**
-     * Method that evaluates the condition. It can either succeed or throw a {@link ConstraintViolationException}.
-     *
-     * @param columnValues Column values to be evaluated at write time.
-     * @param columnMetadata Metadata of the column in which the constraint is defined.
-     * @param tableMetadata Metadata of the table in which the constraint is defined.
-     */
-    void evaluate(Map<String, Term.Raw> columnValues, ColumnMetadata columnMetadata, TableMetadata tableMetadata) throws ConstraintViolationException;
+    void appendCqlTo(CqlBuilder builder);
+
+//    /**
+//     * Method that evaluates the condition. It can either succeed or throw a {@link ConstraintViolationException}.
+//     *
+//     * @param columnValue Column value to be evaluated at write time.
+//     */
+    void evaluate(Object columnValue) throws ConstraintViolationException;
+
+//    void check(Object value) throws ConstraintViolationException;
 
     /**
      * Method to validate the condition. Method to validate the condition. This method is called when creating constraint via CQL.
      * A {@link ConstraintInvalidException} is thrown for invalid consrtaint definition.
      *
      * @param columnMetadata Metadata of the column in which the constraint is defined.
-     * @param tableMetadata Metadata of the table in which the constraint is defined.
      */
-    void validate(Map<String, ColumnMetadata> columnMetadata, TableMetadata tableMetadata) throws ConstraintInvalidException;
+    void validate(ColumnMetadata columnMetadata, TableMetadata tableMetadata) throws ConstraintInvalidException;
 }
