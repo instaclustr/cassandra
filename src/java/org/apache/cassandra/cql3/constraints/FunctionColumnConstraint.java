@@ -16,12 +16,14 @@
  * limitations under the License.
  */
 
-package org.apache.cassandra.cql3;
+package org.apache.cassandra.cql3.constraints;
 
 
 import java.io.IOException;
 
-import org.apache.cassandra.cql3.terms.Constants;
+import org.apache.cassandra.cql3.ColumnIdentifier;
+import org.apache.cassandra.cql3.CqlBuilder;
+import org.apache.cassandra.cql3.Operator;
 import org.apache.cassandra.db.TypeSizes;
 import org.apache.cassandra.io.IVersionedSerializer;
 import org.apache.cassandra.io.util.DataInputPlus;
@@ -51,7 +53,7 @@ public class FunctionColumnConstraint implements ColumnConstraint
             if (LengthConstraint.FUNCTION_NAME.equals(functionName.toCQLString().toUpperCase()))
                 this.function = new ConstraintFunctionExpression(new LengthConstraint(), columnName);
             else
-                throw new ConstraintInvalidException("Invalid constraint function");
+                throw new InvalidConstraintDefinitionException("Invalid constraint function");
         }
 
         public FunctionColumnConstraint prepare()
@@ -97,16 +99,16 @@ public class FunctionColumnConstraint implements ColumnConstraint
     void validateArgs(ColumnMetadata columnMetadata)
     {
         if (function == null)
-            throw new ConstraintInvalidException("Function parameter should be the column name");
+            throw new InvalidConstraintDefinitionException("Function parameter should be the column name");
 
         if (!columnMetadata.name.equals(function.columnName))
-            throw new ConstraintInvalidException("Function parameter should be the column name");
+            throw new InvalidConstraintDefinitionException("Function parameter should be the column name");
     }
 
     @Override
     public String toString()
     {
-        return String.format("%s %s %s", function, relationType, term);
+        return function + " " + relationType + " " + term;
     }
 
     public static class Serializer implements IVersionedSerializer<ColumnConstraint>

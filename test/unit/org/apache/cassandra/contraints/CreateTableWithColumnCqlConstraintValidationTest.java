@@ -21,8 +21,8 @@ package org.apache.cassandra.contraints;
 
 import org.junit.Test;
 
-import org.apache.cassandra.cql3.ConstraintInvalidException;
-import org.apache.cassandra.cql3.ConstraintViolationException;
+import org.apache.cassandra.cql3.constraints.InvalidConstraintDefinitionException;
+import org.apache.cassandra.cql3.constraints.ConstraintViolationException;
 import org.apache.cassandra.exceptions.InvalidRequestException;
 import org.apache.cassandra.utils.Generators;
 
@@ -1072,7 +1072,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         }
         catch (InvalidRequestException e)
         {
-            assertTrue(e.getCause() instanceof ConstraintInvalidException);
+            assertTrue(e.getCause() instanceof InvalidConstraintDefinitionException);
             assertTrue(e.getMessage().contains("Error setting schema for test"));
         }
     }
@@ -1087,7 +1087,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         }
         catch (InvalidRequestException e)
         {
-            assertTrue(e.getCause() instanceof ConstraintInvalidException);
+            assertTrue(e.getCause() instanceof InvalidConstraintDefinitionException);
             assertTrue(e.getMessage().contains("Error setting schema for test"));
         }
     }
@@ -1102,7 +1102,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         }
         catch (InvalidRequestException e)
         {
-            assertTrue(e.getCause() instanceof ConstraintInvalidException);
+            assertTrue(e.getCause() instanceof InvalidConstraintDefinitionException);
             assertTrue(e.getMessage().contains("Error setting schema for test"));
         }
     }
@@ -1117,7 +1117,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         }
         catch (InvalidRequestException e)
         {
-            assertTrue(e.getCause() instanceof ConstraintInvalidException);
+            assertTrue(e.getCause() instanceof InvalidConstraintDefinitionException);
             assertTrue(e.getMessage().contains("Error setting schema for test"));
         }
     }

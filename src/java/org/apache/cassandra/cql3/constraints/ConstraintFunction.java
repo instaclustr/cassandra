@@ -16,9 +16,11 @@
  * limitations under the License.
  */
 
-package org.apache.cassandra.cql3;
+package org.apache.cassandra.cql3.constraints;
 
 
+import org.apache.cassandra.cql3.ColumnIdentifier;
+import org.apache.cassandra.cql3.Operator;
 import org.apache.cassandra.schema.TableMetadata;
 
 /**
@@ -39,31 +41,17 @@ public interface ConstraintFunction
      * @param columnName
      * @param relationType
      * @param term
-     * @param tableMetadata
      * @param columnValue
      */
     void evaluate(ColumnIdentifier columnName, Operator relationType, String term, Object columnValue) throws ConstraintViolationException;
 
     /**
      * Method that validates that a condition is valid. This method is called when the CQL constraint is created to determine
-     * if the CQL statement is valid or needs to be rejected as invalid throwing a {@link ConstraintInvalidException}
+     * if the CQL statement is valid or needs to be rejected as invalid throwing a {@link InvalidConstraintDefinitionException}
      * @param columnName
      * @param relationType
      * @param term
      * @param tableMetadata
      */
-    void validate(ColumnIdentifier columnName, Operator relationType, String term, TableMetadata tableMetadata) throws ConstraintInvalidException;
-
-    /**
-     * Removes initial and ending quotes from a column value
-     *
-     * @param columnValue
-     * @return
-     */
-    default String stripColumnValue(String columnValue)
-    {
-        if (columnValue.startsWith("'") && columnValue.endsWith("'"))
-            return columnValue.substring(1, columnValue.length() - 1);
-        return columnValue;
-    }
+    void validate(ColumnIdentifier columnName, Operator relationType, String term, TableMetadata tableMetadata) throws InvalidConstraintDefinitionException;
 }

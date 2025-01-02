@@ -16,16 +16,16 @@
  * limitations under the License.
  */
 
-package org.apache.cassandra.cql3;
+package org.apache.cassandra.cql3.constraints;
 
 import org.apache.cassandra.exceptions.InvalidRequestException;
 
 /**
- * Thrown to indicate that the CQL constraint is not valid
+ * Thrown to indicate that the CQL operation did not comply with the defined Constraints
  */
-public class ConstraintInvalidException extends InvalidRequestException
+public class ConstraintViolationException extends InvalidRequestException
 {
-    public ConstraintInvalidException(String msg)
+    public ConstraintViolationException(String msg)
     {
         super(msg);
     }

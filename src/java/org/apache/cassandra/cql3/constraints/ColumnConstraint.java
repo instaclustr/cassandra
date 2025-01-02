@@ -16,8 +16,9 @@
  * limitations under the License.
  */
 
-package org.apache.cassandra.cql3;
+package org.apache.cassandra.cql3.constraints;
 
+import org.apache.cassandra.cql3.CqlBuilder;
 import org.apache.cassandra.io.IVersionedSerializer;
 import org.apache.cassandra.schema.ColumnMetadata;
 import org.apache.cassandra.schema.TableMetadata;
@@ -32,20 +33,18 @@ public interface ColumnConstraint
 
     void appendCqlTo(CqlBuilder builder);
 
-//    /**
-//     * Method that evaluates the condition. It can either succeed or throw a {@link ConstraintViolationException}.
-//     *
-//     * @param columnValue Column value to be evaluated at write time.
-//     */
+    /**
+     * Method that evaluates the condition. It can either succeed or throw a {@link ConstraintViolationException}.
+     *
+     * @param columnValue Column value to be evaluated at write time.
+     */
     void evaluate(Object columnValue) throws ConstraintViolationException;
-
-//    void check(Object value) throws ConstraintViolationException;
 
     /**
      * Method to validate the condition. Method to validate the condition. This method is called when creating constraint via CQL.
-     * A {@link ConstraintInvalidException} is thrown for invalid consrtaint definition.
+     * A {@link InvalidConstraintDefinitionException} is thrown for invalid consrtaint definition.
      *
      * @param columnMetadata Metadata of the column in which the constraint is defined.
      */
-    void validate(ColumnMetadata columnMetadata, TableMetadata tableMetadata) throws ConstraintInvalidException;
+    void validate(ColumnMetadata columnMetadata, TableMetadata tableMetadata) throws InvalidConstraintDefinitionException;
 }

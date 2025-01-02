@@ -16,10 +16,17 @@
  * limitations under the License.
  */
 
-package org.apache.cassandra.cql3;
+package org.apache.cassandra.cql3.constraints;
 
 
+import java.util.Set;
+
+import com.google.common.collect.Sets;
+
+import org.apache.cassandra.cql3.ColumnIdentifier;
+import org.apache.cassandra.cql3.Operator;
 import org.apache.cassandra.db.marshal.AsciiType;
+import org.apache.cassandra.db.marshal.BytesType;
 import org.apache.cassandra.db.marshal.UTF8Type;
 import org.apache.cassandra.schema.ColumnMetadata;
 import org.apache.cassandra.schema.TableMetadata;
@@ -27,11 +34,14 @@ import org.apache.cassandra.schema.TableMetadata;
 public class LengthConstraint implements ConstraintFunction
 {
     public static String FUNCTION_NAME = "LENGTH";
+
     @Override
     public String getName()
     {
         return FUNCTION_NAME;
     }
+
+    private static Set SUPPORTED_TYPES = Sets.newHashSet(UTF8Type.class, AsciiType.class, BytesType.class);
 
     @Override
     public void evaluate(ColumnIdentifier columnName, Operator relationType, String term, Object columnValue)
@@ -74,11 +84,20 @@ public class LengthConstraint implements ConstraintFunction
     public void validate(ColumnIdentifier columnName, Operator relationType, String term, TableMetadata tableMetadata)
     {
         ColumnMetadata columnMetadata = tableMetadata.getColumn(columnName);
-        if (columnMetadata.type.getClass() != UTF8Type.class && columnMetadata.type.getClass() != AsciiType.class)
-        {
-            throw new ConstraintInvalidException("Column should be of type "
-                                                 + UTF8Type.class + " or " + AsciiType.class
-                                                 + " but got " + columnMetadata.type.getClass());
-        }
+        if (!SUPPORTED_TYPES.contains(columnMetadata.type.getClass()))
+            throw new InvalidConstraintDefinitionException("Column type not supported");
+    }
+
+    /**
+     * Removes initial and ending quotes from a column value
+     *
+     * @param columnValue
+     * @return
+     */
+    private String stripColumnValue(String columnValue)
+    {
+        if (columnValue.startsWith("'") && columnValue.endsWith("'"))
+            return columnValue.substring(1, columnValue.length() - 1);
+        return columnValue;
     }
 }

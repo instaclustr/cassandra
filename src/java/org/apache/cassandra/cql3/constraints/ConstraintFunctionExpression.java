@@ -16,11 +16,13 @@
  * limitations under the License.
  */
 
-package org.apache.cassandra.cql3;
+package org.apache.cassandra.cql3.constraints;
 
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.cassandra.cql3.ColumnIdentifier;
+import org.apache.cassandra.cql3.Operator;
 import org.apache.cassandra.db.TypeSizes;
 import org.apache.cassandra.io.IVersionedAsymmetricSerializer;
 import org.apache.cassandra.io.util.DataInputPlus;
@@ -63,7 +65,7 @@ public class ConstraintFunctionExpression
     @Override
     public String toString()
     {
-        return String.format("%s(%s)", constraintFunction.getName(), columnName);
+        return constraintFunction.getName() + "(" + columnName + ")";
     }
 
     public final static class Serializer implements IVersionedAsymmetricSerializer<ConstraintFunctionExpression, ConstraintFunctionExpression>

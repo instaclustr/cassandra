@@ -16,9 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.cassandra.cql3;
+package org.apache.cassandra.cql3.constraints;
 
 
+import org.apache.cassandra.cql3.CqlBuilder;
 import org.apache.cassandra.io.IVersionedAsymmetricSerializer;
 import org.apache.cassandra.io.IVersionedSerializer;
 import org.apache.cassandra.io.util.DataInputPlus;
@@ -28,27 +29,30 @@ import org.apache.cassandra.schema.TableMetadata;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 // group of constraints for the column
 public class ColumnConstraints implements ColumnConstraint
 {
-
     public static Serializer serializer = new Serializer();
 
     private final List<ColumnConstraint> constraints;
 
-    public ColumnConstraints(List<ColumnConstraint> constraints) {
-        this.constraints = constraints;
+    public ColumnConstraints(List<ColumnConstraint> constraints)
+    {
+        this.constraints = new ArrayList<>(constraints);
     }
 
     @Override
-    public IVersionedSerializer<ColumnConstraint> getSerializer() {
+    public IVersionedSerializer<ColumnConstraint> getSerializer()
+    {
         return null;
     }
 
     @Override
-    public void appendCqlTo(CqlBuilder builder) {
+    public void appendCqlTo(CqlBuilder builder)
+    {
         for (ColumnConstraint constraint : constraints)
         {
             constraint.appendCqlTo(builder);
@@ -56,8 +60,8 @@ public class ColumnConstraints implements ColumnConstraint
     }
 
     @Override
-    public void evaluate(Object columnValue) throws ConstraintViolationException {
-
+    public void evaluate(Object columnValue) throws ConstraintViolationException
+    {
         for (ColumnConstraint constraint : constraints)
         {
             constraint.evaluate(columnValue);
@@ -76,7 +80,8 @@ public class ColumnConstraints implements ColumnConstraint
 
 
     @Override
-    public void validate(ColumnMetadata columnMetadata, TableMetadata tableMetadata) throws ConstraintInvalidException {
+    public void validate(ColumnMetadata columnMetadata, TableMetadata tableMetadata) throws InvalidConstraintDefinitionException
+    {
         for (ColumnConstraint constraint : constraints)
         {
             constraint.validate(columnMetadata, tableMetadata);
@@ -85,10 +90,10 @@ public class ColumnConstraints implements ColumnConstraint
 
     public static class Noop extends ColumnConstraints
     {
-        public static Noop INSTANCE = new Noop();
+        public static final Noop INSTANCE = new Noop();
 
         public Noop() {
-            super(new ArrayList<>());
+            super(Collections.emptyList());
         }
     }
 
@@ -103,12 +108,7 @@ public class ColumnConstraints implements ColumnConstraint
 
         public Raw()
         {
-            this.constraints = new ArrayList<>();
-        }
-
-        public void addConstraint(ColumnConstraint constraint)
-        {
-            this.constraints.add(constraint);
+            this.constraints = Collections.emptyList();
         }
 
         public ColumnConstraints prepare()

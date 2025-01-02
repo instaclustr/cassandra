@@ -300,7 +300,9 @@ public abstract class ModificationStatement implements CQLStatement.SingleKeyspa
                 Token token = metadata().partitioner.getToken(key);
 
                 for (Replica replica : ReplicaLayout.forTokenWriteLiveAndDown(keyspace, token).all())
+                {
                     Guardrails.replicaDiskUsage.guard(replica.endpoint(), state);
+                }
             }
         }
     }

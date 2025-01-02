@@ -22,8 +22,8 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import org.apache.cassandra.cql3.ConstraintInvalidException;
-import org.apache.cassandra.cql3.ConstraintViolationException;
+import org.apache.cassandra.cql3.constraints.InvalidConstraintDefinitionException;
+import org.apache.cassandra.cql3.constraints.ConstraintViolationException;
 import org.apache.cassandra.distributed.Cluster;
 import org.apache.cassandra.distributed.api.ConsistencyLevel;
 import org.assertj.core.api.Assertions;
@@ -257,6 +257,6 @@ public class CqlConstraintsTest extends TestBaseImpl
         Assertions.assertThatThrownBy(() -> cluster.schemaChange(statement))
                   .describedAs(description)
                   .has(new Condition<Throwable>(t -> t.getClass().getCanonicalName()
-                                                      .equals(ConstraintInvalidException.class.getCanonicalName()), "is instance of ConstraintInvalidException"));
+                                                      .equals(InvalidConstraintDefinitionException.class.getCanonicalName()), "is instance of ConstraintInvalidException"));
     }
 }

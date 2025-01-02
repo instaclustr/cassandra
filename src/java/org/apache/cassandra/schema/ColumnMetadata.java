@@ -31,6 +31,8 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 
 import org.apache.cassandra.cql3.*;
+import org.apache.cassandra.cql3.constraints.ColumnConstraint;
+import org.apache.cassandra.cql3.constraints.ColumnConstraints;
 import org.apache.cassandra.cql3.functions.masking.ColumnMask;
 import org.apache.cassandra.cql3.selection.Selectable;
 import org.apache.cassandra.cql3.selection.Selector;
@@ -174,7 +176,7 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
                           int position,
                           Kind kind,
                           @Nullable ColumnMask mask,
-                          @Nullable ColumnConstraints columnConstraints)
+                          ColumnConstraints columnConstraints)
     {
         this(table.keyspace,
              table.name,
@@ -349,7 +351,7 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
     @Nonnull
     public ColumnConstraints getColumnConstraints()
     {
-        return columnConstraints; // either Noop or actual constraints
+        return columnConstraints;
     }
 
     @Nullable

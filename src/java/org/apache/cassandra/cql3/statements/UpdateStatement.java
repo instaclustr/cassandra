@@ -29,6 +29,7 @@ import org.apache.cassandra.audit.AuditLogEntryType;
 import org.apache.cassandra.cql3.*;
 import org.apache.cassandra.cql3.conditions.ColumnCondition;
 import org.apache.cassandra.cql3.conditions.Conditions;
+import org.apache.cassandra.cql3.constraints.ColumnConstraint;
 import org.apache.cassandra.cql3.restrictions.StatementRestrictions;
 import org.apache.cassandra.cql3.terms.Constants;
 import org.apache.cassandra.cql3.terms.Term;
@@ -102,7 +103,6 @@ public class UpdateStatement extends ModificationStatement
                 updates.get(i).execute(updateBuilder.partitionKey(), params);
 
             Row row = params.buildRow();
-            //evaluateConstraints(metadata, columnNames, columnValues);
             updateBuilder.add(row);
         }
 
@@ -113,7 +113,6 @@ public class UpdateStatement extends ModificationStatement
             for (int i = 0, isize = staticOps.size(); i < isize; i++)
                 staticOps.get(i).execute(updateBuilder.partitionKey(), params);
             updateBuilder.add(params.buildRow());
-            //evaluateConstraints(metadata, columnNames, columnValues);
         }
     }
 
@@ -396,7 +395,7 @@ public class UpdateStatement extends ModificationStatement
         {
             if (column.hasConstraint())
             {
-                // This is needed becouse when parsing from JSON, the literal type is for numeric
+                // This is needed because when parsing from JSON, the literal type is for numeric
                 // values is float.
                 TypeSerializer serializer;
                 ColumnSpecification receiver;

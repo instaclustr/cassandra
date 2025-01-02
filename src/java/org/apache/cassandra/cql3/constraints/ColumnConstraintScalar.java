@@ -16,11 +16,14 @@
  * limitations under the License.
  */
 
-package org.apache.cassandra.cql3;
+package org.apache.cassandra.cql3.constraints;
 
 
 import java.io.IOException;
 
+import org.apache.cassandra.cql3.ColumnIdentifier;
+import org.apache.cassandra.cql3.CqlBuilder;
+import org.apache.cassandra.cql3.Operator;
 import org.apache.cassandra.db.TypeSizes;
 import org.apache.cassandra.io.IVersionedSerializer;
 import org.apache.cassandra.io.util.DataInputPlus;
@@ -110,16 +113,16 @@ public class ColumnConstraintScalar implements ColumnConstraint
     }
 
     @Override
-    public void validate(ColumnMetadata columnMetadata, TableMetadata tableMetadata) throws ConstraintInvalidException
+    public void validate(ColumnMetadata columnMetadata, TableMetadata tableMetadata) throws InvalidConstraintDefinitionException
     {
         if (!(columnMetadata.type instanceof org.apache.cassandra.db.marshal.NumberType))
-            throw new ConstraintInvalidException(param + " is not a number");
+            throw new InvalidConstraintDefinitionException(param + " is not a number");
     }
 
     @Override
     public String toString()
     {
-        return String.format("%s %s %s", param, relationType, term);
+        return param + " " + relationType + " " + term;
     }
 
     @Override
