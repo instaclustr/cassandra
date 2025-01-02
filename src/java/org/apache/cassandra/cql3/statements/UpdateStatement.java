@@ -17,10 +17,12 @@
  */
 package org.apache.cassandra.cql3.statements;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +40,7 @@ import org.apache.cassandra.db.Slice;
 import org.apache.cassandra.db.marshal.FloatType;
 import org.apache.cassandra.db.marshal.NumberType;
 import org.apache.cassandra.db.partitions.PartitionUpdate;
+import org.apache.cassandra.db.rows.Cell;
 import org.apache.cassandra.db.rows.Row;
 import org.apache.cassandra.schema.ColumnMetadata;
 import org.apache.cassandra.schema.TableMetadata;
@@ -103,6 +106,7 @@ public class UpdateStatement extends ModificationStatement
                 updates.get(i).execute(updateBuilder.partitionKey(), params);
 
             Row row = params.buildRow();
+            evaluateConstraintsForRow(row);
             updateBuilder.add(row);
         }
 
@@ -200,8 +204,7 @@ public class UpdateStatement extends ModificationStatement
                                                                            false,
                                                                            false);
 
-            evaluateConstraints(metadata, columnNames, columnValues);
-
+            evaluateConstraintsForModificationStatement(metadata, columnNames, columnValues);
             return new UpdateStatement(type,
                                        bindVariables,
                                        metadata,
@@ -371,7 +374,7 @@ public class UpdateStatement extends ModificationStatement
         return new AuditLogContext(AuditLogEntryType.UPDATE, keyspace(), table());
     }
 
-    public static void evaluateConstraints(TableMetadata tableMetadata, List<ColumnIdentifier> columnNames, List<Term.Raw> columnValues)
+    public static void evaluateConstraintsForModificationStatement(TableMetadata tableMetadata, List<ColumnIdentifier> columnNames, List<Term.Raw> columnValues)
     {
         Map<String, Term.Raw> columnMap = getColumnMap(columnNames, columnValues);
         for (ColumnMetadata column : tableMetadata.columns())
@@ -379,6 +382,36 @@ public class UpdateStatement extends ModificationStatement
             if (column.hasConstraint())
                 for (ColumnConstraint constraint : column.getColumnConstraints().getConstraints())
                     evaluateConstraint(column, constraint, columnMap, column.type.getSerializer(), column);
+        }
+    }
+
+    public static void evaluateConstraintsForRow(Row row)
+    {
+        Iterator<Cell<?>> cellIt = row.cells().iterator();
+        // check constraint for each column
+        while (cellIt.hasNext())
+        {
+            Cell<?> cell = cellIt.next();
+            ColumnMetadata columnMetadata = cell.column();
+            if (!columnMetadata.hasConstraint()
+                || columnMetadata.isComplex()) // complex column is not supported, for now
+                continue;
+
+            ByteBuffer cellData = cell.buffer();
+            evaluateConstraint(columnMetadata, cellData);
+        }
+    }
+
+    public static void evaluateConstraint(ColumnMetadata columnMetadata, ByteBuffer cellData)
+    {
+
+        if (columnMetadata.hasConstraint())
+        {
+            for (ColumnConstraint constraint : columnMetadata.getColumnConstraints().getConstraints())
+            {
+                TypeSerializer serializer = columnMetadata.type.getSerializer();
+                constraint.evaluate(serializer.deserialize(cellData));
+            }
         }
     }
 
