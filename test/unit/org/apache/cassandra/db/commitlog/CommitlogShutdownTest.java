@@ -22,10 +22,10 @@ import java.nio.ByteBuffer;
 import java.util.Random;
 
 import com.google.common.collect.ImmutableMap;
-import org.apache.cassandra.io.util.File;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.cassandra.SchemaLoader;
 import org.apache.cassandra.config.Config;
@@ -38,8 +38,11 @@ import org.apache.cassandra.db.RowUpdateBuilder;
 import org.apache.cassandra.db.compaction.CompactionManager;
 import org.apache.cassandra.db.marshal.AsciiType;
 import org.apache.cassandra.db.marshal.BytesType;
+import org.apache.cassandra.io.util.File;
 import org.apache.cassandra.schema.KeyspaceParams;
 import org.apache.cassandra.schema.TableId;
+import org.apache.cassandra.service.StorageService;
+import org.awaitility.Awaitility;
 import org.jboss.byteman.contrib.bmunit.BMRule;
 import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
 
@@ -49,6 +52,8 @@ import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
 @RunWith(BMUnitRunner.class)
 public class CommitlogShutdownTest
 {
+    private static final Logger logger = LoggerFactory.getLogger(CommitlogShutdownTest.class);
+
     private static final String KEYSPACE1 = "CommitLogTest";
     private static final String STANDARD1 = "Standard1";
 
@@ -88,12 +93,20 @@ public class CommitlogShutdownTest
             CommitLog.instance.add(m);
         }
 
+        Awaitility.await().until(() -> new File(DatabaseDescriptor.getCommitLogLocation()).tryList().length > 2);
+
         // schedule discarding completed segments and immediately issue a shutdown
         TableId tableId = m.getTableIds().iterator().next();
         CommitLog.instance.discardCompletedSegments(tableId, CommitLogPosition.NONE, CommitLog.instance.getCurrentPosition());
+        ColumnFamilyStore.getIfExists(tableId).forceFlush(ColumnFamilyStore.FlushReason.UNIT_TESTS);
+
+        for (String keyspace : StorageService.instance.getKeyspaces())
+        {
+            StorageService.instance.forceKeyspaceFlush(keyspace);
+        }
+
         CommitLog.instance.shutdownBlocking();
 
-        // the shutdown should block until all logs except the currently active one and perhaps a new, empty one are gone
-        Assert.assertTrue(new File(DatabaseDescriptor.getCommitLogLocation()).tryList().length <= 2);
+        Awaitility.await().until(() -> new File(DatabaseDescriptor.getCommitLogLocation()).tryList().length <= 2);
     }
 }

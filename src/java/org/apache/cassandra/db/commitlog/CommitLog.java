@@ -32,6 +32,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.zip.CRC32;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -379,7 +380,13 @@ public class CommitLog implements CommitLogMBean
             // Don't mark or try to delete any newer segments once we've reached the one containing the
             // position of the flush.
             if (segment.contains(upperBound))
+            {
+                List<String> collect = segment.getDirtyTableIds().stream().map(Object::toString).collect(Collectors.toList());
+                if (!collect.isEmpty())
+                    logger.info("Still dirty table ids: {}", collect);
+
                 break;
+            }
         }
     }
 
