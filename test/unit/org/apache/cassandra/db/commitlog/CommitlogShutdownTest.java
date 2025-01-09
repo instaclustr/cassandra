@@ -87,6 +87,12 @@ public class CommitlogShutdownTest
                            .add("val", ByteBuffer.wrap(entropy))
                            .build();
 
+
+        for (String keyspace : StorageService.instance.getKeyspaces())
+        {
+            StorageService.instance.forceKeyspaceFlush(keyspace);
+        }
+
         // force creating several commitlog files
         for (int i = 0; i < 10; i++)
         {
@@ -98,12 +104,6 @@ public class CommitlogShutdownTest
         // schedule discarding completed segments and immediately issue a shutdown
         TableId tableId = m.getTableIds().iterator().next();
         CommitLog.instance.discardCompletedSegments(tableId, CommitLogPosition.NONE, CommitLog.instance.getCurrentPosition());
-        ColumnFamilyStore.getIfExists(tableId).forceFlush(ColumnFamilyStore.FlushReason.UNIT_TESTS);
-
-        for (String keyspace : StorageService.instance.getKeyspaces())
-        {
-            StorageService.instance.forceKeyspaceFlush(keyspace);
-        }
 
         CommitLog.instance.shutdownBlocking();
 
