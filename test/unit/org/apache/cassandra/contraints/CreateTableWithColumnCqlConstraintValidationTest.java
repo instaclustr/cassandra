@@ -22,7 +22,6 @@ package org.apache.cassandra.contraints;
 import org.junit.Test;
 
 import org.apache.cassandra.cql3.constraints.InvalidConstraintDefinitionException;
-import org.apache.cassandra.cql3.constraints.ConstraintViolationException;
 import org.apache.cassandra.exceptions.InvalidRequestException;
 import org.apache.cassandra.utils.Generators;
 
@@ -113,7 +112,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -136,7 +135,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -159,7 +158,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -182,7 +181,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -203,7 +202,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)"));
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 4, 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 4, 2, 3)");
     }
 
     @Test
@@ -220,7 +219,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -231,7 +230,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -254,7 +253,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -277,7 +276,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -300,7 +299,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -323,7 +322,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -344,7 +343,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)"));
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 4, 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 4, 2, 3)");
     }
 
     @Test
@@ -361,7 +360,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -372,7 +371,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -396,7 +395,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -419,7 +418,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -442,7 +441,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -465,7 +464,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -486,7 +485,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)"));
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 4.2, 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 4.2, 2, 3)");
     }
 
     @Test
@@ -503,7 +502,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -514,7 +513,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -538,7 +537,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -561,7 +560,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -584,7 +583,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -607,7 +606,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -628,7 +627,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)"));
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 4.2, 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 4.2, 2, 3)");
     }
 
     @Test
@@ -645,7 +644,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -656,7 +655,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -680,7 +679,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -703,7 +702,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -726,7 +725,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -749,7 +748,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -770,7 +769,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)"));
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 4.2, 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 4.2, 2, 3)");
     }
 
     @Test
@@ -787,7 +786,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -798,7 +797,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             .check(d -> {
                 try
                 {
-                    assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
+                    assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + d + ", 3, 4)");
                 }
                 catch (Throwable e)
                 {
@@ -817,8 +816,8 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'fooo', 2, 3)");
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'foo', 2, 3)");
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'foooo', 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'foo', 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'foooo', 2, 3)");
     }
 
     @Test
@@ -831,7 +830,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'foooo', 2, 3)");
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'fooo', 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'fooo', 2, 3)");
     }
 
     @Test
@@ -843,8 +842,8 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'foooo', 2, 3)");
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'foo', 2, 3)");
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'fooo', 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'foo', 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'fooo', 2, 3)");
     }
 
     @Test
@@ -857,7 +856,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'fooo', 2, 3)");
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'foo', 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'foo', 2, 3)");
     }
 
     @Test
@@ -869,8 +868,8 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'foo', 2, 3)");
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'fooo', 2, 3)");
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'foooo', 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'fooo', 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'foooo', 2, 3)");
     }
 
     @Test
@@ -883,7 +882,85 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'fooo', 2, 3)");
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'foooo', 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'foooo', 2, 3)");
+    }
+
+    @Test
+    public void testCreateTableWithColumnWithClusteringBlobColumnLengthEqualToConstraint() throws Throwable
+    {
+        createTable("CREATE TABLE %s (pk int, ck1 blob CHECK LENGTH(ck1) = 4, ck2 int, v int, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
+
+        // Valid
+        execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, textAsBlob('fooo'), 2, 3)");
+
+        // Invalid
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, textAsBlob('foo'), 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, textAsBlob('foooo'), 2, 3)");
+    }
+
+    @Test
+    public void testCreateTableWithColumnWithClusteringBlobColumnLengthDifferentThanConstraint() throws Throwable
+    {
+        createTable("CREATE TABLE %s (pk int, ck1 blob CHECK LENGTH(ck1) != 4, ck2 int, v int, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
+
+        // Valid
+        execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, textAsBlob('foo'), 2, 3)");
+        execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, textAsBlob('foooo'), 2, 3)");
+
+        // Invalid
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, textAsBlob('fooo'), 2, 3)");
+    }
+
+    @Test
+    public void testCreateTableWithColumnWithClusteringBlobColumnLengthBiggerThanConstraint() throws Throwable
+    {
+        createTable("CREATE TABLE %s (pk int, ck1 blob CHECK LENGTH(ck1) > 4, ck2 int, v int, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
+
+        // Valid
+        execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, textAsBlob('foooo'), 2, 3)");
+
+        // Invalid
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, textAsBlob('foo'), 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, textAsBlob('fooo'), 2, 3)");
+    }
+
+    @Test
+    public void testCreateTableWithColumnWithClusteringBlobColumnLengthBiggerOrEqualThanConstraint() throws Throwable
+    {
+        createTable("CREATE TABLE %s (pk int, ck1 blob CHECK LENGTH(ck1) >= 4, ck2 int, v int, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
+
+        // Valid
+        execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, textAsBlob('foooo'), 2, 3)");
+        execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, textAsBlob('fooo'), 2, 3)");
+
+        // Invalid
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, textAsBlob('foo'), 2, 3)");
+    }
+
+    @Test
+    public void testCreateTableWithColumnWithClusteringBlobColumnLengthSmallerThanConstraint() throws Throwable
+    {
+        createTable("CREATE TABLE %s (pk int, ck1 blob CHECK LENGTH(ck1) < 4, ck2 int, v int, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
+
+        // Valid
+        execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, textAsBlob('foo'), 2, 3)");
+
+        // Invalid
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, textAsBlob('fooo'), 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, textAsBlob('foooo'), 2, 3)");
+    }
+
+    @Test
+    public void testCreateTableWithColumnWithClusteringBlobColumnLengthSmallerOrEqualThanConstraint() throws Throwable
+    {
+        createTable("CREATE TABLE %s (pk int, ck1 blob CHECK LENGTH(ck1) <= 4, ck2 int, v int, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
+
+        // Valid
+        execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, textAsBlob('foo'), 2, 3)");
+        execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, textAsBlob('fooo'), 2, 3)");
+
+        // Invalid
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'foooo', 2, 3)");
     }
 
 
@@ -896,8 +973,8 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES ('fooo', 1, 2, 3)");
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foo', 1, 2, 3)");
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foooo', 1, 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foo', 1, 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foooo', 1, 2, 3)");
     }
 
     @Test
@@ -910,7 +987,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foooo', 1, 2, 3)");
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('fooo', 1, 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('fooo', 1, 2, 3)");
     }
 
     @Test
@@ -922,8 +999,8 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foooo', 1, 2, 3)");
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foo', 1, 2, 3)");
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('fooo', 1, 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foo', 1, 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('fooo', 1, 2, 3)");
     }
 
     @Test
@@ -936,7 +1013,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES ('fooo', 1, 2, 3)");
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foo', 1, 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foo', 1, 2, 3)");
     }
 
     @Test
@@ -948,8 +1025,8 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foo', 1, 2, 3)");
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('fooo', 1, 2, 3)");
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foooo', 1, 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('fooo', 1, 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foooo', 1, 2, 3)");
     }
 
     @Test
@@ -962,7 +1039,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES ('fooo', 1, 2, 3)");
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foooo', 1, 2, 3)");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foooo', 1, 2, 3)");
     }
 
 
@@ -975,8 +1052,8 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'fooo')");
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'foo')");
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'foooo')");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'foo')");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'foooo')");
     }
 
     @Test
@@ -989,7 +1066,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'foooo')");
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'fooo')");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'fooo')");
     }
 
     @Test
@@ -1001,8 +1078,8 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'foooo')");
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'foo')");
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'fooo')");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'foo')");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'fooo')");
     }
 
     @Test
@@ -1015,7 +1092,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'fooo')");
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'foo')");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'foo')");
     }
 
     @Test
@@ -1027,8 +1104,8 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'foo')");
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'fooo')");
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'foooo')");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'fooo')");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'foooo')");
     }
 
     @Test
@@ -1041,9 +1118,8 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'fooo')");
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'foooo')");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, 'foooo')");
     }
-
 
     @Test
     public void testCreateTableWithColumnMixedColumnsLengthConstraint() throws Throwable
@@ -1054,12 +1130,12 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES ('fooo', 2, 3, 'fooo')");
 
         // Invalid
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foo', 2, 3, 'foo')");
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('fooo', 2, 3, 'foo')");
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foo', 2, 3, 'fooo')");
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foooo', 2, 3, 'fooo')");
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('fooo', 2, 3, 'foooo')");
-        assertInvalidThrow(ConstraintViolationException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foooo', 2, 3, 'foooo')");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foo', 2, 3, 'foo')");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('fooo', 2, 3, 'foo')");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foo', 2, 3, 'fooo')");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foooo', 2, 3, 'fooo')");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('fooo', 2, 3, 'foooo')");
+        assertInvalidThrow(InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES ('foooo', 2, 3, 'foooo')");
     }
 
     @Test
@@ -1072,7 +1148,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         }
         catch (InvalidRequestException e)
         {
-            assertTrue(e.getCause() instanceof InvalidConstraintDefinitionException);
+            assertTrue(e.getCause() instanceof InvalidRequestException);
             assertTrue(e.getMessage().contains("Error setting schema for test"));
         }
     }
@@ -1087,7 +1163,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         }
         catch (InvalidRequestException e)
         {
-            assertTrue(e.getCause() instanceof InvalidConstraintDefinitionException);
+            assertTrue(e.getCause() instanceof InvalidRequestException);
             assertTrue(e.getMessage().contains("Error setting schema for test"));
         }
     }
@@ -1102,7 +1178,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         }
         catch (InvalidRequestException e)
         {
-            assertTrue(e.getCause() instanceof InvalidConstraintDefinitionException);
+            assertTrue(e.getCause() instanceof InvalidRequestException);
             assertTrue(e.getMessage().contains("Error setting schema for test"));
         }
     }
@@ -1117,7 +1193,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         }
         catch (InvalidRequestException e)
         {
-            assertTrue(e.getCause() instanceof InvalidConstraintDefinitionException);
+            assertTrue(e.getCause() instanceof InvalidRequestException);
             assertTrue(e.getMessage().contains("Error setting schema for test"));
         }
     }

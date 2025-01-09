@@ -18,24 +18,42 @@
 
 package org.apache.cassandra.cql3.constraints;
 
-
 import org.apache.cassandra.cql3.CqlBuilder;
+import org.apache.cassandra.db.marshal.AbstractType;
+import org.apache.cassandra.db.marshal.CompositeType;
+import org.apache.cassandra.db.marshal.DynamicCompositeType;
+import org.apache.cassandra.db.marshal.MapType;
+import org.apache.cassandra.db.marshal.TupleType;
+import org.apache.cassandra.db.marshal.UserType;
 import org.apache.cassandra.io.IVersionedAsymmetricSerializer;
 import org.apache.cassandra.io.IVersionedSerializer;
 import org.apache.cassandra.io.util.DataInputPlus;
 import org.apache.cassandra.io.util.DataOutputPlus;
 import org.apache.cassandra.schema.ColumnMetadata;
-import org.apache.cassandra.schema.TableMetadata;
+import org.apache.cassandra.transport.DataType;
+import org.apache.cassandra.transport.ProtocolVersion;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 // group of constraints for the column
 public class ColumnConstraints implements ColumnConstraint
 {
-    public static Serializer serializer = new Serializer();
+    public static final Serializer serializer = new Serializer();
+
+    private static final Set<Class<? extends AbstractType>> complexTypes = ImmutableSet.of(MapType.class,
+                                                                                           TupleType.class,
+                                                                                           UserType.class,
+                                                                                           CompositeType.class,
+                                                                                           DynamicCompositeType.class);
 
     private final List<ColumnConstraint> constraints;
 
@@ -45,9 +63,9 @@ public class ColumnConstraints implements ColumnConstraint
     }
 
     @Override
-    public IVersionedSerializer<ColumnConstraint> getSerializer()
+    public IVersionedSerializer<ColumnConstraint> serializer()
     {
-        return null;
+        return serializer;
     }
 
     @Override
@@ -60,11 +78,11 @@ public class ColumnConstraints implements ColumnConstraint
     }
 
     @Override
-    public void evaluate(Object columnValue) throws ConstraintViolationException
+    public void evaluate(Class<? extends AbstractType> valueType, Object columnValue) throws ConstraintViolationException
     {
         for (ColumnConstraint constraint : constraints)
         {
-            constraint.evaluate(columnValue);
+            constraint.evaluate(valueType, columnValue);
         }
     }
 
@@ -78,13 +96,16 @@ public class ColumnConstraints implements ColumnConstraint
         return constraints.isEmpty();
     }
 
-
     @Override
-    public void validate(ColumnMetadata columnMetadata, TableMetadata tableMetadata) throws InvalidConstraintDefinitionException
+    public void validate(ColumnMetadata columnMetadata) throws InvalidConstraintDefinitionException
     {
+        if (complexTypes.contains(columnMetadata.type))
+        {
+            throw new InvalidConstraintDefinitionException("Complex types do not support constraints");
+        }
         for (ColumnConstraint constraint : constraints)
         {
-            constraint.validate(columnMetadata, tableMetadata);
+            constraint.validate(columnMetadata);
         }
     }
 
@@ -92,7 +113,8 @@ public class ColumnConstraints implements ColumnConstraint
     {
         public static final Noop INSTANCE = new Noop();
 
-        public Noop() {
+        public Noop()
+        {
             super(Collections.emptyList());
         }
     }
@@ -125,9 +147,10 @@ public class ColumnConstraints implements ColumnConstraint
             ColumnConstraints constraints = (ColumnConstraints) columnConstraint;
             out.writeInt(constraints.getConstraints().size());
 
-            for (ColumnConstraint constraint : constraints.getConstraints()) {
+            for (ColumnConstraint constraint : constraints.getConstraints())
+            {
                 out.writeUTF(constraint.getClass().toString());
-                constraint.getSerializer().serialize(constraint, out, version);
+                constraint.serializer().serialize(constraint, out, version);
             }
         }
 
@@ -152,7 +175,7 @@ public class ColumnConstraints implements ColumnConstraint
             ColumnConstraints constraints = (ColumnConstraints) columnConstraint;
             long constraintsSize = 0;
             for (ColumnConstraint constraint : constraints.getConstraints())
-                constraintsSize += constraint.getSerializer().serializedSize(constraint, version);
+                constraintsSize += constraint.serializer().serializedSize(constraint, version);
             return constraintsSize;
         }
     }

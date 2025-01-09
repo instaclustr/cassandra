@@ -21,10 +21,8 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.cassandra.audit.AuditLogContext;
 import org.apache.cassandra.audit.AuditLogEntryType;
@@ -37,14 +35,11 @@ import org.apache.cassandra.cql3.terms.Constants;
 import org.apache.cassandra.cql3.terms.Term;
 import org.apache.cassandra.db.Clustering;
 import org.apache.cassandra.db.Slice;
-import org.apache.cassandra.db.marshal.FloatType;
-import org.apache.cassandra.db.marshal.NumberType;
 import org.apache.cassandra.db.partitions.PartitionUpdate;
 import org.apache.cassandra.db.rows.Cell;
 import org.apache.cassandra.db.rows.Row;
 import org.apache.cassandra.schema.ColumnMetadata;
 import org.apache.cassandra.schema.TableMetadata;
-import org.apache.cassandra.serializers.FloatSerializer;
 import org.apache.cassandra.serializers.TypeSerializer;
 import org.apache.cassandra.service.ClientState;
 import org.apache.cassandra.utils.ByteBufferUtil;
@@ -204,7 +199,6 @@ public class UpdateStatement extends ModificationStatement
                                                                            false,
                                                                            false);
 
-            evaluateConstraintsForModificationStatement(metadata, columnNames, columnValues);
             return new UpdateStatement(type,
                                        bindVariables,
                                        metadata,
@@ -285,7 +279,6 @@ public class UpdateStatement extends ModificationStatement
                 columnNames.add(columnMetadata.name);
                 columnValues.add(unprepared.getRawTermForColumn(columnMetadata, false));
             }
-            evaluateJsonConstraints(metadata, columnNames, columnValues);
             return new UpdateStatement(type,
                                        bindVariables,
                                        metadata,
@@ -374,17 +367,6 @@ public class UpdateStatement extends ModificationStatement
         return new AuditLogContext(AuditLogEntryType.UPDATE, keyspace(), table());
     }
 
-    public static void evaluateConstraintsForModificationStatement(TableMetadata tableMetadata, List<ColumnIdentifier> columnNames, List<Term.Raw> columnValues)
-    {
-        Map<String, Term.Raw> columnMap = getColumnMap(columnNames, columnValues);
-        for (ColumnMetadata column : tableMetadata.columns())
-        {
-            if (column.hasConstraint())
-                for (ColumnConstraint constraint : column.getColumnConstraints().getConstraints())
-                    evaluateConstraint(column, constraint, columnMap, column.type.getSerializer(), column);
-        }
-    }
-
     public static void evaluateConstraintsForRow(Row row)
     {
         Iterator<Cell<?>> cellIt = row.cells().iterator();
@@ -404,59 +386,14 @@ public class UpdateStatement extends ModificationStatement
 
     public static void evaluateConstraint(ColumnMetadata columnMetadata, ByteBuffer cellData)
     {
-
         if (columnMetadata.hasConstraint())
         {
             for (ColumnConstraint constraint : columnMetadata.getColumnConstraints().getConstraints())
             {
-                TypeSerializer serializer = columnMetadata.type.getSerializer();
-                constraint.evaluate(serializer.deserialize(cellData));
+                TypeSerializer<?> serializer = columnMetadata.type.getSerializer();
+                constraint.evaluate(columnMetadata.type.getClass(),
+                                    serializer.deserialize(cellData));
             }
         }
-    }
-
-    public static void evaluateConstraint(ColumnMetadata column, ColumnConstraint constraint, Map<String, Term.Raw> columnMap, TypeSerializer serializer, ColumnSpecification receiver)
-    {
-        constraint.evaluate(serializer.deserialize(columnMap.get(column.name.toCQLString())
-                                                            .prepare(column.ksName, receiver).bindAndGet(QueryOptions.DEFAULT)));
-    }
-
-    public static void evaluateJsonConstraints(TableMetadata tableMetadata, List<ColumnIdentifier> columnNames, List<Term.Raw> columnValues)
-    {
-        Map<String, Term.Raw> columnMap = getColumnMap(columnNames, columnValues);
-        for (ColumnMetadata column : tableMetadata.columns())
-        {
-            if (column.hasConstraint())
-            {
-                // This is needed because when parsing from JSON, the literal type is for numeric
-                // values is float.
-                TypeSerializer serializer;
-                ColumnSpecification receiver;
-                if (column.type instanceof NumberType)
-                {
-                    serializer = FloatSerializer.instance;
-                    receiver = new ColumnSpecification(column.ksName, column.cfName, column.name, FloatType.instance);
-                }
-
-                else
-                {
-                    serializer = column.type.getSerializer();
-                    receiver = column;
-                }
-
-                for (ColumnConstraint constraint : column.getColumnConstraints().getConstraints())
-                    evaluateConstraint(column, constraint, columnMap, serializer, receiver);
-            }
-        }
-    }
-
-    private static Map<String, Term.Raw> getColumnMap(List<ColumnIdentifier> columnNames, List<Term.Raw> columnValues)
-    {
-        Map<String, Term.Raw> columnMap = new HashMap<>();
-        for (int i = 0; i < columnNames.size(); i++)
-        {
-            columnMap.put(columnNames.get(i).toString(), columnValues.get(i));
-        }
-        return columnMap;
     }
 }

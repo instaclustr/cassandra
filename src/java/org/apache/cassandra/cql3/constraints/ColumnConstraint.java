@@ -19,9 +19,9 @@
 package org.apache.cassandra.cql3.constraints;
 
 import org.apache.cassandra.cql3.CqlBuilder;
+import org.apache.cassandra.db.marshal.AbstractType;
 import org.apache.cassandra.io.IVersionedSerializer;
 import org.apache.cassandra.schema.ColumnMetadata;
-import org.apache.cassandra.schema.TableMetadata;
 
 /**
  * Common class for the conditions that a CQL Constraint needs to implement to be integrated in the
@@ -29,16 +29,17 @@ import org.apache.cassandra.schema.TableMetadata;
  */
 public interface ColumnConstraint
 {
-    IVersionedSerializer<ColumnConstraint> getSerializer();
+    IVersionedSerializer<ColumnConstraint> serializer();
 
     void appendCqlTo(CqlBuilder builder);
 
     /**
      * Method that evaluates the condition. It can either succeed or throw a {@link ConstraintViolationException}.
      *
-     * @param columnValue Column value to be evaluated at write time.
+     * @param valueType value type of the column value under test
+     * @param columnValue Column value to be evaluated at write time
      */
-    void evaluate(Object columnValue) throws ConstraintViolationException;
+    void evaluate(Class<? extends AbstractType> valueType, Object columnValue) throws ConstraintViolationException;
 
     /**
      * Method to validate the condition. Method to validate the condition. This method is called when creating constraint via CQL.
@@ -46,5 +47,5 @@ public interface ColumnConstraint
      *
      * @param columnMetadata Metadata of the column in which the constraint is defined.
      */
-    void validate(ColumnMetadata columnMetadata, TableMetadata tableMetadata) throws InvalidConstraintDefinitionException;
+    void validate(ColumnMetadata columnMetadata) throws InvalidConstraintDefinitionException;
 }

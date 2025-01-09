@@ -19,9 +19,9 @@
 package org.apache.cassandra.cql3.constraints;
 
 
-import org.apache.cassandra.cql3.ColumnIdentifier;
 import org.apache.cassandra.cql3.Operator;
-import org.apache.cassandra.schema.TableMetadata;
+import org.apache.cassandra.db.marshal.AbstractType;
+import org.apache.cassandra.schema.ColumnMetadata;
 
 /**
  * Interface to be implemented by functions that are executed as part of CQL constraints.
@@ -38,20 +38,17 @@ public interface ConstraintFunction
     /**
      * Method that provides the execution of the condition. It can either succeed or throw a {@link ConstraintViolationException}.
      *
-     * @param columnName
+     * @param valueType
      * @param relationType
      * @param term
      * @param columnValue
      */
-    void evaluate(ColumnIdentifier columnName, Operator relationType, String term, Object columnValue) throws ConstraintViolationException;
+    void evaluate(Class<? extends AbstractType> valueType, Operator relationType, String term, Object columnValue) throws ConstraintViolationException;
 
     /**
      * Method that validates that a condition is valid. This method is called when the CQL constraint is created to determine
      * if the CQL statement is valid or needs to be rejected as invalid throwing a {@link InvalidConstraintDefinitionException}
-     * @param columnName
-     * @param relationType
-     * @param term
-     * @param tableMetadata
+     * @param columnMetadata
      */
-    void validate(ColumnIdentifier columnName, Operator relationType, String term, TableMetadata tableMetadata) throws InvalidConstraintDefinitionException;
+    void validate(ColumnMetadata columnMetadata) throws InvalidConstraintDefinitionException;
 }

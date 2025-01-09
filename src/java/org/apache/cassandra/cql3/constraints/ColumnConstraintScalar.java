@@ -25,12 +25,11 @@ import org.apache.cassandra.cql3.ColumnIdentifier;
 import org.apache.cassandra.cql3.CqlBuilder;
 import org.apache.cassandra.cql3.Operator;
 import org.apache.cassandra.db.TypeSizes;
+import org.apache.cassandra.db.marshal.AbstractType;
 import org.apache.cassandra.io.IVersionedSerializer;
 import org.apache.cassandra.io.util.DataInputPlus;
 import org.apache.cassandra.io.util.DataOutputPlus;
 import org.apache.cassandra.schema.ColumnMetadata;
-import org.apache.cassandra.schema.TableMetadata;
-
 
 public class ColumnConstraintScalar implements ColumnConstraint
 {
@@ -66,7 +65,8 @@ public class ColumnConstraintScalar implements ColumnConstraint
         this.term = term;
     }
 
-    public void evaluate(Object columnValue)
+    @Override
+    public void evaluate(Class<? extends AbstractType> valueType, Object columnValue)
     {
         Number columnValueNumber;
         float sizeConstraint;
@@ -76,7 +76,7 @@ public class ColumnConstraintScalar implements ColumnConstraint
             columnValueNumber = (Number) columnValue;
             sizeConstraint = Float.parseFloat(term);
         }
-        catch (final NumberFormatException exception)
+        catch (NumberFormatException exception)
         {
             throw new ConstraintViolationException(param + " and " + term + " need to be numbers.");
         }
@@ -85,27 +85,27 @@ public class ColumnConstraintScalar implements ColumnConstraint
         {
             case EQ:
                 if (Float.compare(columnValueNumber.floatValue(), sizeConstraint) != 0)
-                    throw new ConstraintViolationException(param + " value length should be exactly " + sizeConstraint);
+                    throw new ConstraintViolationException(param + " value should be exactly " + sizeConstraint);
                 break;
             case NEQ:
                 if (Double.compare(columnValueNumber.floatValue(), sizeConstraint) == 0)
-                    throw new ConstraintViolationException(param + " value length different than " + sizeConstraint);
+                    throw new ConstraintViolationException(param + " value should be different from " + sizeConstraint);
                 break;
             case GT:
                 if (columnValueNumber.floatValue() <= sizeConstraint)
-                    throw new ConstraintViolationException(param + " value length should be larger than " + sizeConstraint);
+                    throw new ConstraintViolationException(param + " value should be larger than " + sizeConstraint);
                 break;
             case LT:
                 if (columnValueNumber.floatValue() >= sizeConstraint)
-                    throw new ConstraintViolationException(param + " value length should be smaller than " + sizeConstraint);
+                    throw new ConstraintViolationException(param + " value should be smaller than " + sizeConstraint);
                 break;
             case GTE:
                 if (columnValueNumber.floatValue() < sizeConstraint)
-                    throw new ConstraintViolationException(param + " value length should be larger or equal than " + sizeConstraint);
+                    throw new ConstraintViolationException(param + " value should be larger or equal than " + sizeConstraint);
                 break;
             case LTE:
                 if (columnValueNumber.floatValue() > sizeConstraint)
-                    throw new ConstraintViolationException(param + " value length should be smaller or equal than " + sizeConstraint);
+                    throw new ConstraintViolationException(param + " value should be smaller or equal than " + sizeConstraint);
                 break;
             default:
                 throw new ConstraintViolationException("Invalid relation type: " + relationType);
@@ -113,7 +113,7 @@ public class ColumnConstraintScalar implements ColumnConstraint
     }
 
     @Override
-    public void validate(ColumnMetadata columnMetadata, TableMetadata tableMetadata) throws InvalidConstraintDefinitionException
+    public void validate(ColumnMetadata columnMetadata) throws InvalidConstraintDefinitionException
     {
         if (!(columnMetadata.type instanceof org.apache.cassandra.db.marshal.NumberType))
             throw new InvalidConstraintDefinitionException(param + " is not a number");
@@ -126,7 +126,7 @@ public class ColumnConstraintScalar implements ColumnConstraint
     }
 
     @Override
-    public IVersionedSerializer<ColumnConstraint> getSerializer()
+    public IVersionedSerializer<ColumnConstraint> serializer()
     {
         return serializer;
     }

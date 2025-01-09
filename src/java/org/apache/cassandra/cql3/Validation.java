@@ -20,10 +20,12 @@ package org.apache.cassandra.cql3;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NavigableSet;
 
 import org.apache.cassandra.cql3.constraints.ColumnConstraint;
 import org.apache.cassandra.cql3.constraints.ColumnConstraints;
 import org.apache.cassandra.cql3.constraints.ConstraintViolationException;
+import org.apache.cassandra.db.Clustering;
 import org.apache.cassandra.exceptions.InvalidRequestException;
 import org.apache.cassandra.schema.ColumnMetadata;
 import org.apache.cassandra.schema.TableMetadata;
@@ -76,18 +78,18 @@ public abstract class Validation
         validateKey(metadata, key);
 
         List<ColumnMetadata> partitionKeys = metadata.partitionKeyColumns();
-        List<ColumnConstraint> columnConstraints = new ArrayList<>(partitionKeys.size());
+        List<ColumnConstraint> partitionKeyConstraints = new ArrayList<>(partitionKeys.size());
         for (ColumnMetadata column : partitionKeys)
         {
-            columnConstraints.add(column.getColumnConstraints());
+            partitionKeyConstraints.add(column.getColumnConstraints());
         }
         try
         {
-            metadata.partitionKeyType.checkConstraints(key, new ColumnConstraints(columnConstraints));
+            metadata.partitionKeyType.checkConstraints(key, new ColumnConstraints(partitionKeyConstraints));
         }
         catch (ConstraintViolationException e)
         {
-            throw new InvalidRequestException(e.getMessage());
+            throw new InvalidRequestException(e.getMessage(), e);
         }
     }
 }

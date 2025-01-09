@@ -50,6 +50,7 @@ import org.apache.cassandra.cql3.constraints.ColumnConstraints;
 import org.apache.cassandra.cql3.ColumnIdentifier;
 import org.apache.cassandra.cql3.CqlBuilder;
 import org.apache.cassandra.cql3.SchemaElement;
+import org.apache.cassandra.cql3.constraints.InvalidConstraintDefinitionException;
 import org.apache.cassandra.cql3.functions.Function;
 import org.apache.cassandra.cql3.functions.masking.ColumnMask;
 import org.apache.cassandra.db.Clustering;
@@ -532,9 +533,11 @@ public class TableMetadata implements SchemaElement
         for (ColumnMetadata columnMetadata : this.columns())
         {
             ColumnConstraints constraints = columnMetadata.getColumnConstraints();
-            if (constraints != null)
+            try {
+                constraints.validate(columnMetadata);
+            } catch (InvalidConstraintDefinitionException e)
             {
-                constraints.validate(columnMetadata, this);
+                throw new InvalidRequestException(e.getMessage(), e);
             }
         }
     }

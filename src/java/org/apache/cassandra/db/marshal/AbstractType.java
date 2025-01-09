@@ -214,7 +214,7 @@ public abstract class AbstractType<T> implements Comparator<ByteBuffer>, Assignm
         }
 
         T value = getSerializer().deserialize(bytes);
-        constraints.evaluate(value);
+        constraints.evaluate(getClass(), value);
     }
 
     public final int compare(ByteBuffer left, ByteBuffer right)

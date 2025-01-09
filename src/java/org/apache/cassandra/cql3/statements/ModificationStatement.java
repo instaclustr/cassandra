@@ -26,6 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.cassandra.auth.Permission;
+import org.apache.cassandra.cql3.constraints.ColumnConstraints;
+import org.apache.cassandra.cql3.constraints.ConstraintViolationException;
 import org.apache.cassandra.db.guardrails.Guardrails;
 import org.apache.cassandra.dht.Token;
 import org.apache.cassandra.locator.Replica;
@@ -816,9 +818,25 @@ public abstract class ModificationStatement implements CQLStatement.SingleKeyspa
                 }
                 else
                 {
+                    // Clustering keys need to be checked on their own
                     for (Clustering<?> clustering : clusterings)
                     {
                         clustering.validate();
+                        for (int i = 0; i < clustering.size(); i++)
+                        {
+                            ColumnMetadata column = metadata.clusteringColumns().get(i);
+                            if (column.hasConstraint())
+                            {
+                                try
+                                {
+                                    clustering.checkConstraints(i, metadata.comparator, column.getColumnConstraints());
+                                }
+                                catch (ConstraintViolationException e)
+                                {
+                                    throw new InvalidRequestException(e.getMessage(), e);
+                                }
+                            }
+                        }
                         addUpdateForKey(updateBuilder, clustering, params);
                     }
                 }
