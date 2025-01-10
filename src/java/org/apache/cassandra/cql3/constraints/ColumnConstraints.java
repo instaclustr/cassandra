@@ -30,18 +30,13 @@ import org.apache.cassandra.io.IVersionedSerializer;
 import org.apache.cassandra.io.util.DataInputPlus;
 import org.apache.cassandra.io.util.DataOutputPlus;
 import org.apache.cassandra.schema.ColumnMetadata;
-import org.apache.cassandra.transport.DataType;
-import org.apache.cassandra.transport.ProtocolVersion;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 // group of constraints for the column
@@ -49,7 +44,7 @@ public class ColumnConstraints implements ColumnConstraint
 {
     public static final Serializer serializer = new Serializer();
 
-    private static final Set<Class<? extends AbstractType>> complexTypes = ImmutableSet.of(MapType.class,
+    private static final Set<Class<? extends AbstractType>> UNSUPPORTED_TYPES = ImmutableSet.of(MapType.class,
                                                                                            TupleType.class,
                                                                                            UserType.class,
                                                                                            CompositeType.class,
@@ -99,9 +94,11 @@ public class ColumnConstraints implements ColumnConstraint
     @Override
     public void validate(ColumnMetadata columnMetadata) throws InvalidConstraintDefinitionException
     {
-        if (complexTypes.contains(columnMetadata.type))
+        if (UNSUPPORTED_TYPES.contains(columnMetadata.type.getClass()))
         {
-            throw new InvalidConstraintDefinitionException("Complex types do not support constraints");
+            throw new InvalidConstraintDefinitionException("Constraint cannot be defined on column '"
+                                                           + columnMetadata.name + "' with type: "
+                                                           + columnMetadata.type.asCQL3Type());
         }
         for (ColumnConstraint constraint : constraints)
         {

@@ -89,16 +89,6 @@ public final class StatementRestrictions
      */
     private PartitionKeyRestrictions partitionKeyRestrictions;
 
-    public List<ColumnMetadata> getClusteringColumnsRestrictions()
-    {
-        return clusteringColumnsRestrictions.restrictions.columns();
-    }
-
-    public List<ColumnMetadata> getPartitionKeyRestrictions()
-    {
-        return partitionKeyRestrictions.restrictions.columns();
-    }
-
     /**
      * Restrictions on clustering columns
      */
