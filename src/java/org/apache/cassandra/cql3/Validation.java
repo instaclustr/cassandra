@@ -82,13 +82,16 @@ public abstract class Validation
             if (column.hasConstraint())
                 partitionKeyConstraints.add(column.getColumnConstraints());
         }
-        try
+        if (!partitionKeyConstraints.isEmpty())
         {
-            metadata.partitionKeyType.checkConstraints(key, new ColumnConstraints(partitionKeyConstraints));
-        }
-        catch (ConstraintViolationException e)
-        {
-            throw new InvalidRequestException(e.getMessage(), e);
+            try
+            {
+                metadata.partitionKeyType.checkConstraints(key, new ColumnConstraints(partitionKeyConstraints));
+            }
+            catch (ConstraintViolationException e)
+            {
+                throw new InvalidRequestException(e.getMessage(), e);
+            }
         }
     }
 }
