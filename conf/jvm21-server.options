@@ -30,19 +30,26 @@
 ### Generational ZGC settings
 -XX:+UseZGC
 -XX:+ZGenerational
+
 # Temporary workaround for jamm's incorrect default CompressedOops; if you're using ZGC this needs to be set
 -XX:-UseCompressedOops
 
 # Blanket enabling of all the THP / large pages available in the env
 # -XX:+UseLargePages
+
 # Max size ZGC will _attempt_ to stay below
 # -XX:+SoftMaxHeapSize=12G
+
 # Don't let ZGC return unclaimed memory to the OS by setting min and max ==
 # -Xms12G </string>
 # -Xmx12G </string>
-# Alternatively, can use this to disable returning memory to OS
+# Alternatively you can use this to disable returning memory to OS
 # -XX:-ZUncommit</string>
+
+# Time memory should have been unused before eligible for uncommit in seconds
 # -XX:ZUncommitDelay=300</string>
+
+# Tell GC to touch heap and allocate and fault in memory pages backing heap at startup. Can prevent later allocation pauses
 # -XX:+AlwaysPreTouch</string>
 
 ### JPMS

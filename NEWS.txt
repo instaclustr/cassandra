@@ -71,6 +71,25 @@ using the provided 'sstableupgrade' tool.
 
 New features
 ------------
+    - JDK21 and Generational ZGC is now officially supported. By default, when JDK21 is used the server params in
+      jvm21-server.options will be used. We do not recommend using non-generational ZGC with Apache Cassandra. The following
+      options are seeded in jvm21-server.options and can be set by the user based on use-case:
+        # Temporary workaround for jamm's incorrect default CompressedOops; if you're using ZGC this needs to be set
+        -XX:-UseCompressedOops
+        # Blanket enabling of all the THP / large pages available in the env
+        # -XX:+UseLargePages
+        # Max size ZGC will _attempt_ to stay below
+        # -XX:+SoftMaxHeapSize=12G
+        # Don't let ZGC return unclaimed memory to the OS by setting min and max ==
+        # -Xms12G </string>
+        # -Xmx12G </string>
+        # Alternatively you can use this to disable returning memory to OS
+        # -XX:-ZUncommit</string>
+        # Time memory should have been unused before eligible for uncommit in seconds
+        # -XX:ZUncommitDelay=300</string>
+        # Tell GC to touch heap and allocate and fault in memory pages backing heap at startup. Can prevent later allocation pauses
+        # -XX:+AlwaysPreTouch</string>
+
     [The following is a placeholder, to be revised asap]
     - CEP-21 Transactional Cluster Metadata introduces a distributed log for linearizing modifications to cluster
     metadata. In the first instance, this encompasses cluster membership, token ownership and schema metadata. See
