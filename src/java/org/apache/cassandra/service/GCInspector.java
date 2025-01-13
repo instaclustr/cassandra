@@ -65,6 +65,8 @@ public class GCInspector implements NotificationListener, GCInspectorMXBean
     // This represents the amount of direct memory that has been reserved for future use but not necessarily allocated yet.
     final static Field BITS_RESERVED;
 
+    private final boolean hasZGC;
+
     static
     {
         Field totalTempField = null;
@@ -81,7 +83,7 @@ public class GCInspector implements NotificationListener, GCInspectorMXBean
         catch (Throwable t)
         {
             logger.debug("Error accessing field of java.nio.Bits", t);
-            //Don't care, will just return the dummy value -1 if we can't get at the field in this JVM
+            // Don't care, will just return the dummy value -1 if we can't get at the field in this JVM
         }
         BITS_TOTAL_CAPACITY = totalTempField;
         BITS_MAX = maxTempField;
@@ -153,11 +155,15 @@ public class GCInspector implements NotificationListener, GCInspectorMXBean
         try
         {
             ObjectName gcName = new ObjectName(ManagementFactory.GARBAGE_COLLECTOR_MXBEAN_DOMAIN_TYPE + ",*");
+            boolean sawZGC = false;
             for (ObjectName name : MBeanWrapper.instance.queryNames(gcName, null))
             {
                 GarbageCollectorMXBean gc = ManagementFactory.newPlatformMXBeanProxy(MBeanWrapper.instance.getMBeanServer(), name.getCanonicalName(), GarbageCollectorMXBean.class);
+                if (isZGC(gc))
+                    sawZGC = true;
                 gcStates.put(gc.getName(), new GCState(gc, assumeGCIsPartiallyConcurrent(gc), assumeGCIsOldGen(gc), isZGC(gc)));
             }
+            this.hasZGC = sawZGC;
             ObjectName me = new ObjectName(MBEAN_NAME);
             if (!MBeanWrapper.instance.isRegistered(me))
                 MBeanWrapper.instance.registerMBean(this, new ObjectName(MBEAN_NAME));
@@ -189,20 +195,20 @@ public class GCInspector implements NotificationListener, GCInspectorMXBean
      * should be used to calculate application stopped time due to the GC.
      *
      * If the GC isn't recognized then assume that is concurrent and we need to do our own calculation
-     * via the the side channel.
+     * via the side channel.
      */
     private static boolean assumeGCIsPartiallyConcurrent(GarbageCollectorMXBean gc)
     {
         switch (gc.getName())
         {
-                //First two are from the serial collector
+                // First two are from the serial collector
             case "Copy":
             case "MarkSweepCompact":
-                //Parallel collector
+                // Parallel collector
             case "PS MarkSweep":
             case "PS Scavenge":
             case "G1 Young Generation":
-                //CMS young generation collector
+                // CMS young generation collector
             case "ParNew":
                 // gen zgc
             case "ZGC Minor Pauses":
@@ -217,7 +223,7 @@ public class GCInspector implements NotificationListener, GCInspectorMXBean
             case "ZGC Cycles":
                 return true;
             default:
-                //Assume possibly concurrent if unsure
+                // Assume possibly concurrent if unsure
                 return true;
         }
     }
@@ -250,8 +256,8 @@ public class GCInspector implements NotificationListener, GCInspectorMXBean
             case "ZGC Pauses":
                 return true;
             default:
-                //Assume not old gen otherwise, don't call
-                //TransactionLogs.rescheduleFailedTasks()
+                // Assume not old gen otherwise, don't call
+                // TransactionLogs.rescheduleFailedTasks()
                 return false;
         }
     }
@@ -426,13 +432,14 @@ public class GCInspector implements NotificationListener, GCInspectorMXBean
                     + gcLogThresholdInMs);
         if (threshold > Integer.MAX_VALUE)
             throw new IllegalArgumentException("Threshold must be less than Integer.MAX_VALUE");
+        DatabaseDescriptor.setZGCWarnThreshold(threshold);
         DatabaseDescriptor.setGCWarnThreshold(threshold);
     }
 
     @Override
     public long getGcWarnThresholdInMs()
     {
-        return DatabaseDescriptor.getGCWarnThreshold();
+        return hasZGC ? DatabaseDescriptor.getZGCWarnThreshold() : DatabaseDescriptor.getGCWarnThreshold();
     }
 
     @Override
@@ -445,14 +452,14 @@ public class GCInspector implements NotificationListener, GCInspectorMXBean
         if (gcWarnThresholdInMs != 0 && threshold > gcWarnThresholdInMs)
             throw new IllegalArgumentException("Threshold must be less than gcWarnThresholdInMs which is currently "
                                                + gcWarnThresholdInMs);
-
+        DatabaseDescriptor.setZGCLogThreshold(threshold);
         DatabaseDescriptor.setGCLogThreshold(threshold);
     }
 
     @Override
     public long getGcLogThresholdInMs()
     {
-        return DatabaseDescriptor.getGCLogThreshold();
+        return hasZGC ? DatabaseDescriptor.getZGCLogThreshold() : DatabaseDescriptor.getGCLogThreshold();
     }
 
     @Override
@@ -475,12 +482,18 @@ public class GCInspector implements NotificationListener, GCInspectorMXBean
         DatabaseDescriptor.setGCPauseLogThreshold(threshold);
     }
 
+    /**
+     * Same value shared here between ZGC and non
+     */
     @Override
     public long getGcPauseLogThresholdInMs()
     {
         return DatabaseDescriptor.getGCPauseLogThreshold();
     }
 
+    /**
+     * Same value shared here between ZGC and non
+     */
     @Override
     public long getGcPauseWarnThresholdInMs()
     {

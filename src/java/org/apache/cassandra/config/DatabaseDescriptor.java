@@ -4486,6 +4486,16 @@ public class DatabaseDescriptor
         conf.gc_log_threshold = new DurationSpec.IntMillisecondsBound(gcLogThreshold);
     }
 
+    public static long getZGCLogThreshold()
+    {
+        return conf.gc_log_zgc_threshold.toMilliseconds();
+    }
+
+    public static void setZGCLogThreshold(long gcLogThreshold)
+    {
+        conf.gc_log_zgc_threshold = new DurationSpec.IntMillisecondsBound(gcLogThreshold);
+    }
+
     public static long getGCPauseLogThreshold()
     {
         return conf.gc_pause_log_threshold.toMilliseconds();
@@ -4509,6 +4519,16 @@ public class DatabaseDescriptor
     public static void setGCWarnThreshold(long threshold)
     {
         conf.gc_warn_threshold = new DurationSpec.IntMillisecondsBound(threshold);
+    }
+
+    public static long getZGCWarnThreshold()
+    {
+        return conf.gc_warn_zgc_threshold.toMilliseconds();
+    }
+
+    public static void setZGCWarnThreshold(long threshold)
+    {
+        conf.gc_warn_zgc_threshold = new DurationSpec.IntMillisecondsBound(threshold);
     }
 
     public static long getGCPauseWarnThreshold()

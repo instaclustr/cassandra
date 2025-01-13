@@ -17,6 +17,7 @@
  */
 package org.apache.cassandra.service;
 
+import org.apache.cassandra.config.CassandraRelevantProperties;
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.junit.Assert;
 import org.junit.Before;
@@ -42,9 +43,17 @@ public class GCInspectorTest
     
     @Test
     public void ensureStaticFieldsHydrateFromConfig()
-    {    
-        Assert.assertEquals(DatabaseDescriptor.getGCLogThreshold(), gcInspector.getGcLogThresholdInMs());
-        Assert.assertEquals(DatabaseDescriptor.getGCWarnThreshold(), gcInspector.getGcWarnThresholdInMs());
+    {
+        if (CassandraRelevantProperties.JAVA_VERSION.getString().compareTo("21") > 0)
+        {
+            Assert.assertEquals(DatabaseDescriptor.getZGCLogThreshold(), gcInspector.getGcLogThresholdInMs());
+            Assert.assertEquals(DatabaseDescriptor.getZGCWarnThreshold(), gcInspector.getGcWarnThresholdInMs());
+        }
+        else
+        {
+            Assert.assertEquals(DatabaseDescriptor.getGCLogThreshold(), gcInspector.getGcLogThresholdInMs());
+            Assert.assertEquals(DatabaseDescriptor.getGCWarnThreshold(), gcInspector.getGcWarnThresholdInMs());
+        }
     }
     
     @Test
@@ -65,7 +74,8 @@ public class GCInspectorTest
         gcInspector.setGcWarnThresholdInMs(0);
         Assert.assertEquals(gcInspector.getStatusThresholdInMs(), gcInspector.getGcLogThresholdInMs());
         Assert.assertEquals(0, DatabaseDescriptor.getGCWarnThreshold());
-        Assert.assertEquals(20000, DatabaseDescriptor.getGCLogThreshold());
+        Assert.assertEquals(200, DatabaseDescriptor.getGCLogThreshold());
+        Assert.assertEquals(20000, DatabaseDescriptor.getZGCLogThreshold());
     }
     
     @Test(expected=IllegalArgumentException.class)
