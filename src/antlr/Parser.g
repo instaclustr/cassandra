@@ -795,7 +795,7 @@ columnConstraints returns [ColumnConstraints.Raw constraints]
 
 columnConstraint returns [ColumnConstraint columnConstraint]
     : funcName=ident '(' k=ident ')' op=relationType t=value { $columnConstraint = new FunctionColumnConstraint.Raw(funcName, k, op, t.getText()).prepare(); }
-    | k=ident op=relationType t=value { $columnConstraint = new ColumnConstraintScalar.Raw(k, op, t.getText()).prepare(); }
+    | k=ident op=relationType t=value { $columnConstraint = new ScalarColumnConstraint.Raw(k, op, t.getText()).prepare(); }
     ;
 
 columnMask returns [ColumnMask.Raw mask]

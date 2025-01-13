@@ -30,9 +30,9 @@ import org.apache.cassandra.io.util.DataInputPlus;
 import org.apache.cassandra.io.util.DataOutputPlus;
 import org.apache.cassandra.schema.ColumnMetadata;
 
-public class FunctionColumnConstraint implements ColumnConstraint
+public class FunctionColumnConstraint implements ColumnConstraint<FunctionColumnConstraint>
 {
-    public static final Serializer serializer = new Serializer();
+    static final Serializer serializer = new Serializer();
 
     public final ConstraintFunction function;
     public final ColumnIdentifier columnName;
@@ -82,7 +82,7 @@ public class FunctionColumnConstraint implements ColumnConstraint
     }
 
     @Override
-    public IVersionedSerializer<ColumnConstraint> serializer()
+    public IVersionedSerializer<FunctionColumnConstraint> serializer()
     {
         return serializer;
     }
@@ -112,20 +112,19 @@ public class FunctionColumnConstraint implements ColumnConstraint
         return function.getName() + "(" + columnName + ") " + relationType + " " + term;
     }
 
-    public static class Serializer implements IVersionedSerializer<ColumnConstraint>
+    public static class Serializer implements IVersionedSerializer<FunctionColumnConstraint>
     {
         @Override
-        public void serialize(ColumnConstraint columnConstraint, DataOutputPlus out, int version) throws IOException
+        public void serialize(FunctionColumnConstraint columnConstraint, DataOutputPlus out, int version) throws IOException
         {
-            FunctionColumnConstraint condition = (FunctionColumnConstraint) columnConstraint;
-            out.writeUTF(condition.function.getName());
-            out.writeUTF(condition.columnName.toCQLString());
-            out.writeUTF(condition.relationType.toString());
-            out.writeUTF(condition.term);
+            out.writeUTF(columnConstraint.function.getName());
+            out.writeUTF(columnConstraint.columnName.toCQLString());
+            out.writeUTF(columnConstraint.relationType.toString());
+            out.writeUTF(columnConstraint.term);
         }
 
         @Override
-        public ColumnConstraint deserialize(DataInputPlus in, int version) throws IOException
+        public FunctionColumnConstraint deserialize(DataInputPlus in, int version) throws IOException
         {
             String functionName = in.readUTF();
             ConstraintFunction function;
@@ -146,14 +145,12 @@ public class FunctionColumnConstraint implements ColumnConstraint
         }
 
         @Override
-        public long serializedSize(ColumnConstraint columnConstraint, int version)
+        public long serializedSize(FunctionColumnConstraint columnConstraint, int version)
         {
-            FunctionColumnConstraint condition = (FunctionColumnConstraint) columnConstraint;
-
-            return TypeSizes.sizeof(condition.function.getClass().getName())
-                   + TypeSizes.sizeof(condition.columnName.toCQLString())
-                   + TypeSizes.sizeof(condition.term)
-                   + TypeSizes.sizeof(condition.relationType.toString());
+            return TypeSizes.sizeof(columnConstraint.function.getClass().getName())
+                   + TypeSizes.sizeof(columnConstraint.columnName.toCQLString())
+                   + TypeSizes.sizeof(columnConstraint.term)
+                   + TypeSizes.sizeof(columnConstraint.relationType.toString());
         }
     }
 }

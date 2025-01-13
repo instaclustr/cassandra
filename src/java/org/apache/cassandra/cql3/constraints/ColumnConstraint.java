@@ -27,9 +27,9 @@ import org.apache.cassandra.schema.ColumnMetadata;
  * Common class for the conditions that a CQL Constraint needs to implement to be integrated in the
  * CQL Constraints framework.
  */
-public interface ColumnConstraint
+public interface ColumnConstraint<T>
 {
-    IVersionedSerializer<ColumnConstraint> serializer();
+    IVersionedSerializer<T> serializer();
 
     void appendCqlTo(CqlBuilder builder);
 
