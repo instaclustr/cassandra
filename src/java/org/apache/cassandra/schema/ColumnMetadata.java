@@ -586,10 +586,10 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
         if (isMasked())
             mask.appendCqlTo(builder);
 
-        if (columnConstraints != null && !columnConstraints.isEmpty())
+        if (!columnConstraints.isEmpty())
         {
             builder.append(" CHECK ");
-            Iterator<ColumnConstraint> constraintIterator = columnConstraints.getConstraints().iterator();
+            Iterator<ColumnConstraint<?>> constraintIterator = columnConstraints.getConstraints().iterator();
             constraintIterator.next().appendCqlTo(builder);
 
             while (constraintIterator.hasNext())

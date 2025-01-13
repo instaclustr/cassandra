@@ -27,7 +27,7 @@ import org.apache.cassandra.schema.ColumnMetadata;
  * Common class for the conditions that a CQL Constraint needs to implement to be integrated in the
  * CQL Constraints framework.
  */
-public interface ColumnConstraint
+public interface ColumnConstraint<T>
 {
 
     // Enum containing all the possible constraint serializers to help with serialization/deserialization
@@ -41,20 +41,20 @@ public interface ColumnConstraint
 
         private static final ConstraintsSerializers[] values = ConstraintsSerializers.values();
 
-        private final IVersionedSerializer<ColumnConstraint> serializer;
+        private final IVersionedSerializer<?> serializer;
 
-        ConstraintsSerializers(IVersionedSerializer<ColumnConstraint> serializer)
+        ConstraintsSerializers(IVersionedSerializer<?> serializer)
         {
             this.serializer = serializer;
         }
 
-        public static IVersionedSerializer<ColumnConstraint> getSerializer(int i)
+        public static IVersionedSerializer<?> getSerializer(int i)
         {
             return values[i].serializer;
         }
     }
 
-    IVersionedSerializer<ColumnConstraint> serializer();
+    IVersionedSerializer<T> serializer();
 
     void appendCqlTo(CqlBuilder builder);
 
