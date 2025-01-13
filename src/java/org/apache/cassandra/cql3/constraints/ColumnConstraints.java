@@ -59,7 +59,7 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
     @Override
     public IVersionedSerializer<ColumnConstraints> serializer()
     {
-        return serializer;
+        return (IVersionedSerializer<ColumnConstraints>) ConstraintType.CONSTRAINT_GROUP.serializer;
     }
 
     @Override
@@ -96,6 +96,12 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
 
         for (ColumnConstraint<?> constraint : constraints)
             constraint.validate(columnMetadata);
+    }
+
+    @Override
+    public ConstraintType getConstraintType()
+    {
+        return ConstraintType.CONSTRAINT_GROUP;
     }
 
     public static class Noop extends ColumnConstraints
@@ -137,7 +143,7 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
 
             for (ColumnConstraint constraint : columnConstraints.getConstraints())
             {
-                out.writeUTF(constraint.getClass().getSimpleName());
+                out.writeInt(constraint.getConstraintType().ordinal());
                 constraint.serializer().serialize(constraint, out, version);
             }
         }
@@ -149,8 +155,8 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
             int numberOfConstraints = in.readInt();
             for (int i = 0; i < numberOfConstraints; i++)
             {
-                String columnConstraintClassName = in.readUTF();
-                columnConstraints.add(ConstraintSerializerFactory.getCqlConditionSerializer(columnConstraintClassName).deserialize(in, version));
+                int serializerOrdinal = in.readInt();
+                columnConstraints.add((ColumnConstraint) ConstraintType.getSerializer(serializerOrdinal).deserialize(in, version));
             }
             return new ColumnConstraints(columnConstraints);
         }
@@ -162,18 +168,6 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
             for (ColumnConstraint constraint : columnConstraint.getConstraints())
                 constraintsSize += constraint.serializer().serializedSize(constraint, version);
             return constraintsSize;
-        }
-    }
-
-    public static class ConstraintSerializerFactory
-    {
-        public static IVersionedSerializer<? extends ColumnConstraint> getCqlConditionSerializer(String columnConstraintClassName)
-        {
-            if (columnConstraintClassName.equals(FunctionColumnConstraint.class.getSimpleName()))
-                return FunctionColumnConstraint.serializer;
-            else if (columnConstraintClassName.equals(ScalarColumnConstraint.class.getSimpleName()))
-                return ScalarColumnConstraint.serializer;
-            throw new IllegalArgumentException(String.format("Condition %s needs to have an implemented serializer", columnConstraintClassName));
         }
     }
 }

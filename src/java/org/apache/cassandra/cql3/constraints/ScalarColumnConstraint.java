@@ -120,6 +120,12 @@ public class ScalarColumnConstraint implements ColumnConstraint<ScalarColumnCons
     }
 
     @Override
+    public ConstraintType getConstraintType()
+    {
+        return ConstraintType.SCALAR;
+    }
+
+    @Override
     public String toString()
     {
         return param + " " + relationType + " " + term;
@@ -128,7 +134,7 @@ public class ScalarColumnConstraint implements ColumnConstraint<ScalarColumnCons
     @Override
     public IVersionedSerializer<ScalarColumnConstraint> serializer()
     {
-        return serializer;
+        return (IVersionedSerializer<ScalarColumnConstraint>) ConstraintType.SCALAR.serializer;
     }
 
     @Override

@@ -84,7 +84,7 @@ public class FunctionColumnConstraint implements ColumnConstraint<FunctionColumn
     @Override
     public IVersionedSerializer<FunctionColumnConstraint> serializer()
     {
-        return serializer;
+        return (IVersionedSerializer<FunctionColumnConstraint>) ConstraintType.FUNCTION.serializer;
     }
 
     @Override
@@ -98,6 +98,12 @@ public class FunctionColumnConstraint implements ColumnConstraint<FunctionColumn
     {
         validateArgs(columnMetadata);
         function.validate(columnMetadata);
+    }
+
+    @Override
+    public ConstraintType getConstraintType()
+    {
+        return ConstraintType.FUNCTION;
     }
 
     void validateArgs(ColumnMetadata columnMetadata)

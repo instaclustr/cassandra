@@ -48,4 +48,27 @@ public interface ColumnConstraint<T>
      * @param columnMetadata Metadata of the column in which the constraint is defined.
      */
     void validate(ColumnMetadata columnMetadata) throws InvalidConstraintDefinitionException;
+
+    ConstraintType getConstraintType();
+
+    enum ConstraintType
+    {
+        CONSTRAINT_GROUP(ColumnConstraints.serializer),
+        FUNCTION(FunctionColumnConstraint.serializer),
+        SCALAR(ScalarColumnConstraint.serializer);
+
+        private static final ConstraintType[] values = ConstraintType.values();
+
+        public final IVersionedSerializer<?> serializer;
+
+        ConstraintType(IVersionedSerializer<? extends ColumnConstraint<?>> serializer)
+        {
+            this.serializer = serializer;
+        }
+
+        public static IVersionedSerializer<?> getSerializer(int i)
+        {
+            return values[i].serializer;
+        }
+    }
 }
