@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 
 import org.apache.cassandra.auth.DataResource;
 import org.apache.cassandra.config.DatabaseDescriptor;
+import org.apache.cassandra.cql3.constraints.ColumnConstraint;
 import org.apache.cassandra.cql3.constraints.ColumnConstraints;
 import org.apache.cassandra.cql3.ColumnIdentifier;
 import org.apache.cassandra.cql3.CqlBuilder;
@@ -198,6 +199,8 @@ public class TableMetadata implements SchemaElement
     public final DataResource resource;
     public TableMetadataRef ref;
 
+    public final List<ColumnConstraint> partitionKeyConstraints;
+
     protected TableMetadata(Builder builder)
     {
         flags = Sets.immutableEnumSet(builder.flags);
@@ -237,6 +240,14 @@ public class TableMetadata implements SchemaElement
             ref = TableMetadataRef.forIndex(Schema.instance, this, keyspace, indexName, id);
         else
             ref = TableMetadataRef.withInitialReference(new TableMetadataRef(Schema.instance, keyspace, name, id), this);
+
+        List<ColumnConstraint> pkConstraints = new ArrayList<>(this.partitionKeyColumns.size());
+        for (ColumnMetadata column : this.partitionKeyColumns)
+        {
+            if (column.hasConstraint())
+                pkConstraints.add(column.getColumnConstraints());
+        }
+        this.partitionKeyConstraints = pkConstraints;
     }
 
     public static Builder builder(String keyspace, String table)
@@ -533,9 +544,11 @@ public class TableMetadata implements SchemaElement
         for (ColumnMetadata columnMetadata : this.columns())
         {
             ColumnConstraints constraints = columnMetadata.getColumnConstraints();
-            try {
+            try
+            {
                 constraints.validate(columnMetadata);
-            } catch (InvalidConstraintDefinitionException e)
+            }
+            catch (InvalidConstraintDefinitionException e)
             {
                 throw new InvalidRequestException(e.getMessage(), e);
             }

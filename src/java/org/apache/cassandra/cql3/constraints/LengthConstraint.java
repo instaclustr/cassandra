@@ -92,9 +92,7 @@ public class LengthConstraint implements ConstraintFunction
     {
         Class<? extends AbstractType> valueType = columnMetadata.type.getClass();
         if (!SUPPORTED_TYPES.contains(valueType))
-        {
             throw invalidConstraintDefinitionException(valueType);
-        }
     }
 
     private int getValueSize(Object value, Class<? extends AbstractType> valueType)
@@ -106,9 +104,7 @@ public class LengthConstraint implements ConstraintFunction
         }
 
         if (valueType == AsciiType.class || valueType == UTF8Type.class)
-        {
             return ((String) value).length();
-        }
 
         throw invalidConstraintDefinitionException(valueType);
     }

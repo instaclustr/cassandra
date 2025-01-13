@@ -58,7 +58,7 @@ public class ColumnConstraintScalar implements ColumnConstraint
         }
     }
 
-    public ColumnConstraintScalar(ColumnIdentifier param, Operator relationType, String term)
+    private ColumnConstraintScalar(ColumnIdentifier param, Operator relationType, String term)
     {
         this.param = param;
         this.relationType = relationType;
@@ -115,7 +115,7 @@ public class ColumnConstraintScalar implements ColumnConstraint
     @Override
     public void validate(ColumnMetadata columnMetadata) throws InvalidConstraintDefinitionException
     {
-        if (!(columnMetadata.type instanceof org.apache.cassandra.db.marshal.NumberType))
+        if (!columnMetadata.type.isNumber())
             throw new InvalidConstraintDefinitionException(param + " is not a number");
     }
 
@@ -132,11 +132,12 @@ public class ColumnConstraintScalar implements ColumnConstraint
     }
 
     @Override
-    public void appendCqlTo(CqlBuilder builder) {
+    public void appendCqlTo(CqlBuilder builder)
+    {
         builder.append(toString());
     }
 
-    public static class Serializer implements IVersionedSerializer<ColumnConstraint>
+    private static class Serializer implements IVersionedSerializer<ColumnConstraint>
     {
         @Override
         public void serialize(ColumnConstraint columnConstraint, DataOutputPlus out, int version) throws IOException

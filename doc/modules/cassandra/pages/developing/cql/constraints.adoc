@@ -8,26 +8,30 @@ column level in a table schema definition and enforcing them at write time.
 Constraints can be created within the column definition, or as part
 of the table properties.
 
+The main syntaxis to define a constraint is as follows:
+
 [source,bnf]
 ----
 CREATE TABLE keyspace.table (
 	name text,
-	i int CHECK (condition)
+	i int CHECK (condition) (AND (condition))*
 	...,
 
 );
 ----
 
+As shown in this syntax, more than one constraint can be defined for a given column using the AND keyword.
 
 == ALTER CONSTRAINT
 
+Altering a constraint is done by following the alter column CQL syntax:
 [source,bnf]
 ----
 ALTER TABLE [IF EXISTS] <table> ALTER [IF EXISTS] <column> CHECK <condition>;
 ----
 
 == DROP CONSTRAINT
-
+And DROP can be used to drop constraints for a column as well.
 [source,bnf]
 ----
 ALTER TABLE [IF EXISTS] <table> ALTER [IF EXISTS] <column> DROP CHECK;
@@ -37,17 +41,53 @@ ALTER TABLE [IF EXISTS] <table> ALTER [IF EXISTS] <column> DROP CHECK;
 
 === SCALAR CONSTRAINT
 
-Defines a comparator against a numeric type.
+Defines a comparator against a numeric type. It support all numeric types supported in Cassandra, with all the regular
+comparators.
+
+For example, we can define constraints that ensure that i is bigger or equal than 100 but smaller than 1000.
 
 [source,bnf]
 ----
-i int CHECK i < 1000
+CREATE TABLE keyspace.table (
+	name text,
+	i int CHECK i < 1000 AND i > 100
+	...,
+);
+----
+
+Altering that constraint can be done with:
+
+----
+ALTER TABLE keyspace.table ALTER i CHECK i >= 500;
+----
+
+Finally, the constraint can be removed:
+
+----
+ALTER TABLE keyspace.table ALTER i DROP CHECK;
 ----
 
 === LENGTH CONSTRAINT
 
 Defines a condition that checks the lenght of text or binary type.
 
+For example, we can create a constraint that checks that name can't be longer than 256 characters:
+
 ----
-n text CHECK LENGTH(n) < 256
+CREATE TABLE keyspace.table (
+	name text CHECK LENGTH(name) < 256
+	...,
+);
+----
+
+Altering that constraint can be done with:
+
+----
+ALTER TABLE keyspace.table ALTER name LENGTH(name) < 512;
+----
+
+Finally, the constraint can be removed:
+
+----
+ALTER TABLE keyspace.table ALTER name DROP CHECK;
 ----

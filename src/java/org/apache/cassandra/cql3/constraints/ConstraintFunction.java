@@ -29,9 +29,7 @@ import org.apache.cassandra.schema.ColumnMetadata;
 public interface ConstraintFunction
 {
     /**
-     * This method returns the function name to be executed.
-     *
-     * @return
+     * @return the function name to be executed.
      */
     String getName();
 

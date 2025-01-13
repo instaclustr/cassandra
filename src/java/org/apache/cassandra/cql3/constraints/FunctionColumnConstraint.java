@@ -64,11 +64,10 @@ public class FunctionColumnConstraint implements ColumnConstraint
     {
         if (LengthConstraint.FUNCTION_NAME.equalsIgnoreCase(functionName))
             return new LengthConstraint(columnName);
-        else
-            throw new InvalidConstraintDefinitionException("Unrecognized constraint function: " + functionName);
+        throw new InvalidConstraintDefinitionException("Unrecognized constraint function: " + functionName);
     }
 
-    public FunctionColumnConstraint(ConstraintFunction function, ColumnIdentifier columnName, Operator relationType, String term)
+    private FunctionColumnConstraint(ConstraintFunction function, ColumnIdentifier columnName, Operator relationType, String term)
     {
         this.function = function;
         this.columnName = columnName;
@@ -77,7 +76,8 @@ public class FunctionColumnConstraint implements ColumnConstraint
     }
 
     @Override
-    public void appendCqlTo(CqlBuilder builder) {
+    public void appendCqlTo(CqlBuilder builder)
+    {
         builder.append(toString());
     }
 

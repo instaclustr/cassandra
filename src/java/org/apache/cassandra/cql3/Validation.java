@@ -18,14 +18,11 @@
 package org.apache.cassandra.cql3;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.cassandra.cql3.constraints.ColumnConstraint;
-import org.apache.cassandra.cql3.constraints.ColumnConstraints;
 import org.apache.cassandra.cql3.constraints.ConstraintViolationException;
 import org.apache.cassandra.exceptions.InvalidRequestException;
-import org.apache.cassandra.schema.ColumnMetadata;
 import org.apache.cassandra.schema.TableMetadata;
 import org.apache.cassandra.serializers.MarshalException;
 import org.apache.cassandra.utils.FBUtilities;
@@ -74,19 +71,12 @@ public abstract class Validation
     public static void validateKeyAndCheckConstraints(TableMetadata metadata, ByteBuffer key)
     {
         validateKey(metadata, key);
-
-        List<ColumnMetadata> partitionKeys = metadata.partitionKeyColumns();
-        List<ColumnConstraint> partitionKeyConstraints = new ArrayList<>(partitionKeys.size());
-        for (ColumnMetadata column : partitionKeys)
-        {
-            if (column.hasConstraint())
-                partitionKeyConstraints.add(column.getColumnConstraints());
-        }
+        List<ColumnConstraint> partitionKeyConstraints = metadata.partitionKeyConstraints;
         if (!partitionKeyConstraints.isEmpty())
         {
             try
             {
-                metadata.partitionKeyType.checkConstraints(key, new ColumnConstraints(partitionKeyConstraints));
+                metadata.partitionKeyType.checkConstraints(key, partitionKeyConstraints);
             }
             catch (ConstraintViolationException e)
             {

@@ -412,10 +412,8 @@ public final class Json
             }
 
             if (!valueMap.isEmpty())
-            {
                 throw new InvalidRequestException(format("JSON values map contains unrecognized column: %s",
                                                          valueMap.keySet().iterator().next()));
-            }
 
             return columnMap;
         }

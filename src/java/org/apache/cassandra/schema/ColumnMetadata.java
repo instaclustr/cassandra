@@ -321,7 +321,7 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
 
     public boolean hasConstraint()
     {
-        return !columnConstraints.isEmpty();
+        return columnConstraints != null && !columnConstraints.isEmpty();
     }
 
     public boolean isRegular()
@@ -727,7 +727,6 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
             long constraintsSize = 0;
             if (!t.columnConstraints.isEmpty())
             {
-
                 constraintsSize += t.getColumnConstraints().serializer().serializedSize(t.columnConstraints, version.asInt());
             }
 

@@ -45,10 +45,10 @@ public class ColumnConstraints implements ColumnConstraint
     public static final Serializer serializer = new Serializer();
 
     private static final Set<Class<? extends AbstractType>> UNSUPPORTED_TYPES = ImmutableSet.of(MapType.class,
-                                                                                           TupleType.class,
-                                                                                           UserType.class,
-                                                                                           CompositeType.class,
-                                                                                           DynamicCompositeType.class);
+                                                                                                TupleType.class,
+                                                                                                UserType.class,
+                                                                                                CompositeType.class,
+                                                                                                DynamicCompositeType.class);
 
     private final List<ColumnConstraint> constraints;
 
@@ -67,18 +67,14 @@ public class ColumnConstraints implements ColumnConstraint
     public void appendCqlTo(CqlBuilder builder)
     {
         for (ColumnConstraint constraint : constraints)
-        {
             constraint.appendCqlTo(builder);
-        }
     }
 
     @Override
     public void evaluate(Class<? extends AbstractType> valueType, Object columnValue) throws ConstraintViolationException
     {
         for (ColumnConstraint constraint : constraints)
-        {
             constraint.evaluate(valueType, columnValue);
-        }
     }
 
     public List<ColumnConstraint> getConstraints()
@@ -95,15 +91,12 @@ public class ColumnConstraints implements ColumnConstraint
     public void validate(ColumnMetadata columnMetadata) throws InvalidConstraintDefinitionException
     {
         if (UNSUPPORTED_TYPES.contains(columnMetadata.type.getClass()))
-        {
             throw new InvalidConstraintDefinitionException("Constraint cannot be defined on column '"
                                                            + columnMetadata.name + "' with type: "
                                                            + columnMetadata.type.asCQL3Type());
-        }
+
         for (ColumnConstraint constraint : constraints)
-        {
             constraint.validate(columnMetadata);
-        }
     }
 
     public static class Noop extends ColumnConstraints
@@ -146,7 +139,7 @@ public class ColumnConstraints implements ColumnConstraint
 
             for (ColumnConstraint constraint : constraints.getConstraints())
             {
-                out.writeUTF(constraint.getClass().toString());
+                out.writeUTF(constraint.getClass().getSimpleName());
                 constraint.serializer().serialize(constraint, out, version);
             }
         }
@@ -181,9 +174,9 @@ public class ColumnConstraints implements ColumnConstraint
     {
         public static IVersionedAsymmetricSerializer<ColumnConstraint, ColumnConstraint> getCqlConditionSerializer(String columnConstraintClassName)
         {
-            if (columnConstraintClassName.equals(FunctionColumnConstraint.class.getName()))
+            if (columnConstraintClassName.equals(FunctionColumnConstraint.class.getSimpleName()))
                 return FunctionColumnConstraint.serializer;
-            else if (columnConstraintClassName.equals(ColumnConstraintScalar.class.getName()))
+            else if (columnConstraintClassName.equals(ColumnConstraintScalar.class.getSimpleName()))
                 return ColumnConstraintScalar.serializer;
             throw new IllegalArgumentException(String.format("Condition %s needs to have an implemented serializer", columnConstraintClassName));
         }

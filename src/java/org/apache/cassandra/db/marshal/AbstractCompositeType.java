@@ -331,12 +331,9 @@ public abstract class AbstractCompositeType extends AbstractType<ByteBuffer>
         {
             assert c instanceof ColumnConstraints;
             allNoopConstraint = allNoopConstraint && c instanceof ColumnConstraints.Noop;
-        }
-
-        // no constraints defined for the partition keys
-        if (allNoopConstraint)
-        {
-            return;
+            // no constraints defined for the partition keys
+            if (allNoopConstraint)
+                return;
         }
 
         ValueAccessor<ByteBuffer> accessor = ByteBufferAccessor.instance;
