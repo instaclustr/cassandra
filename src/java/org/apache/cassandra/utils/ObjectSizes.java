@@ -41,6 +41,10 @@ public class ObjectSizes
      * For debugging purposes, you can construct this with .printVisitedTree() to get a printout of all the objects
      * and their calculated size on heap to debug jamm related issues. See:
      * <a href="https://github.com/jbellis/jamm/blob/master/README.md#visited-object-tree">README.md on github</a>
+     *
+     * See build.xml for a param to enable logging of found memory layout on startup:
+     *   -Dorg.github.jamm.strategies.LogInfoAtStartup-true
+     *
      */
     private static final MemoryMeter meter = MemoryMeter.builder().withGuessing(Guess.INSTRUMENTATION_AND_SPECIFICATION,
                                                                                 Guess.UNSAFE)

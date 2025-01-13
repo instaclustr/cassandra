@@ -317,56 +317,56 @@
         <string>-XX:-UseCompressedOops</string>
 
         <!-- Have jamm tell us what it sees for memory layout on start for debugging purposes -->
-        <string>-Dorg.github.jamm.strategies.LogInfoAtStartup-true</string>
+        <!-- <string>-Dorg.github.jamm.strategies.LogInfoAtStartup-true</string> -->
 
         <!-- <string>-XX:+UseLargePages</string> -->
-        <!-- <string>-XX:+SoftMaxHeapSize=12G</string> --> <!-- Max size ZGC will _attempt_ to stay below -->
+
+        <!-- Max size ZGC will _attempt_ to stay below -->
+        <!-- <string>-XX:+SoftMaxHeapSize=12G</string> -->
+
         <!-- Disable returning memory to the OS -->
-        <string>-XX:-ZUncommit</string>
+        <!-- <string>-XX:-ZUncommit</string> -->
+
+        <!-- Time memory should have been unused before eligible for uncommit in seconds -->
         <!-- <string>-XX:ZUncommitDelay=300</string> -->
 
         <!-- Pay the tax up front to pretouch memory to smooth out latency later -->
-        <string>-XX:+AlwaysPreTouch</string>
+        <!-- <string>-XX:+AlwaysPreTouch</string> -->
 
         <!-- Need to explicitly allow security manager on JDK21; deprecated for removal -->
         <string>-Djava.security.manager=allow</string>
 
+        <string>--add-exports java.base/java.lang.ref=ALL-UNNAMED</string>
+        <string>--add-exports java.base/java.lang.reflect=ALL-UNNAMED</string>
         <string>--add-exports java.base/jdk.internal.misc=ALL-UNNAMED</string>
         <string>--add-exports java.base/jdk.internal.ref=ALL-UNNAMED</string>
         <string>--add-exports java.base/sun.nio.ch=ALL-UNNAMED</string>
         <string>--add-exports java.management.rmi/com.sun.jmx.remote.internal.rmi=ALL-UNNAMED</string>
-
         <string>--add-exports java.rmi/sun.rmi.registry=ALL-UNNAMED</string>
         <string>--add-exports java.rmi/sun.rmi.server=ALL-UNNAMED</string>
         <string>--add-exports java.rmi/sun.rmi.transport.tcp=ALL-UNNAMED</string>
         <string>--add-exports java.sql/java.sql=ALL-UNNAMED</string>
-        <string>--add-exports java.base/java.lang.ref=ALL-UNNAMED</string>
-        <string>--add-exports java.base/java.lang.reflect=ALL-UNNAMED</string>
-        <string>--add-exports jdk.unsupported/sun.misc=ALL-UNNAMED</string>
         <string>--add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</string>
+        <string>--add-exports jdk.unsupported/sun.misc=ALL-UNNAMED</string>
 
+        <string>--add-opens java.base/java.io=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.lang=ALL-UNNAMED</string>
         <string>--add-opens java.base/java.lang.module=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.lang.reflect=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.math=ALL-UNNAMED</string>
         <string>--add-opens java.base/java.net=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.nio=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.util=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.util.concurrent=ALL-UNNAMED</string>
+        <string>--add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED</string>
         <string>--add-opens java.base/jdk.internal.loader=ALL-UNNAMED</string>
-        <string>--add-opens java.base/jdk.internal.ref=ALL-UNNAMED</string>
-        <string>--add-opens java.base/jdk.internal.reflect=ALL-UNNAMED</string>
         <string>--add-opens java.base/jdk.internal.math=ALL-UNNAMED</string>
         <string>--add-opens java.base/jdk.internal.module=ALL-UNNAMED</string>
-        <string>--add-opens java.base/jdk.internal.util.jar=ALL-UNNAMED</string>
-        <string>--add-opens jdk.management/com.sun.management=ALL-UNNAMED</string>
-
+        <string>--add-opens java.base/jdk.internal.ref=ALL-UNNAMED</string>
+        <string>--add-opens java.base/jdk.internal.reflect=ALL-UNNAMED</string>
         <string>--add-opens java.base/sun.nio.ch=ALL-UNNAMED</string>
-        <string>--add-opens java.base/java.io=ALL-UNNAMED</string>
-        <string>--add-opens java.base/java.nio=ALL-UNNAMED</string>
-        <string>--add-opens java.base/java.util.concurrent=ALL-UNNAMED</string>
-        <string>--add-opens java.base/java.util=ALL-UNNAMED</string>
-        <string>--add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED</string>
-        <string>--add-opens java.base/java.lang=ALL-UNNAMED</string>
-        <string>--add-opens java.base/java.math=ALL-UNNAMED</string>
-        <string>--add-opens java.base/java.lang.reflect=ALL-UNNAMED</string>
-        <string>--add-opens java.base/java.net=ALL-UNNAMED</string>
-
         <string>--add-opens java.rmi/sun.rmi.transport.tcp=ALL-UNNAMED</string>
+        <string>--add-opens jdk.management/com.sun.management=ALL-UNNAMED</string>
     </resources>
     <pathconvert property="_jvm21_args_concat" refid="_jvm21_arg_items" pathsep=" "/>
     <condition property="java-jvmargs" value="${_jvm21_args_concat}" else="">

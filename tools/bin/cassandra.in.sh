@@ -84,7 +84,6 @@ if [ -z $JAVA ] ; then
     exit 1;
 fi
 
-# TODO: Factor this out to something we source so we don't have the duplication all over our scripts
 # Matches variable 'java.supported' in build.xml
 java_versions_supported=(11 17 21)
 java_version_string=$(IFS=" "; echo "${java_versions_supported[*]}")

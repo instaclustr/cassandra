@@ -89,7 +89,6 @@ New features
         # -XX:ZUncommitDelay=300</string>
         # Tell GC to touch heap and allocate and fault in memory pages backing heap at startup. Can prevent later allocation pauses
         # -XX:+AlwaysPreTouch</string>
-
     [The following is a placeholder, to be revised asap]
     - CEP-21 Transactional Cluster Metadata introduces a distributed log for linearizing modifications to cluster
     metadata. In the first instance, this encompasses cluster membership, token ownership and schema metadata. See
