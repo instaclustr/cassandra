@@ -100,6 +100,12 @@ public class FunctionColumnConstraint implements ColumnConstraint
         function.validate(columnMetadata);
     }
 
+    @Override
+    public ConstraintsSerializers getConstraintType()
+    {
+        return ConstraintsSerializers.FUNCTION;
+    }
+
     void validateArgs(ColumnMetadata columnMetadata)
     {
         if (!columnMetadata.name.equals(columnName))

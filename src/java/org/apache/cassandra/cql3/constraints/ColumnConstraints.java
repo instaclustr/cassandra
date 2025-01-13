@@ -49,38 +49,7 @@ public class ColumnConstraints implements ColumnConstraint
                                                                                                 CompositeType.class,
                                                                                                 DynamicCompositeType.class);
 
-    // Enum containing all the possible constraint serializers to help with serialization/deserialization
-    // of constraints.
-    public enum ConstraintsSerializers
-    {
-        // The order of that enum matters!!
-        FUNCTION(FunctionColumnConstraint.serializer),
-        SCALAR(ColumnConstraintScalar.serializer);
 
-        private static final ConstraintsSerializers[] values = ConstraintsSerializers.values();
-
-        private final IVersionedSerializer<ColumnConstraint> serializer;
-
-        ConstraintsSerializers(IVersionedSerializer<ColumnConstraint> serializer)
-        {
-            this.serializer = serializer;
-        }
-
-        public static IVersionedSerializer<ColumnConstraint> getSerializer(int i)
-        {
-            return values[i].serializer;
-        }
-
-        public static int getSerializer(Class clazz)
-        {
-            for (int i = 0; i < values().length; i++)
-            {
-                if (values()[i].getClass() == clazz)
-                    return i;
-            }
-            throw new RuntimeException("Serializer not found");
-        }
-    }
 
     private final List<ColumnConstraint> constraints;
 
@@ -131,6 +100,12 @@ public class ColumnConstraints implements ColumnConstraint
             constraint.validate(columnMetadata);
     }
 
+    @Override
+    public ConstraintsSerializers getConstraintType()
+    {
+        return ConstraintsSerializers.COMPOSED;
+    }
+
     public static class Noop extends ColumnConstraints
     {
         public static final Noop INSTANCE = new Noop();
@@ -172,7 +147,7 @@ public class ColumnConstraints implements ColumnConstraint
             for (ColumnConstraint constraint : constraints.getConstraints())
             {
                 // We serialize the serializer position in the enum to save space
-                out.writeShort(ConstraintsSerializers.getSerializer(constraint.serializer().getClass()));
+                out.writeInt(constraint.getConstraintType().ordinal());
                 constraint.serializer().serialize(constraint, out, version);
             }
         }

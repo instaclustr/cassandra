@@ -29,6 +29,41 @@ import org.apache.cassandra.schema.ColumnMetadata;
  */
 public interface ColumnConstraint
 {
+
+    // Enum containing all the possible constraint serializers to help with serialization/deserialization
+    // of constraints.
+    public enum ConstraintsSerializers
+    {
+        // The order of that enum matters!!
+        FUNCTION(FunctionColumnConstraint.serializer),
+        SCALAR(ColumnConstraintScalar.serializer),
+        COMPOSED(ColumnConstraints.serializer);
+
+        private static final ConstraintsSerializers[] values = ConstraintsSerializers.values();
+
+        private final IVersionedSerializer<ColumnConstraint> serializer;
+
+        ConstraintsSerializers(IVersionedSerializer<ColumnConstraint> serializer)
+        {
+            this.serializer = serializer;
+        }
+
+        public static IVersionedSerializer<ColumnConstraint> getSerializer(int i)
+        {
+            return values[i].serializer;
+        }
+
+        public static int getSerializer(Class clazz)
+        {
+            for (int i = 0; i < values().length; i++)
+            {
+                if (values()[i].getClass() == clazz)
+                    return i;
+            }
+            throw new RuntimeException("Serializer not found");
+        }
+    }
+
     IVersionedSerializer<ColumnConstraint> serializer();
 
     void appendCqlTo(CqlBuilder builder);
@@ -42,10 +77,17 @@ public interface ColumnConstraint
     void evaluate(Class<? extends AbstractType> valueType, Object columnValue) throws ConstraintViolationException;
 
     /**
-     * Method to validate the condition. Method to validate the condition. This method is called when creating constraint via CQL.
+     * Method to validate the condition. This method is called when creating constraint via CQL.
      * A {@link InvalidConstraintDefinitionException} is thrown for invalid consrtaint definition.
      *
      * @param columnMetadata Metadata of the column in which the constraint is defined.
      */
     void validate(ColumnMetadata columnMetadata) throws InvalidConstraintDefinitionException;
+
+    /**
+     * Method to get the Constraint serializer
+     *
+     * @return the Constraint type serializer
+     */
+    ConstraintsSerializers getConstraintType();
 }
