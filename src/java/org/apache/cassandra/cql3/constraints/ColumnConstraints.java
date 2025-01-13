@@ -25,7 +25,6 @@ import org.apache.cassandra.db.marshal.DynamicCompositeType;
 import org.apache.cassandra.db.marshal.MapType;
 import org.apache.cassandra.db.marshal.TupleType;
 import org.apache.cassandra.db.marshal.UserType;
-import org.apache.cassandra.io.IVersionedAsymmetricSerializer;
 import org.apache.cassandra.io.IVersionedSerializer;
 import org.apache.cassandra.io.util.DataInputPlus;
 import org.apache.cassandra.io.util.DataOutputPlus;
@@ -49,6 +48,29 @@ public class ColumnConstraints implements ColumnConstraint
                                                                                                 UserType.class,
                                                                                                 CompositeType.class,
                                                                                                 DynamicCompositeType.class);
+
+    // Enum containing all the possible constraint serializers to help with serialization/deserialization
+    // of constraints.
+    public enum ConstraintsSerializers
+    {
+        // The order of that enum matters!!
+        FUNCTION(FunctionColumnConstraint.serializer),
+        SCALAR(ColumnConstraintScalar.serializer);
+
+        private static final ConstraintsSerializers[] values = ConstraintsSerializers.values();
+
+        private final IVersionedSerializer<ColumnConstraint> serializer;
+
+        ConstraintsSerializers(IVersionedSerializer<ColumnConstraint> serializer)
+        {
+            this.serializer = serializer;
+        }
+
+        public static IVersionedSerializer<ColumnConstraint> getSerializer(int i)
+        {
+            return values[i].serializer;
+        }
+    }
 
     private final List<ColumnConstraint> constraints;
 
@@ -139,7 +161,8 @@ public class ColumnConstraints implements ColumnConstraint
 
             for (ColumnConstraint constraint : constraints.getConstraints())
             {
-                out.writeUTF(constraint.getClass().getSimpleName());
+                // We serialize the serializer position in the enum to save space
+                out.writeShort(ConstraintsSerializers.valueOf(constraint.serializer().getClass().getName()).ordinal());
                 constraint.serializer().serialize(constraint, out, version);
             }
         }
@@ -151,9 +174,9 @@ public class ColumnConstraints implements ColumnConstraint
             int numberOfConstraints = in.readInt();
             for (int i = 0; i < numberOfConstraints; i++)
             {
-                String columnConstraintClassName = in.readUTF();
-                ColumnConstraint constraint = ConstraintSerializerFactory.getCqlConditionSerializer(columnConstraintClassName)
-                        .deserialize(in, version);
+                int serializerPosition = in.readShort();
+                ColumnConstraint constraint = ConstraintsSerializers.getSerializer(serializerPosition)
+                                                                    .deserialize(in, version);
                 columnConstraints.add(constraint);
             }
             return new ColumnConstraints(columnConstraints);
@@ -167,18 +190,6 @@ public class ColumnConstraints implements ColumnConstraint
             for (ColumnConstraint constraint : constraints.getConstraints())
                 constraintsSize += constraint.serializer().serializedSize(constraint, version);
             return constraintsSize;
-        }
-    }
-
-    public static class ConstraintSerializerFactory
-    {
-        public static IVersionedAsymmetricSerializer<ColumnConstraint, ColumnConstraint> getCqlConditionSerializer(String columnConstraintClassName)
-        {
-            if (columnConstraintClassName.equals(FunctionColumnConstraint.class.getSimpleName()))
-                return FunctionColumnConstraint.serializer;
-            else if (columnConstraintClassName.equals(ColumnConstraintScalar.class.getSimpleName()))
-                return ColumnConstraintScalar.serializer;
-            throw new IllegalArgumentException(String.format("Condition %s needs to have an implemented serializer", columnConstraintClassName));
         }
     }
 }
