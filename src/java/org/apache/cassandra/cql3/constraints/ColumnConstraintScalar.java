@@ -120,7 +120,7 @@ public class ColumnConstraintScalar implements ColumnConstraint
     }
 
     @Override
-    public ConstraintsSerializers getConstraintType()
+    public ConstraintsSerializers getConstraintSerializerType()
     {
         return ConstraintsSerializers.SCALAR;
     }

@@ -101,7 +101,7 @@ public class ColumnConstraints implements ColumnConstraint
     }
 
     @Override
-    public ConstraintsSerializers getConstraintType()
+    public ConstraintsSerializers getConstraintSerializerType()
     {
         return ConstraintsSerializers.COMPOSED;
     }
@@ -147,7 +147,7 @@ public class ColumnConstraints implements ColumnConstraint
             for (ColumnConstraint constraint : constraints.getConstraints())
             {
                 // We serialize the serializer position in the enum to save space
-                out.writeInt(constraint.getConstraintType().ordinal());
+                out.writeInt(constraint.getConstraintSerializerType().ordinal());
                 constraint.serializer().serialize(constraint, out, version);
             }
         }

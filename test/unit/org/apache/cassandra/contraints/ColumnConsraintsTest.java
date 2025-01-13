@@ -30,9 +30,9 @@ public class ColumnConsraintsTest
 {
     private static final Object[][] EXPECTED_VALUES =
     {
+    { "COMPOSED", ColumnConstraints.serializer },
     { "FUNCTION", FunctionColumnConstraint.serializer },
-    { "SCALAR", ColumnConstraintScalar.serializer },
-    { "COMPOSED", ColumnConstraints.serializer }
+    { "SCALAR", ColumnConstraintScalar.serializer }
     };
 
     @Test

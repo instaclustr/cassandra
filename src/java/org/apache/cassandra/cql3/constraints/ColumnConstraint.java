@@ -35,9 +35,9 @@ public interface ColumnConstraint
     public enum ConstraintsSerializers
     {
         // The order of that enum matters!!
+        COMPOSED(ColumnConstraints.serializer),
         FUNCTION(FunctionColumnConstraint.serializer),
-        SCALAR(ColumnConstraintScalar.serializer),
-        COMPOSED(ColumnConstraints.serializer);
+        SCALAR(ColumnConstraintScalar.serializer);
 
         private static final ConstraintsSerializers[] values = ConstraintsSerializers.values();
 
@@ -51,16 +51,6 @@ public interface ColumnConstraint
         public static IVersionedSerializer<ColumnConstraint> getSerializer(int i)
         {
             return values[i].serializer;
-        }
-
-        public static int getSerializer(Class clazz)
-        {
-            for (int i = 0; i < values().length; i++)
-            {
-                if (values()[i].getClass() == clazz)
-                    return i;
-            }
-            throw new RuntimeException("Serializer not found");
         }
     }
 
@@ -89,5 +79,5 @@ public interface ColumnConstraint
      *
      * @return the Constraint type serializer
      */
-    ConstraintsSerializers getConstraintType();
+    ConstraintsSerializers getConstraintSerializerType();
 }

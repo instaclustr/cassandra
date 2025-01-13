@@ -101,7 +101,7 @@ public class FunctionColumnConstraint implements ColumnConstraint
     }
 
     @Override
-    public ConstraintsSerializers getConstraintType()
+    public ConstraintsSerializers getConstraintSerializerType()
     {
         return ConstraintsSerializers.FUNCTION;
     }
