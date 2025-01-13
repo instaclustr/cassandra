@@ -70,6 +70,16 @@ public class ColumnConstraints implements ColumnConstraint
         {
             return values[i].serializer;
         }
+
+        public static int getSerializer(Class clazz)
+        {
+            for (int i = 0; i < values().length; i++)
+            {
+                if (values()[i].getClass() == clazz)
+                    return i;
+            }
+            throw new RuntimeException("Serializer not found");
+        }
     }
 
     private final List<ColumnConstraint> constraints;
@@ -162,7 +172,7 @@ public class ColumnConstraints implements ColumnConstraint
             for (ColumnConstraint constraint : constraints.getConstraints())
             {
                 // We serialize the serializer position in the enum to save space
-                out.writeShort(ConstraintsSerializers.valueOf(constraint.serializer().getClass().getName()).ordinal());
+                out.writeShort(ConstraintsSerializers.getSerializer(constraint.serializer().getClass()));
                 constraint.serializer().serialize(constraint, out, version);
             }
         }
