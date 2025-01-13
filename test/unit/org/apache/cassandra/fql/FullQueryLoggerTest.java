@@ -42,7 +42,6 @@ import net.openhft.chronicle.queue.ChronicleQueue;
 import net.openhft.chronicle.queue.impl.single.SingleChronicleQueueBuilder;
 import net.openhft.chronicle.queue.ExcerptTailer;
 import net.openhft.chronicle.queue.rollcycles.TestRollCycles;
-import net.openhft.chronicle.queue.RollCycles;
 import net.openhft.chronicle.wire.ValueIn;
 import net.openhft.chronicle.wire.WireOut;
 import org.apache.cassandra.Util;
