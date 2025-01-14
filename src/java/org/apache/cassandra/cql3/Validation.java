@@ -68,9 +68,8 @@ public abstract class Validation
         }
     }
 
-    public static void validateKeyAndCheckConstraints(TableMetadata metadata, ByteBuffer key)
+    public static void checkConstraints(TableMetadata metadata, ByteBuffer key)
     {
-        validateKey(metadata, key);
         List<ColumnConstraint> partitionKeyConstraints = metadata.partitionKeyConstraints;
         if (!partitionKeyConstraints.isEmpty())
         {

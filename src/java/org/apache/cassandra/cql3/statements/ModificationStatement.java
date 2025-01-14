@@ -806,7 +806,8 @@ public abstract class ModificationStatement implements CQLStatement.SingleKeyspa
 
             for (ByteBuffer key : keys)
             {
-                Validation.validateKeyAndCheckConstraints(metadata(), key);
+                Validation.validateKey(metadata(), key);
+                Validation.checkConstraints(metadata(), key);
                 DecoratedKey dk = metadata().partitioner.decorateKey(key);
 
                 PartitionUpdate.Builder updateBuilder = collector.getPartitionUpdateBuilder(metadata(), dk, options.getConsistency());
@@ -831,14 +832,13 @@ public abstract class ModificationStatement implements CQLStatement.SingleKeyspa
 
     private void checkClusteringConstraints(Clustering<?> clustering)
     {
-        for (int i = 0; i < clustering.size(); i++)
+        for (ColumnMetadata column : metadata.clusteringColumns())
         {
-            ColumnMetadata column = metadata.clusteringColumns().get(i);
             if (column.hasConstraint())
             {
                 try
                 {
-                    clustering.checkConstraints(i, metadata.comparator, column.getColumnConstraints());
+                    clustering.checkConstraints(column.position(), metadata.comparator, column.getColumnConstraints());
                 }
                 catch (ConstraintViolationException e)
                 {
