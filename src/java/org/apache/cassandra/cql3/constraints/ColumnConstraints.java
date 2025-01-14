@@ -101,9 +101,9 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
     }
 
     @Override
-    public ConstraintsSerializers getConstraintSerializerType()
+    public ConstraintType getConstraintType()
     {
-        return ConstraintsSerializers.COMPOSED;
+        return ConstraintType.COMPOSED;
     }
 
     public static class Noop extends ColumnConstraints
@@ -146,7 +146,7 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
             for (ColumnConstraint constraint : columnConstraint.getConstraints())
             {
                 // We serialize the serializer position in the enum to save space
-                out.writeInt(constraint.getConstraintSerializerType().ordinal());
+                out.writeInt(constraint.getConstraintType().ordinal());
                 constraint.serializer().serialize(constraint, out, version);
             }
         }
@@ -159,7 +159,7 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
             for (int i = 0; i < numberOfConstraints; i++)
             {
                 int serializerPosition = in.readShort();
-                ColumnConstraint<?> constraint = (ColumnConstraint<?>) ConstraintsSerializers
+                ColumnConstraint<?> constraint = (ColumnConstraint<?>) ConstraintType
                                                                        .getSerializer(serializerPosition)
                                                                        .deserialize(in, version);
                 columnConstraints.add(constraint);

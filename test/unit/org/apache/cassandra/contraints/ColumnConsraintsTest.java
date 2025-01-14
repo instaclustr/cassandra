@@ -20,6 +20,7 @@ package org.apache.cassandra.contraints;
 
 import org.junit.Test;
 
+import org.apache.cassandra.cql3.constraints.ColumnConstraint;
 import org.apache.cassandra.cql3.constraints.ScalarColumnConstraint;
 import org.apache.cassandra.cql3.constraints.ColumnConstraints;
 import org.apache.cassandra.cql3.constraints.FunctionColumnConstraint;
@@ -38,14 +39,14 @@ public class ColumnConsraintsTest
     @Test
     public void testEnumCodesAndNames()
     {
-        ColumnConstraints.ConstraintsSerializers[] values = ColumnConstraints.ConstraintsSerializers.values();
+        ColumnConstraint.ConstraintType[] values = ColumnConstraint.ConstraintType.values();
 
         for (int i = 0; i < values.length; i++)
         {
             assertEquals("Column Constraint Serializer mismatch in the enum " +
                          values[i], EXPECTED_VALUES[i][0], values[i].name());
             assertEquals("Column Constraint Serializer mismatch in the enum for value " +
-                         values[i], EXPECTED_VALUES[i][1], ColumnConstraints.ConstraintsSerializers.getSerializer(i));
+                         values[i], EXPECTED_VALUES[i][1], ColumnConstraint.ConstraintType.getSerializer(i));
         }
 
         assertEquals("Column Constraint Serializer enum constants has changed. Update the test.",

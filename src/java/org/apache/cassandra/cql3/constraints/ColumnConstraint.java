@@ -32,18 +32,18 @@ public interface ColumnConstraint<T>
 
     // Enum containing all the possible constraint serializers to help with serialization/deserialization
     // of constraints.
-    public enum ConstraintsSerializers
+    public enum ConstraintType
     {
         // The order of that enum matters!!
         COMPOSED(ColumnConstraints.serializer),
         FUNCTION(FunctionColumnConstraint.serializer),
         SCALAR(ScalarColumnConstraint.serializer);
 
-        private static final ConstraintsSerializers[] values = ConstraintsSerializers.values();
+        private static final ConstraintType[] values = ConstraintType.values();
 
         private final IVersionedSerializer<?> serializer;
 
-        ConstraintsSerializers(IVersionedSerializer<?> serializer)
+        ConstraintType(IVersionedSerializer<?> serializer)
         {
             this.serializer = serializer;
         }
@@ -79,5 +79,5 @@ public interface ColumnConstraint<T>
      *
      * @return the Constraint type serializer
      */
-    ConstraintsSerializers getConstraintSerializerType();
+    ConstraintType getConstraintType();
 }

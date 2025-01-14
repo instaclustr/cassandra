@@ -101,9 +101,9 @@ public class FunctionColumnConstraint implements ColumnConstraint<FunctionColumn
     }
 
     @Override
-    public ConstraintsSerializers getConstraintSerializerType()
+    public ConstraintType getConstraintType()
     {
-        return ConstraintsSerializers.FUNCTION;
+        return ConstraintType.FUNCTION;
     }
 
     void validateArgs(ColumnMetadata columnMetadata)
