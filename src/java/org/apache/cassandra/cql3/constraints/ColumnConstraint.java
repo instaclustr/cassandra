@@ -37,7 +37,7 @@ public interface ColumnConstraint<T>
         // The order of that enum matters!!
         COMPOSED(ColumnConstraints.serializer),
         FUNCTION(FunctionColumnConstraint.serializer),
-        SCALAR(ColumnConstraintScalar.serializer);
+        SCALAR(ScalarColumnConstraint.serializer);
 
         private static final ConstraintsSerializers[] values = ConstraintsSerializers.values();
 

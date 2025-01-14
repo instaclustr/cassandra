@@ -20,7 +20,7 @@ package org.apache.cassandra.contraints;
 
 import org.junit.Test;
 
-import org.apache.cassandra.cql3.constraints.ColumnConstraintScalar;
+import org.apache.cassandra.cql3.constraints.ScalarColumnConstraint;
 import org.apache.cassandra.cql3.constraints.ColumnConstraints;
 import org.apache.cassandra.cql3.constraints.FunctionColumnConstraint;
 
@@ -32,7 +32,7 @@ public class ColumnConsraintsTest
     {
     { "COMPOSED", ColumnConstraints.serializer },
     { "FUNCTION", FunctionColumnConstraint.serializer },
-    { "SCALAR", ColumnConstraintScalar.serializer }
+    { "SCALAR", ScalarColumnConstraint.serializer }
     };
 
     @Test

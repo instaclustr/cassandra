@@ -32,6 +32,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.google.common.base.MoreObjects;
@@ -1045,10 +1046,10 @@ public class TableMetadata implements SchemaElement
 
         public Builder addPartitionKeyColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask)
         {
-            return addPartitionKeyColumn(name, type, mask, null);
+            return addPartitionKeyColumn(name, type, mask, new ColumnConstraints.Noop());
         }
 
-        public Builder addPartitionKeyColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nullable ColumnConstraints cqlConstraints)
+        public Builder addPartitionKeyColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nonnull ColumnConstraints cqlConstraints)
         {
             return addColumn(new ColumnMetadata(keyspace, this.name, name, type, partitionKeyColumns.size(), ColumnMetadata.Kind.PARTITION_KEY, mask, cqlConstraints));
         }
@@ -1070,10 +1071,10 @@ public class TableMetadata implements SchemaElement
 
         public Builder addClusteringColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask)
         {
-            return addClusteringColumn(name, type, mask, null);
+            return addClusteringColumn(name, type, mask, new ColumnConstraints.Noop());
         }
 
-        public Builder addClusteringColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nullable ColumnConstraints cqlConstraints)
+        public Builder addClusteringColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nonnull ColumnConstraints cqlConstraints)
         {
             return addColumn(new ColumnMetadata(keyspace, this.name, name, type, clusteringColumns.size(), ColumnMetadata.Kind.CLUSTERING, mask, cqlConstraints));
         }
@@ -1095,10 +1096,10 @@ public class TableMetadata implements SchemaElement
 
         public Builder addRegularColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask)
         {
-            return addRegularColumn(name, type, mask, null);
+            return addRegularColumn(name, type, mask, new ColumnConstraints.Noop());
         }
 
-        public Builder addRegularColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nullable ColumnConstraints cqlConstraints)
+        public Builder addRegularColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nonnull ColumnConstraints cqlConstraints)
         {
             return addColumn(new ColumnMetadata(keyspace, this.name, name, type, ColumnMetadata.NO_POSITION, ColumnMetadata.Kind.REGULAR, mask, cqlConstraints));
         }
@@ -1120,10 +1121,10 @@ public class TableMetadata implements SchemaElement
 
         public Builder addStaticColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask)
         {
-            return addStaticColumn(name, type, mask, null);
+            return addStaticColumn(name, type, mask, new ColumnConstraints.Noop());
         }
 
-        public Builder addStaticColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nullable ColumnConstraints cqlConstraints)
+        public Builder addStaticColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nonnull ColumnConstraints cqlConstraints)
         {
             return addColumn(new ColumnMetadata(keyspace, this.name, name, type, ColumnMetadata.NO_POSITION, ColumnMetadata.Kind.STATIC, mask, cqlConstraints));
         }

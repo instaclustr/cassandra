@@ -321,7 +321,7 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
 
     public boolean hasConstraint()
     {
-        return columnConstraints != null && !columnConstraints.isEmpty();
+        return !columnConstraints.isEmpty();
     }
 
     public boolean isRegular()
@@ -354,7 +354,7 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
         return columnConstraints;
     }
 
-    @Nullable
+    @Nonnull
     public void setColumnConstraints(ColumnConstraints constraints)
     {
         this.columnConstraints = constraints;

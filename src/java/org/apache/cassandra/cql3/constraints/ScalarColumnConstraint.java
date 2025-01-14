@@ -31,7 +31,7 @@ import org.apache.cassandra.io.util.DataInputPlus;
 import org.apache.cassandra.io.util.DataOutputPlus;
 import org.apache.cassandra.schema.ColumnMetadata;
 
-public class ColumnConstraintScalar implements ColumnConstraint<ColumnConstraintScalar>
+public class ScalarColumnConstraint implements ColumnConstraint<ScalarColumnConstraint>
 {
     public final ColumnIdentifier param;
     public final Operator relationType;
@@ -52,13 +52,13 @@ public class ColumnConstraintScalar implements ColumnConstraint<ColumnConstraint
             this.term = term;
         }
 
-        public ColumnConstraintScalar prepare()
+        public ScalarColumnConstraint prepare()
         {
-            return new ColumnConstraintScalar(param, relationType, term);
+            return new ScalarColumnConstraint(param, relationType, term);
         }
     }
 
-    private ColumnConstraintScalar(ColumnIdentifier param, Operator relationType, String term)
+    private ScalarColumnConstraint(ColumnIdentifier param, Operator relationType, String term)
     {
         this.param = param;
         this.relationType = relationType;
@@ -132,7 +132,7 @@ public class ColumnConstraintScalar implements ColumnConstraint<ColumnConstraint
     }
 
     @Override
-    public IVersionedSerializer<ColumnConstraintScalar> serializer()
+    public IVersionedSerializer<ScalarColumnConstraint> serializer()
     {
         return serializer;
     }
@@ -143,10 +143,10 @@ public class ColumnConstraintScalar implements ColumnConstraint<ColumnConstraint
         builder.append(toString());
     }
 
-    private static class Serializer implements IVersionedSerializer<ColumnConstraintScalar>
+    private static class Serializer implements IVersionedSerializer<ScalarColumnConstraint>
     {
         @Override
-        public void serialize(ColumnConstraintScalar columnConstraint, DataOutputPlus out, int version) throws IOException
+        public void serialize(ScalarColumnConstraint columnConstraint, DataOutputPlus out, int version) throws IOException
         {
             out.writeUTF(columnConstraint.param.toString());
             out.writeUTF(columnConstraint.relationType.toString());
@@ -154,15 +154,15 @@ public class ColumnConstraintScalar implements ColumnConstraint<ColumnConstraint
         }
 
         @Override
-        public ColumnConstraintScalar deserialize(DataInputPlus in, int version) throws IOException
+        public ScalarColumnConstraint deserialize(DataInputPlus in, int version) throws IOException
         {
             ColumnIdentifier param = new ColumnIdentifier(in.readUTF(), true);
             Operator relationType = Operator.valueOf(in.readUTF());
-            return new ColumnConstraintScalar(param, relationType, in.readUTF());
+            return new ScalarColumnConstraint(param, relationType, in.readUTF());
         }
 
         @Override
-        public long serializedSize(ColumnConstraintScalar columnConstraint, int version)
+        public long serializedSize(ScalarColumnConstraint columnConstraint, int version)
         {
             return TypeSizes.sizeof(columnConstraint.term)
                    + TypeSizes.sizeof(columnConstraint.relationType.toString())
