@@ -368,13 +368,15 @@ public class UpdateStatement extends ModificationStatement
 
     public static void evaluateConstraintsForRow(Row row, TableMetadata metadata)
     {
-
         for (ColumnMetadata column : metadata.columnsWithConstraints)
         {
             Cell<?> cell = row.getCell(column);
-            ColumnMetadata columnMetadata = cell.column();
-            ByteBuffer cellData = cell.buffer();
-            evaluateConstraint(columnMetadata, cellData);
+            if (cell != null)
+            {
+                ColumnMetadata columnMetadata = cell.column();
+                ByteBuffer cellData = cell.buffer();
+                evaluateConstraint(columnMetadata, cellData);
+            }
         }
     }
 
