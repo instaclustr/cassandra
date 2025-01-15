@@ -696,9 +696,13 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
             out.writeBoolean(t.mask != null);
             if (t.mask != null)
                 ColumnMask.serializer.serialize(t.mask, out, version);
-            out.writeBoolean(!t.columnConstraints.isEmpty());
-            if (!t.columnConstraints.isEmpty())
-                ColumnConstraints.serializer.serialize(t.columnConstraints, out, version.asInt());
+            if (version.isAtLeast(Version.V6))
+            {
+                boolean hasConstraints = t.hasConstraint();
+                out.writeBoolean(hasConstraints);
+                if (hasConstraints)
+                    ColumnConstraints.serializer.serialize(t.columnConstraints, out, version.asInt());
+            }
         }
 
         public ColumnMetadata deserialize(DataInputPlus in, Types types, UserFunctions functions, Version version) throws IOException
@@ -717,22 +721,25 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
             boolean masked = in.readBoolean();
             if (masked)
                 mask = ColumnMask.serializer.deserialize(in, ksName, type, types, functions, version);
-            boolean hasConstraints = in.readBoolean();
+
             ColumnConstraints constraints;
-            if (hasConstraints)
+            if (version.isAtLeast(Version.V6) && in.readBoolean())
                 constraints = ColumnConstraints.serializer.deserialize(in, version.asInt());
             else
                 constraints = ColumnConstraints.Noop.INSTANCE;
+
             return new ColumnMetadata(ksName, tableName, new ColumnIdentifier(nameBB, name), type, position, kind, mask, constraints);
         }
 
         public long serializedSize(ColumnMetadata t, Version version)
         {
-
             long constraintsSize = 0;
-            if (!t.hasConstraint())
+
+            if (version.isAtLeast(Version.V6))
             {
-                constraintsSize += t.getColumnConstraints().serializer().serializedSize(t.columnConstraints, version.asInt());
+                constraintsSize += BOOL_SIZE;
+                if (t.hasConstraint())
+                    constraintsSize += t.getColumnConstraints().serializer().serializedSize(t.columnConstraints, version.asInt());
             }
 
             return sizeof(t.ksName) +
@@ -745,9 +752,7 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
                    ByteBufferUtil.serializedSizeWithShortLength(t.name.bytes) +
                    BOOL_SIZE +
                    ((t.mask == null) ? 0 : ColumnMask.serializer.serializedSize(t.mask, version)) +
-                   BOOL_SIZE +
-                   constraintsSize
-            ;
+                   constraintsSize;
         }
     }
 }
