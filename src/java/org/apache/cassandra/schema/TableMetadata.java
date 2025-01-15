@@ -201,6 +201,7 @@ public class TableMetadata implements SchemaElement
     public TableMetadataRef ref;
 
     public final List<ColumnConstraint> partitionKeyConstraints;
+    public final List<ColumnMetadata> columnsWithConstraints;
 
     protected TableMetadata(Builder builder)
     {
@@ -249,6 +250,15 @@ public class TableMetadata implements SchemaElement
                 pkConstraints.add(column.getColumnConstraints());
         }
         this.partitionKeyConstraints = pkConstraints;
+
+        // We cache the columns with constraints to avoid iterations over columns
+        List<ColumnMetadata> columnsWithConstraints = new ArrayList<>();
+        for (ColumnMetadata column : this.columns())
+        {
+            if (column.hasConstraint() && !column.isPartitionKey() && !column.isClusteringColumn())
+                columnsWithConstraints.add(column);
+        }
+        this.columnsWithConstraints = columnsWithConstraints;
     }
 
     public static Builder builder(String keyspace, String table)
@@ -542,7 +552,7 @@ public class TableMetadata implements SchemaElement
 
         indexes.validate(this);
 
-        for (ColumnMetadata columnMetadata : this.columns())
+        for (ColumnMetadata columnMetadata : columns())
         {
             ColumnConstraints constraints = columnMetadata.getColumnConstraints();
             try
@@ -1046,7 +1056,7 @@ public class TableMetadata implements SchemaElement
 
         public Builder addPartitionKeyColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask)
         {
-            return addPartitionKeyColumn(name, type, mask, new ColumnConstraints.Noop());
+            return addPartitionKeyColumn(name, type, mask, ColumnConstraints.Noop.INSTANCE);
         }
 
         public Builder addPartitionKeyColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nonnull ColumnConstraints cqlConstraints)
@@ -1071,7 +1081,7 @@ public class TableMetadata implements SchemaElement
 
         public Builder addClusteringColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask)
         {
-            return addClusteringColumn(name, type, mask, new ColumnConstraints.Noop());
+            return addClusteringColumn(name, type, mask, ColumnConstraints.Noop.INSTANCE);
         }
 
         public Builder addClusteringColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nonnull ColumnConstraints cqlConstraints)
@@ -1096,7 +1106,7 @@ public class TableMetadata implements SchemaElement
 
         public Builder addRegularColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask)
         {
-            return addRegularColumn(name, type, mask, new ColumnConstraints.Noop());
+            return addRegularColumn(name, type, mask, ColumnConstraints.Noop.INSTANCE);
         }
 
         public Builder addRegularColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nonnull ColumnConstraints cqlConstraints)
@@ -1121,7 +1131,7 @@ public class TableMetadata implements SchemaElement
 
         public Builder addStaticColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask)
         {
-            return addStaticColumn(name, type, mask, new ColumnConstraints.Noop());
+            return addStaticColumn(name, type, mask, ColumnConstraints.Noop.INSTANCE);
         }
 
         public Builder addStaticColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nonnull ColumnConstraints cqlConstraints)

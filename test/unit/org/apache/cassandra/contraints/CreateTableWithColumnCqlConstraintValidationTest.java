@@ -809,7 +809,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
     @Test
     public void testCreateTableWithColumnWithClusteringColumnLengthEqualToConstraint() throws Throwable
     {
-        createTable("CREATE TABLE %s (pk int, ck1 text CHECK LENGTH(ck1) = 4, ck2 int, v int, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
+        createTable("CREATE TABLE %s (pk int, ck1 text CHECK LENGTH(ck1) = 4, ck2 int, v int, PRIMARY KEY ((pk), ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
 
         // Valid
         execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 'fooo', 2, 3)");

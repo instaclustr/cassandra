@@ -29,8 +29,6 @@ import org.apache.cassandra.cql3.functions.Function;
 import org.apache.cassandra.cql3.terms.Constants;
 import org.apache.cassandra.cql3.terms.Term;
 import org.apache.cassandra.db.marshal.AbstractType;
-import org.apache.cassandra.db.marshal.NumberType;
-import org.apache.cassandra.db.marshal.StringType;
 import org.apache.cassandra.db.marshal.UTF8Type;
 import org.apache.cassandra.exceptions.InvalidRequestException;
 import org.apache.cassandra.schema.ColumnMetadata;
@@ -366,9 +364,9 @@ public final class Json
 
     static Term.Raw getUnpreparedTerm(ColumnSpecification spec, Object parsedJsonObject)
     {
-        if (spec.type instanceof NumberType)
+        if (spec.type.isNumber())
             return Constants.Literal.floatingPoint(parsedJsonObject.toString());
-        if (spec.type instanceof StringType)
+        if (spec.type.isString())
             return Constants.Literal.string(parsedJsonObject.toString());
         return null;
     }

@@ -21,7 +21,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.cassandra.audit.AuditLogContext;
@@ -101,7 +100,7 @@ public class UpdateStatement extends ModificationStatement
                 updates.get(i).execute(updateBuilder.partitionKey(), params);
 
             Row row = params.buildRow();
-            evaluateConstraintsForRow(row);
+            evaluateConstraintsForRow(row, metadata);
             updateBuilder.add(row);
         }
 
@@ -367,18 +366,13 @@ public class UpdateStatement extends ModificationStatement
         return new AuditLogContext(AuditLogEntryType.UPDATE, keyspace(), table());
     }
 
-    public static void evaluateConstraintsForRow(Row row)
+    public static void evaluateConstraintsForRow(Row row, TableMetadata metadata)
     {
-        Iterator<Cell<?>> cellIt = row.cells().iterator();
-        // check constraint for each column
-        while (cellIt.hasNext())
-        {
-            Cell<?> cell = cellIt.next();
-            ColumnMetadata columnMetadata = cell.column();
-            if (!columnMetadata.hasConstraint()
-                || columnMetadata.isComplex()) // complex column is not supported, for now
-                continue;
 
+        for (ColumnMetadata column : metadata.columnsWithConstraints)
+        {
+            Cell<?> cell = row.getCell(column);
+            ColumnMetadata columnMetadata = cell.column();
             ByteBuffer cellData = cell.buffer();
             evaluateConstraint(columnMetadata, cellData);
         }
@@ -386,14 +380,11 @@ public class UpdateStatement extends ModificationStatement
 
     public static void evaluateConstraint(ColumnMetadata columnMetadata, ByteBuffer cellData)
     {
-        if (columnMetadata.hasConstraint())
+        for (ColumnConstraint constraint : columnMetadata.getColumnConstraints().getConstraints())
         {
-            for (ColumnConstraint constraint : columnMetadata.getColumnConstraints().getConstraints())
-            {
-                TypeSerializer<?> serializer = columnMetadata.type.getSerializer();
-                constraint.evaluate(columnMetadata.type.getClass(),
-                                    serializer.deserialize(cellData));
-            }
+            TypeSerializer<?> serializer = columnMetadata.type.getSerializer();
+            constraint.evaluate(columnMetadata.type.getClass(),
+                                serializer.deserialize(cellData));
         }
     }
 }

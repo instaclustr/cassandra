@@ -840,7 +840,7 @@ public abstract class AlterTableStatement extends AlterSchemaStatement
                 case         ALTER_OPTIONS: return new AlterOptions(keyspaceName, tableName, attrs, ifTableExists);
                 case  DROP_COMPACT_STORAGE: return new DropCompactStorage(keyspaceName, tableName, ifTableExists);
                 case       DROP_CONSTRAINT: return new DropConstraint(keyspaceName, tableName, ifTableExists, constraintName);
-                case       ALTER_CONSTRAINTS: return new AlterConstraints(keyspaceName, tableName, ifTableExists, constraintName, constraints);
+                case     ALTER_CONSTRAINTS: return new AlterConstraints(keyspaceName, tableName, ifTableExists, constraintName, constraints);
             }
 
             throw new AssertionError();

@@ -52,10 +52,15 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
 
 
     private final List<ColumnConstraint<?>> constraints;
+    private final int constraintsSize;
+    private final boolean isEmpty;
 
     public ColumnConstraints(List<ColumnConstraint<?>> constraints)
     {
         this.constraints = new ArrayList<>(constraints);
+        // These are catched values to avoid making the calculations every time
+        this.constraintsSize = constraints.size();
+        this.isEmpty = constraints.isEmpty();
     }
 
     @Override
@@ -85,7 +90,12 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
 
     public boolean isEmpty()
     {
-        return constraints.isEmpty();
+        return isEmpty;
+    }
+
+    public int getSize()
+    {
+        return constraintsSize;
     }
 
     @Override
@@ -114,6 +124,18 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
         {
             super(Collections.emptyList());
         }
+
+        @Override
+        public boolean isEmpty()
+        {
+            return true;
+        }
+
+        @Override
+        public int getSize()
+        {
+            return 0;
+        }
     }
 
     public final static class Raw
@@ -141,8 +163,7 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
         @Override
         public void serialize(ColumnConstraints columnConstraint, DataOutputPlus out, int version) throws IOException
         {
-            out.writeInt(columnConstraint.getConstraints().size());
-
+            out.writeInt(columnConstraint.getSize());
             for (ColumnConstraint constraint : columnConstraint.getConstraints())
             {
                 // We serialize the serializer position in the enum to save space
