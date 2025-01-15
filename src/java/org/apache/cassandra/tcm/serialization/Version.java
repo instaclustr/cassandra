@@ -51,6 +51,10 @@ public enum Version
      * - PreInitialize includes datacenter (affects local serialization on first CMS node only)
      */
     V5(5),
+    /**
+     * CEP-42 - Constraints framework
+     */
+    V6(6),
 
     UNKNOWN(Integer.MAX_VALUE);
 

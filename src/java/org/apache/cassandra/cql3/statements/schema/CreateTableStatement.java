@@ -558,7 +558,7 @@ public final class CreateTableStatement extends AlterSchemaStatement
             if (isStatic)
                 staticColumns.add(column);
             if (null == constraints)
-                columnConstraints.put(column, ColumnConstraints.Noop.INSTANCE);
+                columnConstraints.put(column, ColumnConstraints.NO_OP);
             else
                 columnConstraints.put(column, constraints.prepare());
         }

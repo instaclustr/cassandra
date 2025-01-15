@@ -1056,7 +1056,7 @@ public class TableMetadata implements SchemaElement
 
         public Builder addPartitionKeyColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask)
         {
-            return addPartitionKeyColumn(name, type, mask, ColumnConstraints.Noop.INSTANCE);
+            return addPartitionKeyColumn(name, type, mask, ColumnConstraints.NO_OP);
         }
 
         public Builder addPartitionKeyColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nonnull ColumnConstraints cqlConstraints)
@@ -1081,7 +1081,7 @@ public class TableMetadata implements SchemaElement
 
         public Builder addClusteringColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask)
         {
-            return addClusteringColumn(name, type, mask, ColumnConstraints.Noop.INSTANCE);
+            return addClusteringColumn(name, type, mask, ColumnConstraints.NO_OP);
         }
 
         public Builder addClusteringColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nonnull ColumnConstraints cqlConstraints)
@@ -1106,7 +1106,7 @@ public class TableMetadata implements SchemaElement
 
         public Builder addRegularColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask)
         {
-            return addRegularColumn(name, type, mask, ColumnConstraints.Noop.INSTANCE);
+            return addRegularColumn(name, type, mask, ColumnConstraints.NO_OP);
         }
 
         public Builder addRegularColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nonnull ColumnConstraints cqlConstraints)
@@ -1131,7 +1131,7 @@ public class TableMetadata implements SchemaElement
 
         public Builder addStaticColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask)
         {
-            return addStaticColumn(name, type, mask, ColumnConstraints.Noop.INSTANCE);
+            return addStaticColumn(name, type, mask, ColumnConstraints.NO_OP);
         }
 
         public Builder addStaticColumn(ColumnIdentifier name, AbstractType<?> type, @Nullable ColumnMask mask, @Nonnull ColumnConstraints cqlConstraints)

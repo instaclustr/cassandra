@@ -895,7 +895,7 @@ public abstract class AlterTableStatement extends AlterSchemaStatement
         {
             kind = Kind.ALTER_CONSTRAINTS;
             this.constraintName = name;
-            this.constraints = Objects.requireNonNullElseGet(rawConstraints.prepare(), ColumnConstraints.Noop::new);
+            this.constraints = rawConstraints.prepare();
         }
 
         public void timestamp(long timestamp)

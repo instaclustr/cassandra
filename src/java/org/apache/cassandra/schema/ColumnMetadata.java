@@ -135,42 +135,42 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
 
     public static ColumnMetadata partitionKeyColumn(TableMetadata table, ByteBuffer name, AbstractType<?> type, int position)
     {
-        return new ColumnMetadata(table, name, type, position, Kind.PARTITION_KEY, null, ColumnConstraints.Noop.INSTANCE);
+        return new ColumnMetadata(table, name, type, position, Kind.PARTITION_KEY, null, ColumnConstraints.NO_OP);
     }
 
     public static ColumnMetadata partitionKeyColumn(String keyspace, String table, String name, AbstractType<?> type, int position)
     {
-        return new ColumnMetadata(keyspace, table, ColumnIdentifier.getInterned(name, true), type, position, Kind.PARTITION_KEY, null, ColumnConstraints.Noop.INSTANCE);
+        return new ColumnMetadata(keyspace, table, ColumnIdentifier.getInterned(name, true), type, position, Kind.PARTITION_KEY, null, ColumnConstraints.NO_OP);
     }
 
     public static ColumnMetadata clusteringColumn(TableMetadata table, ByteBuffer name, AbstractType<?> type, int position)
     {
-        return new ColumnMetadata(table, name, type, position, Kind.CLUSTERING, null, ColumnConstraints.Noop.INSTANCE);
+        return new ColumnMetadata(table, name, type, position, Kind.CLUSTERING, null, ColumnConstraints.NO_OP);
     }
 
     public static ColumnMetadata clusteringColumn(String keyspace, String table, String name, AbstractType<?> type, int position)
     {
-        return new ColumnMetadata(keyspace, table, ColumnIdentifier.getInterned(name, true), type, position, Kind.CLUSTERING, null, ColumnConstraints.Noop.INSTANCE);
+        return new ColumnMetadata(keyspace, table, ColumnIdentifier.getInterned(name, true), type, position, Kind.CLUSTERING, null, ColumnConstraints.NO_OP);
     }
 
     public static ColumnMetadata regularColumn(TableMetadata table, ByteBuffer name, AbstractType<?> type)
     {
-        return new ColumnMetadata(table, name, type, NO_POSITION, Kind.REGULAR, null, ColumnConstraints.Noop.INSTANCE);
+        return new ColumnMetadata(table, name, type, NO_POSITION, Kind.REGULAR, null, ColumnConstraints.NO_OP);
     }
 
     public static ColumnMetadata regularColumn(String keyspace, String table, String name, AbstractType<?> type)
     {
-        return new ColumnMetadata(keyspace, table, ColumnIdentifier.getInterned(name, true), type, NO_POSITION, Kind.REGULAR, null, ColumnConstraints.Noop.INSTANCE);
+        return new ColumnMetadata(keyspace, table, ColumnIdentifier.getInterned(name, true), type, NO_POSITION, Kind.REGULAR, null, ColumnConstraints.NO_OP);
     }
 
     public static ColumnMetadata staticColumn(TableMetadata table, ByteBuffer name, AbstractType<?> type)
     {
-        return new ColumnMetadata(table, name, type, NO_POSITION, Kind.STATIC, null, ColumnConstraints.Noop.INSTANCE);
+        return new ColumnMetadata(table, name, type, NO_POSITION, Kind.STATIC, null, ColumnConstraints.NO_OP);
     }
 
     public static ColumnMetadata staticColumn(String keyspace, String table, String name, AbstractType<?> type)
     {
-        return new ColumnMetadata(keyspace, table, ColumnIdentifier.getInterned(name, true), type, NO_POSITION, Kind.STATIC, null, ColumnConstraints.Noop.INSTANCE);
+        return new ColumnMetadata(keyspace, table, ColumnIdentifier.getInterned(name, true), type, NO_POSITION, Kind.STATIC, null, ColumnConstraints.NO_OP);
     }
 
     public ColumnMetadata(TableMetadata table,
@@ -205,7 +205,7 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
              position,
              kind,
              mask,
-             ColumnConstraints.Noop.INSTANCE);
+             ColumnConstraints.NO_OP);
     }
 
     @VisibleForTesting
@@ -217,7 +217,7 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
                           Kind kind,
                           @Nullable ColumnMask mask)
     {
-        this(ksName, cfName, name, type, position, kind, mask, ColumnConstraints.Noop.INSTANCE);
+        this(ksName, cfName, name, type, position, kind, mask, ColumnConstraints.NO_OP);
     }
 
     @VisibleForTesting
@@ -368,7 +368,7 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
     @Nullable
     public void removeColumnConstraints()
     {
-        columnConstraints = ColumnConstraints.Noop.INSTANCE;
+        columnConstraints = ColumnConstraints.NO_OP;
     }
 
     @Override
@@ -696,9 +696,13 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
             out.writeBoolean(t.mask != null);
             if (t.mask != null)
                 ColumnMask.serializer.serialize(t.mask, out, version);
-            out.writeBoolean(!t.columnConstraints.isEmpty());
-            if (!t.columnConstraints.isEmpty())
-                ColumnConstraints.serializer.serialize(t.columnConstraints, out, version.asInt());
+            if (version.isAtLeast(Version.V6))
+            {
+                boolean hasConstraints = t.hasConstraint();
+                out.writeBoolean(hasConstraints);
+                if (hasConstraints)
+                    ColumnConstraints.serializer.serialize(t.columnConstraints, out, version.asInt());
+            }
         }
 
         public ColumnMetadata deserialize(DataInputPlus in, Types types, UserFunctions functions, Version version) throws IOException
@@ -717,22 +721,22 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
             boolean masked = in.readBoolean();
             if (masked)
                 mask = ColumnMask.serializer.deserialize(in, ksName, type, types, functions, version);
-            boolean hasConstraints = in.readBoolean();
             ColumnConstraints constraints;
-            if (hasConstraints)
+            if (version.isAtLeast(Version.V6) && in.readBoolean())
                 constraints = ColumnConstraints.serializer.deserialize(in, version.asInt());
             else
-                constraints = ColumnConstraints.Noop.INSTANCE;
+                constraints = ColumnConstraints.NO_OP;
             return new ColumnMetadata(ksName, tableName, new ColumnIdentifier(nameBB, name), type, position, kind, mask, constraints);
         }
 
         public long serializedSize(ColumnMetadata t, Version version)
         {
-
             long constraintsSize = 0;
-            if (!t.hasConstraint())
+            if (version.isAtLeast(Version.V6))
             {
-                constraintsSize += t.getColumnConstraints().serializer().serializedSize(t.columnConstraints, version.asInt());
+                constraintsSize += BOOL_SIZE;
+                if (t.hasConstraint())
+                    constraintsSize += t.getColumnConstraints().serializer().serializedSize(t.columnConstraints, version.asInt());
             }
 
             return sizeof(t.ksName) +
@@ -745,7 +749,6 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
                    ByteBufferUtil.serializedSizeWithShortLength(t.name.bytes) +
                    BOOL_SIZE +
                    ((t.mask == null) ? 0 : ColumnMask.serializer.serializedSize(t.mask, version)) +
-                   BOOL_SIZE +
                    constraintsSize
             ;
         }

@@ -64,7 +64,7 @@ public class Columns extends AbstractCollection<ColumnMetadata> implements Colle
                            ColumnMetadata.NO_POSITION,
                            ColumnMetadata.Kind.STATIC,
                            null,
-                           ColumnConstraints.Noop.INSTANCE);
+                           ColumnConstraints.NO_OP);
 
     public static final ColumnMetadata FIRST_COMPLEX_REGULAR =
         new ColumnMetadata("",
@@ -74,7 +74,7 @@ public class Columns extends AbstractCollection<ColumnMetadata> implements Colle
                            ColumnMetadata.NO_POSITION,
                            ColumnMetadata.Kind.REGULAR,
                            null,
-                           ColumnConstraints.Noop.INSTANCE);
+                           ColumnConstraints.NO_OP);
 
     private final Object[] columns;
     private final int complexIdx; // Index of the first complex column

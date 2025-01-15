@@ -549,12 +549,12 @@ public abstract class AbstractType<T> implements Comparator<ByteBuffer>, Assignm
 
     public boolean isNumber()
     {
-        return this instanceof org.apache.cassandra.db.marshal.NumberType;
+        return unwrap() instanceof org.apache.cassandra.db.marshal.NumberType;
     }
 
     public boolean isString()
     {
-        return this instanceof org.apache.cassandra.db.marshal.StringType;
+        return unwrap() instanceof org.apache.cassandra.db.marshal.StringType;
     }
 
     // This assumes that no empty values are passed

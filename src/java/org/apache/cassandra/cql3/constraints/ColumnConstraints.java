@@ -42,6 +42,7 @@ import com.google.common.collect.ImmutableSet;
 public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
 {
     public static final Serializer serializer = new Serializer();
+    public static final Noop NO_OP = new Noop();
 
     private static final Set<Class<? extends AbstractType>> UNSUPPORTED_TYPES = ImmutableSet.of(MapType.class,
                                                                                                 TupleType.class,
@@ -118,9 +119,7 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
 
     public static class Noop extends ColumnConstraints
     {
-        public static final Noop INSTANCE = new Noop();
-
-        public Noop()
+        private Noop()
         {
             super(Collections.emptyList());
         }
@@ -154,6 +153,8 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
 
         public ColumnConstraints prepare()
         {
+            if (constraints.isEmpty())
+                return NO_OP;
             return new ColumnConstraints(constraints);
         }
     }
