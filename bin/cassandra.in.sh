@@ -114,20 +114,20 @@ if [ -z $JAVA ] ; then
 fi
 
 # Matches variable 'java.supported' in build.xml
-java_versions_supported=(11 17 21)
-java_version_string=$(IFS=" "; echo "${java_versions_supported[*]}")
+java_versions_supported="11 17 21"
+java_version_string=$(IFS=" "; echo "${java_versions_supported}")
 
 # Determine the sort of JVM we'll be running on.
 JAVA_VERSION=$(java -version 2>&1 | grep '[openjdk|java] version' | cut -d '"' -f2 | cut -d '.' -f1)
 
 supported=0
-for version in "${java_versions_supported[@]}"; do
+for version in ${java_versions_supported}; do
   if [ "$version" -eq "$JAVA_VERSION" ]; then
       supported=1
   fi
 done
 
-if [[ "$supported" -eq 0 ]]; then
+if [ "$supported" -eq 0 ]; then
   if [ -z "$CASSANDRA_JDK_UNSUPPORTED" ]; then
     echo "Unsupported Java $JAVA_VERSION. Supported are $java_version_string"
     echo "If you would like to test with newer Java versions set CASSANDRA_JDK_UNSUPPORTED to any value (for example, CASSANDRA_JDK_UNSUPPORTED=true). Unset the parameter for default behavior"
