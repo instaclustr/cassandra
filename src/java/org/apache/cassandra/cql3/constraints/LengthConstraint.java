@@ -24,8 +24,10 @@ import org.apache.cassandra.cql3.Operator;
 import org.apache.cassandra.db.marshal.AbstractType;
 import org.apache.cassandra.db.marshal.AsciiType;
 import org.apache.cassandra.db.marshal.BytesType;
+import org.apache.cassandra.db.marshal.Int32Type;
 import org.apache.cassandra.db.marshal.UTF8Type;
 import org.apache.cassandra.schema.ColumnMetadata;
+import org.apache.cassandra.utils.ByteBufferUtil;
 
 import java.nio.ByteBuffer;
 import java.util.Set;
@@ -56,35 +58,12 @@ public class LengthConstraint implements ConstraintFunction
         int valueLength = getValueSize(columnValue, valueType);
         int sizeConstraint = Integer.parseInt(term);
 
-        switch (relationType)
-        {
-            case EQ:
-                if (valueLength != sizeConstraint)
-                    throw new ConstraintViolationException(columnName + " value length should be exactly " + sizeConstraint);
-                break;
-            case NEQ:
-                if (valueLength == sizeConstraint)
-                    throw new ConstraintViolationException(columnName + " value length should be different from " + sizeConstraint);
-                break;
-            case GT:
-                if (valueLength <= sizeConstraint)
-                    throw new ConstraintViolationException(columnName + " value length should be larger than " + sizeConstraint);
-                break;
-            case LT:
-                if (valueLength >= sizeConstraint)
-                    throw new ConstraintViolationException(columnName + " value length should be smaller than " + sizeConstraint);
-                break;
-            case GTE:
-                if (valueLength < sizeConstraint)
-                    throw new ConstraintViolationException(columnName + " value length should be larger or equal than " + sizeConstraint);
-                break;
-            case LTE:
-                if (valueLength > sizeConstraint)
-                    throw new ConstraintViolationException(columnName + " value length should be smaller or equala than " + sizeConstraint);
-                break;
-            default:
-                throw new ConstraintViolationException("Invalid relation type: " + relationType);
-        }
+        ByteBuffer  buffera = ByteBufferUtil.bytes(valueLength);
+        ByteBuffer  bufferb = ByteBufferUtil.bytes(sizeConstraint);
+
+        if (!relationType.isSatisfiedBy(Int32Type.instance, buffera, bufferb))
+            throw new ConstraintViolationException(columnName + " does not satisfy lenght constraint. "
+                                                   + valueLength + " should be " + relationType + ' ' + term);
     }
 
     @Override

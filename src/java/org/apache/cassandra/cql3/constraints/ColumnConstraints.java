@@ -99,6 +99,21 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
         return constraintsSize;
     }
 
+    // Checks if there is at least one constraint that will perform checks
+    public boolean hasRelevantConstraints()
+    {
+        boolean allNoopConstraint = true;
+        for (ColumnConstraint c : constraints)
+        {
+            if (c == ColumnConstraints.NO_OP)
+            {
+                allNoopConstraint = false;
+                break;
+            }
+        }
+        return !allNoopConstraint;
+    }
+
     @Override
     public void validate(ColumnMetadata columnMetadata) throws InvalidConstraintDefinitionException
     {
@@ -117,23 +132,11 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
         return ConstraintType.COMPOSED;
     }
 
-    public static class Noop extends ColumnConstraints
+    private static class Noop extends ColumnConstraints
     {
         private Noop()
         {
             super(Collections.emptyList());
-        }
-
-        @Override
-        public boolean isEmpty()
-        {
-            return true;
-        }
-
-        @Override
-        public int getSize()
-        {
-            return 0;
         }
     }
 

@@ -323,15 +323,8 @@ public abstract class AbstractCompositeType extends AbstractType<ByteBuffer>
     @Override
     public void checkConstraints(ByteBuffer input, ColumnConstraints constraints) throws ConstraintViolationException
     {
-        boolean allNoopConstraint = true;
-        for (ColumnConstraint c : constraints.getConstraints())
-        {
-            assert c instanceof ColumnConstraints;
-            allNoopConstraint = allNoopConstraint && c instanceof ColumnConstraints.Noop;
-        }
-
         // no constraints defined for the partition keys
-        if (allNoopConstraint)
+        if (!constraints.hasRelevantConstraints())
             return;
 
         ValueAccessor<ByteBuffer> accessor = ByteBufferAccessor.instance;

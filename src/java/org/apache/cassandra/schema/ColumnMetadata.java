@@ -298,11 +298,6 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
         return new ColumnMetadata(ksName, cfName, name, type, position, kind, newMask, columnConstraints);
     }
 
-    public ColumnMetadata withNewColumnConstraint(@Nullable ColumnConstraints newCqlConstraints)
-    {
-        return new ColumnMetadata(ksName, cfName, name, type, position, kind, mask, newCqlConstraints);
-    }
-
     public boolean isPartitionKey()
     {
         return kind == Kind.PARTITION_KEY;

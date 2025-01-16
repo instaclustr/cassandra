@@ -57,7 +57,7 @@ public final class CreateTableStatement extends AlterSchemaStatement
     private final Map<ColumnIdentifier, ColumnProperties.Raw> rawColumns;
     private final Set<ColumnIdentifier> staticColumns;
     private final List<ColumnIdentifier> partitionKeyColumns;
-    Map<ColumnIdentifier, ColumnConstraints> columnConstraints;
+    private final Map<ColumnIdentifier, ColumnConstraints> columnConstraints;
     private final List<ColumnIdentifier> clusteringColumns;
 
     private final LinkedHashMap<ColumnIdentifier, Boolean> clusteringOrder;

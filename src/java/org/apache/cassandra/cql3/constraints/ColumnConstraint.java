@@ -32,9 +32,11 @@ public interface ColumnConstraint<T>
 
     // Enum containing all the possible constraint serializers to help with serialization/deserialization
     // of constraints.
-    public enum ConstraintType
+    enum ConstraintType
     {
         // The order of that enum matters!!
+        // We are serializing its enum position instead of its name.
+        // Changing this enum would affect how that int is interpreted when deserializing.
         COMPOSED(ColumnConstraints.serializer),
         FUNCTION(FunctionColumnConstraint.serializer),
         SCALAR(ScalarColumnConstraint.serializer);
