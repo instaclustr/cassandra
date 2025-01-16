@@ -375,7 +375,7 @@ public final class Json
     {
         try
         {
-            Map<String, Object> valueMap = JsonUtils.JSON_OBJECT_MAPPER.readValue(jsonString, Map.class);
+            Map<String, Object> valueMap = JsonUtils.fromJsonMap(jsonString);
 
             if (valueMap == null)
                 throw new InvalidRequestException("Got null for INSERT JSON values");
@@ -414,10 +414,6 @@ public final class Json
                                                          valueMap.keySet().iterator().next()));
 
             return columnMap;
-        }
-        catch (IOException exc)
-        {
-            throw new InvalidRequestException(format("Could not decode JSON string as a map: %s. (String was: %s)", exc.toString(), jsonString));
         }
         catch (MarshalException exc)
         {
