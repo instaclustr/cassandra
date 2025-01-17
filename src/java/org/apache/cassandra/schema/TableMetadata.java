@@ -201,7 +201,7 @@ public class TableMetadata implements SchemaElement
     public TableMetadataRef ref;
 
     // We cache the columns with constraints to avoid iterations over columns
-    // Partition keys columns are evaluated sepparatedly, so we keep the two of them in
+    // Partition keys columns are evaluated separately, so we keep the two of them in
     // two different variables.
     public final List<ColumnConstraint> partitionKeyConstraints;
     public final List<ColumnMetadata> columnsWithConstraints;

@@ -153,12 +153,27 @@ public class FunctionColumnConstraint implements ColumnConstraint<FunctionColumn
         @Override
         public long serializedSize(FunctionColumnConstraint columnConstraint, int version)
         {
-            FunctionColumnConstraint condition = columnConstraint;
-
-            return TypeSizes.sizeof(condition.function.getClass().getName())
-                   + TypeSizes.sizeof(condition.columnName.toCQLString())
-                   + TypeSizes.sizeof(condition.term)
-                   + TypeSizes.sizeof(condition.relationType.toString());
+            return TypeSizes.sizeof(columnConstraint.function.getClass().getName())
+                   + TypeSizes.sizeof(columnConstraint.columnName.toCQLString())
+                   + TypeSizes.sizeof(columnConstraint.term)
+                   + TypeSizes.sizeof(columnConstraint.relationType.toString());
         }
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+
+        if (!(o instanceof FunctionColumnConstraint))
+            return false;
+
+        FunctionColumnConstraint other = (FunctionColumnConstraint) o;
+
+        return function.equals(other.function)
+               && columnName.equals(other.columnName)
+               && relationType == other.relationType
+               && term.equals(other.term);
     }
 }
