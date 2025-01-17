@@ -115,4 +115,10 @@ public class BytesType extends AbstractType<ByteBuffer>
     {
         return MASKED_VALUE;
     }
+
+    @Override
+    public boolean canBeStringTypeConstraint()
+    {
+        return true;
+    }
 }

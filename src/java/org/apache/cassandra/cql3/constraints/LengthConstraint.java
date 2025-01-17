@@ -19,9 +19,7 @@
 package org.apache.cassandra.cql3.constraints;
 
 import java.nio.ByteBuffer;
-import java.util.Set;
 
-import com.google.common.collect.Sets;
 import org.apache.cassandra.cql3.ColumnIdentifier;
 import org.apache.cassandra.cql3.Operator;
 import org.apache.cassandra.db.marshal.AbstractType;
@@ -35,9 +33,6 @@ import org.apache.cassandra.utils.ByteBufferUtil;
 public class LengthConstraint implements ConstraintFunction
 {
     public static final String FUNCTION_NAME = "LENGTH";
-    private static final Set<Class<?>> SUPPORTED_TYPES = Sets.newHashSet(UTF8Type.class,
-                                                                         AsciiType.class,
-                                                                         BytesType.class);
 
     private final ColumnIdentifier columnName;
 
@@ -69,9 +64,8 @@ public class LengthConstraint implements ConstraintFunction
     @Override
     public void validate(ColumnMetadata columnMetadata)
     {
-        Class<? extends AbstractType> valueType = columnMetadata.type.getClass();
-        if (!SUPPORTED_TYPES.contains(valueType))
-            throw invalidConstraintDefinitionException(valueType);
+        if (!columnMetadata.type.canBeStringTypeConstraint())
+            throw invalidConstraintDefinitionException(columnMetadata.type.getClass());
     }
 
     private int getValueSize(Object value, Class<? extends AbstractType> valueType)
@@ -90,8 +84,7 @@ public class LengthConstraint implements ConstraintFunction
 
     private InvalidConstraintDefinitionException invalidConstraintDefinitionException(Class<? extends AbstractType> valueType)
     {
-        throw new InvalidConstraintDefinitionException("Column type " + valueType +
-                                                       " is not supported, supported types are " + SUPPORTED_TYPES);
+        throw new InvalidConstraintDefinitionException("Column type " + valueType + " is not supported.");
     }
 
     @Override

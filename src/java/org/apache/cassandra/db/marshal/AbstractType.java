@@ -831,4 +831,9 @@ public abstract class AbstractType<T> implements Comparator<ByteBuffer>, Assignm
             return type.compose(buffer);
         }
     }
+
+    public boolean canBeStringTypeConstraint()
+    {
+        return false;
+    }
 }
