@@ -169,4 +169,20 @@ public class ScalarColumnConstraint implements ColumnConstraint<ScalarColumnCons
                    + TypeSizes.sizeof(columnConstraint.param.toString());
         }
     }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+
+        if (!(o instanceof ScalarColumnConstraint))
+            return false;
+
+        ScalarColumnConstraint other = (ScalarColumnConstraint) o;
+
+        return param.equals(other.param)
+               && relationType == other.relationType
+               && term.equals(other.term);
+    }
 }

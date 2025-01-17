@@ -154,7 +154,6 @@ public abstract class ModificationStatement implements CQLStatement.SingleKeyspa
             modifiedColumns = metadata.regularAndStaticColumns();
 
         this.updatedColumns = modifiedColumns;
-
         this.conditionColumns = conditionColumnsBuilder.build();
         this.requiresRead = requiresReadBuilder.build();
     }
@@ -766,7 +765,7 @@ public abstract class ModificationStatement implements CQLStatement.SingleKeyspa
                           long nowInSeconds,
                           Dispatcher.RequestTime requestTime)
     {
-        if (hasSlices()) // range deletion
+        if (hasSlices())
         {
             Slices slices = createSlices(options);
 

@@ -8,7 +8,7 @@ column level in a table schema definition and enforcing them at write time.
 Constraints can be created within the column definition, or as part
 of the table properties.
 
-The main syntaxis to define a constraint is as follows:
+The main syntax to define a constraint is as follows:
 
 [source,bnf]
 ----
@@ -69,7 +69,7 @@ ALTER TABLE keyspace.table ALTER i DROP CHECK;
 
 === LENGTH CONSTRAINT
 
-Defines a condition that checks the lenght of text or binary type.
+Defines a condition that checks the length of text or binary type.
 
 For example, we can create a constraint that checks that name can't be longer than 256 characters:
 

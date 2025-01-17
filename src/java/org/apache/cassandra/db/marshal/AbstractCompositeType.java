@@ -354,7 +354,7 @@ public abstract class AbstractCompositeType extends AbstractType<ByteBuffer>
         {
             // contraints list should have the exact size of partition key values.
             // Noop constraints are filled for the partition key columns w/o any constraints.
-            throw new IllegalStateException("Partition key values and number of constraints do not match: "
+            throw new IllegalStateException("Partition key value number should be same with number of constraints: "
                                             + partitionKeyValues.size() + "!=" + constraints.getConstraints().size());
         }
 

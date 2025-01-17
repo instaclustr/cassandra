@@ -123,11 +123,10 @@ public class FunctionColumnConstraint implements ColumnConstraint<FunctionColumn
         @Override
         public void serialize(FunctionColumnConstraint columnConstraint, DataOutputPlus out, int version) throws IOException
         {
-            FunctionColumnConstraint condition = columnConstraint;
-            out.writeUTF(condition.function.getName());
-            out.writeUTF(condition.columnName.toCQLString());
-            out.writeUTF(condition.relationType.toString());
-            out.writeUTF(condition.term);
+            out.writeUTF(columnConstraint.function.getName());
+            out.writeUTF(columnConstraint.columnName.toCQLString());
+            out.writeUTF(columnConstraint.relationType.toString());
+            out.writeUTF(columnConstraint.term);
         }
 
         @Override

@@ -269,15 +269,6 @@ public class UpdateStatement extends ModificationStatement
                                                                            false,
                                                                            false);
 
-            Json.Prepared unprepared = jsonValue.collectMarkers(metadata, defs, bindVariables);
-            List<ColumnIdentifier> columnNames = new ArrayList<>();
-            List<Term.Raw> columnValues = new ArrayList<>();
-
-            for (ColumnMetadata columnMetadata : defs)
-            {
-                columnNames.add(columnMetadata.name);
-                columnValues.add(unprepared.getRawTermForColumn(columnMetadata, false));
-            }
             return new UpdateStatement(type,
                                        bindVariables,
                                        metadata,

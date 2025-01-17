@@ -200,6 +200,9 @@ public class TableMetadata implements SchemaElement
     public final DataResource resource;
     public TableMetadataRef ref;
 
+    // We cache the columns with constraints to avoid iterations over columns
+    // Partition keys columns are evaluated sepparatedly, so we keep the two of them in
+    // two different variables.
     public final List<ColumnConstraint> partitionKeyConstraints;
     public final List<ColumnMetadata> columnsWithConstraints;
 
@@ -251,7 +254,6 @@ public class TableMetadata implements SchemaElement
         }
         this.partitionKeyConstraints = pkConstraints;
 
-        // We cache the columns with constraints to avoid iterations over columns
         List<ColumnMetadata> columnsWithConstraints = new ArrayList<>();
         for (ColumnMetadata column : this.columns())
         {

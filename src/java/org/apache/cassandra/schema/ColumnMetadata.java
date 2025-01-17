@@ -121,7 +121,6 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
     @Nonnull
     private ColumnConstraints columnConstraints;
 
-    @Nonnull
     private boolean hasConstraints;
 
     private static long comparisonOrder(Kind kind, boolean isComplex, long position, ColumnIdentifier name)

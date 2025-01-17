@@ -18,6 +18,9 @@
 
 package org.apache.cassandra.cql3.constraints;
 
+import java.nio.ByteBuffer;
+import java.util.Set;
+
 import com.google.common.collect.Sets;
 import org.apache.cassandra.cql3.ColumnIdentifier;
 import org.apache.cassandra.cql3.Operator;
@@ -28,9 +31,6 @@ import org.apache.cassandra.db.marshal.Int32Type;
 import org.apache.cassandra.db.marshal.UTF8Type;
 import org.apache.cassandra.schema.ColumnMetadata;
 import org.apache.cassandra.utils.ByteBufferUtil;
-
-import java.nio.ByteBuffer;
-import java.util.Set;
 
 public class LengthConstraint implements ConstraintFunction
 {
@@ -58,11 +58,11 @@ public class LengthConstraint implements ConstraintFunction
         int valueLength = getValueSize(columnValue, valueType);
         int sizeConstraint = Integer.parseInt(term);
 
-        ByteBuffer  buffera = ByteBufferUtil.bytes(valueLength);
-        ByteBuffer  bufferb = ByteBufferUtil.bytes(sizeConstraint);
+        ByteBuffer buffera = ByteBufferUtil.bytes(valueLength);
+        ByteBuffer bufferb = ByteBufferUtil.bytes(sizeConstraint);
 
         if (!relationType.isSatisfiedBy(Int32Type.instance, buffera, bufferb))
-            throw new ConstraintViolationException(columnName + " does not satisfy lenght constraint. "
+            throw new ConstraintViolationException(columnName + " does not satisfy length constraint. "
                                                    + valueLength + " should be " + relationType + ' ' + term);
     }
 
@@ -90,8 +90,21 @@ public class LengthConstraint implements ConstraintFunction
 
     private InvalidConstraintDefinitionException invalidConstraintDefinitionException(Class<? extends AbstractType> valueType)
     {
-        throw new InvalidConstraintDefinitionException("Column type not supported. " +
-                                                       "Supported types are " + SUPPORTED_TYPES +
-                                                       ", given type " + valueType);
+        throw new InvalidConstraintDefinitionException("Column type " + valueType +
+                                                       " is not supported, supported types are " + SUPPORTED_TYPES);
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+
+        if (!(o instanceof LengthConstraint))
+            return false;
+
+        LengthConstraint other = (LengthConstraint) o;
+
+        return columnName.equals(other.columnName);
     }
 }

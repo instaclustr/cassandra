@@ -18,7 +18,15 @@
 
 package org.apache.cassandra.cql3.constraints;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
 import org.apache.cassandra.cql3.CqlBuilder;
+import org.apache.cassandra.db.TypeSizes;
 import org.apache.cassandra.db.marshal.AbstractType;
 import org.apache.cassandra.db.marshal.CompositeType;
 import org.apache.cassandra.db.marshal.DynamicCompositeType;
@@ -29,12 +37,6 @@ import org.apache.cassandra.io.IVersionedSerializer;
 import org.apache.cassandra.io.util.DataInputPlus;
 import org.apache.cassandra.io.util.DataOutputPlus;
 import org.apache.cassandra.schema.ColumnMetadata;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -59,7 +61,7 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
     public ColumnConstraints(List<ColumnConstraint<?>> constraints)
     {
         this.constraints = new ArrayList<>(constraints);
-        // These are catched values to avoid making the calculations every time
+        // These are cached values to avoid making the calculations every time
         this.constraintsSize = constraints.size();
         this.isEmpty = constraints.isEmpty();
     }
@@ -102,16 +104,12 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
     // Checks if there is at least one constraint that will perform checks
     public boolean hasRelevantConstraints()
     {
-        boolean allNoopConstraint = true;
         for (ColumnConstraint c : constraints)
         {
-            if (c == ColumnConstraints.NO_OP)
-            {
-                allNoopConstraint = false;
-                break;
-            }
+            if (c != ColumnConstraints.NO_OP)
+                return true;
         }
-        return !allNoopConstraint;
+        return false;
     }
 
     @Override
@@ -170,8 +168,8 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
             out.writeInt(columnConstraint.getSize());
             for (ColumnConstraint constraint : columnConstraint.getConstraints())
             {
-                // We serialize the serializer position in the enum to save space
-                out.writeInt(constraint.getConstraintType().ordinal());
+                // We serialize the serializer ordinal in the enum to save space
+                out.writeShort(constraint.getConstraintType().ordinal());
                 constraint.serializer().serialize(constraint, out, version);
             }
         }
@@ -195,10 +193,25 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
         @Override
         public long serializedSize(ColumnConstraints columnConstraint, int version)
         {
-            long constraintsSize = 0;
+            long constraintsSize = TypeSizes.INT_SIZE;
             for (ColumnConstraint constraint : columnConstraint.getConstraints())
                 constraintsSize += constraint.serializer().serializedSize(constraint, version);
             return constraintsSize;
         }
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+
+        if (!(o instanceof ColumnMetadata))
+            return false;
+
+        ColumnConstraints other = (ColumnConstraints) o;
+        return constraintsSize == (other.constraintsSize)
+               && isEmpty == other.isEmpty
+               && Objects.equals(constraints, other.constraints);
     }
 }

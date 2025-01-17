@@ -34,19 +34,14 @@ public interface ConstraintFunction
     String getName();
 
     /**
-     * Method that provides the execution of the condition. It can either succeed or throw a {@link ConstraintViolationException}.
-     *
-     * @param valueType
-     * @param relationType
-     * @param term
-     * @param columnValue
+     * Method that performs the actual condition test, executed during the write path.
+     * It the test is not successful, it throws a {@link ConstraintViolationException}.
      */
     void evaluate(Class<? extends AbstractType> valueType, Operator relationType, String term, Object columnValue) throws ConstraintViolationException;
 
     /**
      * Method that validates that a condition is valid. This method is called when the CQL constraint is created to determine
      * if the CQL statement is valid or needs to be rejected as invalid throwing a {@link InvalidConstraintDefinitionException}
-     * @param columnMetadata
      */
     void validate(ColumnMetadata columnMetadata) throws InvalidConstraintDefinitionException;
 }
