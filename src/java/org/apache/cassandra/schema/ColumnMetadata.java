@@ -121,8 +121,6 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
     @Nonnull
     private ColumnConstraints columnConstraints;
 
-    private boolean hasConstraints;
-
     private static long comparisonOrder(Kind kind, boolean isComplex, long position, ColumnIdentifier name)
     {
         assert position >= 0 && position < 1 << 12;
@@ -247,7 +245,6 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
         this.comparisonOrder = comparisonOrder(kind, isComplex(), Math.max(0, position), name);
         this.mask = mask;
         this.columnConstraints = columnConstraints;
-        this.hasConstraints = !columnConstraints.isEmpty();
     }
 
     private static Comparator<CellPath> makeCellPathComparator(Kind kind, AbstractType<?> type)
@@ -319,7 +316,7 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
 
     public boolean hasConstraint()
     {
-        return hasConstraints;
+        return !columnConstraints.isEmpty();
     }
 
     public boolean isRegular()
@@ -356,7 +353,6 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
     public void setColumnConstraints(ColumnConstraints constraints)
     {
         this.columnConstraints = constraints;
-        this.hasConstraints = !constraints.isEmpty();
     }
 
     @Nullable
