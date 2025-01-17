@@ -55,15 +55,10 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
 
 
     private final List<ColumnConstraint<?>> constraints;
-    private final int constraintsSize;
-    private final boolean isEmpty;
 
     public ColumnConstraints(List<ColumnConstraint<?>> constraints)
     {
         this.constraints = new ArrayList<>(constraints);
-        // These are cached values to avoid making the calculations every time
-        this.constraintsSize = constraints.size();
-        this.isEmpty = constraints.isEmpty();
     }
 
     @Override
@@ -93,12 +88,12 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
 
     public boolean isEmpty()
     {
-        return isEmpty;
+        return constraints.isEmpty();
     }
 
     public int getSize()
     {
-        return constraintsSize;
+        return constraints.size();
     }
 
     // Checks if there is at least one constraint that will perform checks
@@ -210,8 +205,6 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
             return false;
 
         ColumnConstraints other = (ColumnConstraints) o;
-        return constraintsSize == (other.constraintsSize)
-               && isEmpty == other.isEmpty
-               && Objects.equals(constraints, other.constraints);
+        return Objects.equals(constraints, other.constraints);
     }
 }

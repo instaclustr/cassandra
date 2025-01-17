@@ -128,7 +128,7 @@ public class ScalarColumnConstraint implements ColumnConstraint<ScalarColumnCons
     @Override
     public String toString()
     {
-        return param + " " + relationType + ' ' + term;
+        return param + " " + relationType + " " + term;
     }
 
     @Override
