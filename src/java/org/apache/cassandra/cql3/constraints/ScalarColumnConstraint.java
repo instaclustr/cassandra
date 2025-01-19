@@ -20,16 +20,19 @@ package org.apache.cassandra.cql3.constraints;
 
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import org.apache.cassandra.cql3.ColumnIdentifier;
 import org.apache.cassandra.cql3.CqlBuilder;
 import org.apache.cassandra.cql3.Operator;
 import org.apache.cassandra.db.TypeSizes;
 import org.apache.cassandra.db.marshal.AbstractType;
+import org.apache.cassandra.db.marshal.FloatType;
 import org.apache.cassandra.io.IVersionedSerializer;
 import org.apache.cassandra.io.util.DataInputPlus;
 import org.apache.cassandra.io.util.DataOutputPlus;
 import org.apache.cassandra.schema.ColumnMetadata;
+import org.apache.cassandra.utils.ByteBufferUtil;
 
 public class ScalarColumnConstraint implements ColumnConstraint<ScalarColumnConstraint>
 {
@@ -69,47 +72,24 @@ public class ScalarColumnConstraint implements ColumnConstraint<ScalarColumnCons
     public void evaluate(Class<? extends AbstractType> valueType, Object columnValue)
     {
         Number columnValueNumber;
-        float sizeConstraint;
+        Double sizeConstraint;
 
         try
         {
             columnValueNumber = (Number) columnValue;
-            sizeConstraint = Float.parseFloat(term);
+            sizeConstraint = Double.parseDouble(term);
         }
         catch (NumberFormatException exception)
         {
             throw new ConstraintViolationException(param + " and " + term + " need to be numbers.");
         }
 
-        switch (relationType)
-        {
-            case EQ:
-                if (Float.compare(columnValueNumber.floatValue(), sizeConstraint) != 0)
-                    throw new ConstraintViolationException(param + " value should be exactly " + sizeConstraint);
-                break;
-            case NEQ:
-                if (Double.compare(columnValueNumber.floatValue(), sizeConstraint) == 0)
-                    throw new ConstraintViolationException(param + " value should be different from " + sizeConstraint);
-                break;
-            case GT:
-                if (columnValueNumber.floatValue() <= sizeConstraint)
-                    throw new ConstraintViolationException(param + " value should be larger than " + sizeConstraint);
-                break;
-            case LT:
-                if (columnValueNumber.floatValue() >= sizeConstraint)
-                    throw new ConstraintViolationException(param + " value should be smaller than " + sizeConstraint);
-                break;
-            case GTE:
-                if (columnValueNumber.floatValue() < sizeConstraint)
-                    throw new ConstraintViolationException(param + " value should be larger or equal than " + sizeConstraint);
-                break;
-            case LTE:
-                if (columnValueNumber.floatValue() > sizeConstraint)
-                    throw new ConstraintViolationException(param + " value should be smaller or equal than " + sizeConstraint);
-                break;
-            default:
-                throw new ConstraintViolationException("Invalid relation type: " + relationType);
-        }
+        ByteBuffer buffera = ByteBufferUtil.bytes(columnValueNumber.doubleValue());
+        ByteBuffer bufferb = ByteBufferUtil.bytes(sizeConstraint);
+
+        if (!relationType.isSatisfiedBy(FloatType.instance, buffera, bufferb))
+            throw new ConstraintViolationException(columnValueNumber + " does not satisfy length constraint. "
+                                                   + sizeConstraint + " should be " + relationType + ' ' + term);
     }
 
     @Override
