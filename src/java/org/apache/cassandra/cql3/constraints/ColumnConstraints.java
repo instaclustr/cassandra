@@ -32,7 +32,6 @@ import org.apache.cassandra.io.util.DataInputPlus;
 import org.apache.cassandra.io.util.DataOutputPlus;
 import org.apache.cassandra.schema.ColumnMetadata;
 
-import static java.lang.String.format;
 
 // group of constraints for the column
 public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
@@ -97,11 +96,9 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
     public void validate(ColumnMetadata columnMetadata) throws InvalidConstraintDefinitionException
     {
         if (!columnMetadata.type.isConstrainable())
-            throw new InvalidConstraintDefinitionException(format("Constraint cannot be defined on the column %s of type %s for the table %s.%s",
-                                                                  columnMetadata.name,
-                                                                  columnMetadata.type.asCQL3Type(),
-                                                                  columnMetadata.ksName,
-                                                                  columnMetadata.cfName));
+            throw new InvalidConstraintDefinitionException("Constraint cannot be defined on the column "
+                                                           + columnMetadata.name + " of type " + columnMetadata.type.asCQL3Type()
+                                                           + " for the table " + columnMetadata.ksName + "." + columnMetadata.cfName);
 
         for (ColumnConstraint<?> constraint : constraints)
             constraint.validate(columnMetadata);
