@@ -636,9 +636,15 @@ class TestCqlshCompletion(CqlshCompletionCase):
         self.trycompletions(prefix + ' new_table (col_a ine',
                             immediate='t ')
         self.trycompletions(prefix + ' new_table (col_a int ',
-                            choices=[',', 'MASKED', 'PRIMARY'])
+                            choices=[',', 'CHECK', 'MASKED', 'PRIMARY'])
         self.trycompletions(prefix + ' new_table (col_a int M',
                             immediate='ASKED WITH ')
+        self.trycompletions(prefix + ' new_table (col_a int CHECK ',
+                            choices=['<constraint>'])
+        self.trycompletions(prefix + ' new_table (col_a int CHECK col_a = 1 ',
+                            choices=['AND'])
+        self.trycompletions(prefix + ' new_table (col_a int CHECK col_a = 1 AND ',
+                            choices=['<constraint>'])
         self.trycompletions(prefix + ' new_table (col_a int MASKED WITH ',
                             choices=['DEFAULT', self.cqlsh.keyspace + '.', 'system.'],
                             other_choices_ok=True)
@@ -1009,12 +1015,15 @@ class TestCqlshCompletion(CqlshCompletionCase):
         self.trycompletions('ALTER TABLE IF EXISTS new_table DROP ', choices=['IF', '<quotedName>', '<identifier>'])
         self.trycompletions('ALTER TABLE IF EXISTS new_table ALTER ', choices=['IF', '<quotedName>', '<identifier>'])
         self.trycompletions('ALTER TABLE IF EXISTS new_table ALTER IF E', immediate='XISTS ')
-        self.trycompletions('ALTER TABLE IF EXISTS new_table ALTER IF EXISTS col ', choices=['MASKED', 'DROP'])
+        self.trycompletions('ALTER TABLE IF EXISTS new_table ALTER IF EXISTS col ', choices=['CHECK', 'MASKED', 'DROP'])
+        self.trycompletions('ALTER TABLE IF EXISTS new_table ALTER IF EXISTS col C', choices=['<constraint>'])
         self.trycompletions('ALTER TABLE IF EXISTS new_table ALTER IF EXISTS col M', immediate='ASKED WITH ')
         self.trycompletions('ALTER TABLE IF EXISTS new_table ALTER IF EXISTS col MASKED WITH ',
                             choices=['DEFAULT', self.cqlsh.keyspace + '.', 'system.'],
                             other_choices_ok=True)
-        self.trycompletions('ALTER TABLE IF EXISTS new_table ALTER IF EXISTS col D', immediate='ROP MASKED ;')
+        self.trycompletions('ALTER TABLE IF EXISTS new_table ALTER IF EXISTS col D', immediate='ROP ')
+        self.trycompletions('ALTER TABLE IF EXISTS new_table ALTER IF EXISTS col DROP ', choices=['CHECK', 'MASKED'])
+        self.trycompletions('ALTER TABLE IF EXISTS new_table ALTER IF EXISTS col DROP C', immediate='HECK ;')
         self.trycompletions('ALTER TABLE IF EXISTS new_table ALTER IF EXISTS col DROP M', immediate='ASKED ;')
 
     def test_complete_in_alter_type(self):
