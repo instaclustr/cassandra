@@ -32,6 +32,8 @@ import org.apache.cassandra.utils.ByteBufferUtil;
 
 public class LengthConstraint implements ConstraintFunction
 {
+    private static final AbstractType<?>[] SUPPORTED_TYPES = new AbstractType[] { BytesType.instance, UTF8Type.instance, AsciiType.instance };
+
     public static final String FUNCTION_NAME = "LENGTH";
 
     private final ColumnIdentifier columnName;
@@ -64,7 +66,18 @@ public class LengthConstraint implements ConstraintFunction
     @Override
     public void validate(ColumnMetadata columnMetadata)
     {
-        if (!columnMetadata.type.canBeStringTypeConstraint())
+        boolean supported = false;
+        AbstractType<?> unwrapped = columnMetadata.type.unwrap();
+        for (AbstractType<?> supportedType : SUPPORTED_TYPES)
+        {
+            if (supportedType == unwrapped)
+            {
+                supported = true;
+                break;
+            }
+        }
+
+        if (!supported)
             throw invalidConstraintDefinitionException(columnMetadata.type.getClass());
     }
 

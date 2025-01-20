@@ -37,10 +37,4 @@ public abstract class StringType extends AbstractType<String>
     {
         return decompose(left + right);
     }
-
-    @Override
-    public boolean canBeStringTypeConstraint()
-    {
-        return true;
-    }
 }

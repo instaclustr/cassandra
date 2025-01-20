@@ -552,11 +552,6 @@ public abstract class AbstractType<T> implements Comparator<ByteBuffer>, Assignm
         return unwrap() instanceof org.apache.cassandra.db.marshal.NumberType;
     }
 
-    public boolean isString()
-    {
-        return unwrap() instanceof org.apache.cassandra.db.marshal.StringType;
-    }
-
     // This assumes that no empty values are passed
     public void writeValue(ByteBuffer value, DataOutputPlus out) throws IOException
     {
@@ -832,8 +827,8 @@ public abstract class AbstractType<T> implements Comparator<ByteBuffer>, Assignm
         }
     }
 
-    public boolean canBeStringTypeConstraint()
+    public boolean isConstrainable()
     {
-        return false;
+        return true;
     }
 }

@@ -50,6 +50,12 @@ public abstract class AbstractCompositeType extends AbstractType<ByteBuffer>
         return true;
     }
 
+    @Override
+    public boolean isConstrainable()
+    {
+        return false;
+    }
+
     public <VL, VR> int compareCustom(VL left, ValueAccessor<VL> accessorL, VR right, ValueAccessor<VR> accessorR)
     {
         if (accessorL.isEmpty(left) || accessorR.isEmpty(right))
