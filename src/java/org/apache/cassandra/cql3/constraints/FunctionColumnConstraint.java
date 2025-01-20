@@ -29,6 +29,7 @@ import org.apache.cassandra.io.IVersionedSerializer;
 import org.apache.cassandra.io.util.DataInputPlus;
 import org.apache.cassandra.io.util.DataOutputPlus;
 import org.apache.cassandra.schema.ColumnMetadata;
+import org.apache.cassandra.utils.LocalizeString;
 
 public class FunctionColumnConstraint implements ColumnConstraint<FunctionColumnConstraint>
 {
@@ -60,11 +61,28 @@ public class FunctionColumnConstraint implements ColumnConstraint<FunctionColumn
         }
     }
 
+    private enum Function
+    {
+        LENGTH(LengthConstraint::new);
+
+        private final java.util.function.Function<ColumnIdentifier, ConstraintFunction> functionCreator;
+
+        Function(java.util.function.Function<ColumnIdentifier, ConstraintFunction> functionCreator)
+        {
+            this.functionCreator = functionCreator;
+        }
+    }
+
     private static ConstraintFunction createConstraintFunction(String functionName, ColumnIdentifier columnName)
     {
-        if (LengthConstraint.FUNCTION_NAME.equalsIgnoreCase(functionName))
-            return new LengthConstraint(columnName);
-        throw new InvalidConstraintDefinitionException("Unrecognized constraint function: " + functionName);
+        try
+        {
+            return Function.valueOf(LocalizeString.toUpperCaseLocalized(functionName)).functionCreator.apply(columnName);
+        }
+        catch (IllegalArgumentException ex)
+        {
+            throw new InvalidConstraintDefinitionException("Unrecognized constraint function: " + functionName);
+        }
     }
 
     private FunctionColumnConstraint(ConstraintFunction function, ColumnIdentifier columnName, Operator relationType, String term)
