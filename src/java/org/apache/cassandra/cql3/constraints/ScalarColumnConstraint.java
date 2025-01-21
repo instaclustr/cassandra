@@ -18,7 +18,6 @@
 
 package org.apache.cassandra.cql3.constraints;
 
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -72,19 +71,19 @@ public class ScalarColumnConstraint implements ColumnConstraint<ScalarColumnCons
     public void evaluate(Class<? extends AbstractType> valueType, Object columnValue)
     {
         Number columnValueNumber;
-        Double sizeConstraint;
+        float sizeConstraint;
 
         try
         {
             columnValueNumber = (Number) columnValue;
-            sizeConstraint = Double.parseDouble(term);
+            sizeConstraint = Float.parseFloat(term);
         }
         catch (NumberFormatException exception)
         {
             throw new ConstraintViolationException(param + " and " + term + " need to be numbers.");
         }
 
-        ByteBuffer buffera = ByteBufferUtil.bytes(columnValueNumber.doubleValue());
+        ByteBuffer buffera = ByteBufferUtil.bytes(columnValueNumber.floatValue());
         ByteBuffer bufferb = ByteBufferUtil.bytes(sizeConstraint);
 
         if (!relationType.isSatisfiedBy(FloatType.instance, buffera, bufferb))

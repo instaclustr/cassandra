@@ -260,6 +260,18 @@ public class AbstractTypeTest
     }
 
     @Test
+    public void isConstrainedTest()
+    {
+        qt().forAll(genBuilder().build()).checkAssert(type -> {
+            if (type instanceof MapType || type instanceof TupleType || type instanceof AbstractCompositeType)
+                assertThat(type.isConstrainable()).isEqualTo(false);
+            else
+                assertThat(type.isConstrainable()).isEqualTo(true);
+        });
+
+    }
+
+    @Test
     public void unsafeSharedSerializer()
     {
         // For all types, make sure the serializer returned is unique to that type,

@@ -18,7 +18,6 @@
 
 package org.apache.cassandra.cql3.constraints;
 
-
 import org.apache.cassandra.cql3.Operator;
 import org.apache.cassandra.db.marshal.AbstractType;
 import org.apache.cassandra.schema.ColumnMetadata;
