@@ -711,20 +711,20 @@ public abstract class AlterTableStatement extends AlterSchemaStatement
         }
     }
 
-    public static class DropConstraint extends AlterTableStatement
+    public static class DropConstraints extends AlterTableStatement
     {
-        final ColumnIdentifier constraintName;
+        final ColumnIdentifier columnName;
 
-        DropConstraint(String keyspaceName, String tableName, boolean ifTableExists, ColumnIdentifier constraintName)
+        DropConstraints(String keyspaceName, String tableName, boolean ifTableExists, ColumnIdentifier columnName)
         {
             super(keyspaceName, tableName, ifTableExists);
-            this.constraintName = constraintName;
+            this.columnName = columnName;
         }
 
         @Override
         public KeyspaceMetadata apply(Epoch epoch, KeyspaceMetadata keyspace, TableMetadata table, ClusterMetadata metadata)
         {
-            ColumnMetadata columnMetadata = table.getColumn(constraintName);
+            ColumnMetadata columnMetadata = table.getColumn(columnName);
             columnMetadata.removeColumnConstraints();
 
             TableMetadata.Builder tableBuilder = table.unbuild().epoch(epoch);
@@ -739,13 +739,13 @@ public abstract class AlterTableStatement extends AlterSchemaStatement
 
     public static class AlterConstraints extends AlterTableStatement
     {
-        final ColumnIdentifier constraintName;
+        final ColumnIdentifier columnName;
         final ColumnConstraints constraints;
 
-        AlterConstraints(String keyspaceName, String tableName, boolean ifTableExists, ColumnIdentifier constraintName, ColumnConstraints constraints)
+        AlterConstraints(String keyspaceName, String tableName, boolean ifTableExists, ColumnIdentifier columnName, ColumnConstraints constraints)
         {
             super(keyspaceName, tableName, ifTableExists);
-            this.constraintName = constraintName;
+            this.columnName = columnName;
             this.constraints = constraints;
         }
 
@@ -756,7 +756,7 @@ public abstract class AlterTableStatement extends AlterSchemaStatement
 
             for (ColumnMetadata column : tableBuilder.columns())
             {
-                if (column.name == constraintName)
+                if (column.name == columnName)
                 {
                     column.setColumnConstraints(constraints);
                     break;
@@ -783,7 +783,7 @@ public abstract class AlterTableStatement extends AlterSchemaStatement
             RENAME_COLUMNS,
             ALTER_OPTIONS,
             DROP_COMPACT_STORAGE,
-            DROP_CONSTRAINT,
+            DROP_CONSTRAINTS,
             ALTER_CONSTRAINTS
         }
 
@@ -839,7 +839,7 @@ public abstract class AlterTableStatement extends AlterSchemaStatement
                 case        RENAME_COLUMNS: return new RenameColumns(keyspaceName, tableName, renamedColumns, ifTableExists, ifColumnExists);
                 case         ALTER_OPTIONS: return new AlterOptions(keyspaceName, tableName, attrs, ifTableExists);
                 case  DROP_COMPACT_STORAGE: return new DropCompactStorage(keyspaceName, tableName, ifTableExists);
-                case       DROP_CONSTRAINT: return new DropConstraint(keyspaceName, tableName, ifTableExists, constraintName);
+                case      DROP_CONSTRAINTS: return new DropConstraints(keyspaceName, tableName, ifTableExists, constraintName);
                 case     ALTER_CONSTRAINTS: return new AlterConstraints(keyspaceName, tableName, ifTableExists, constraintName, constraints);
             }
 
@@ -885,9 +885,9 @@ public abstract class AlterTableStatement extends AlterSchemaStatement
             kind = Kind.DROP_COMPACT_STORAGE;
         }
 
-        public void dropConstraint(ColumnIdentifier name)
+        public void dropConstraints(ColumnIdentifier name)
         {
-            kind = Kind.DROP_CONSTRAINT;
+            kind = Kind.DROP_CONSTRAINTS;
             this.constraintName = name;
         }
 
