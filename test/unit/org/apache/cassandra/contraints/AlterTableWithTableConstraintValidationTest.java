@@ -20,6 +20,11 @@ package org.apache.cassandra.contraints;
 
 import org.junit.Test;
 
+import org.apache.cassandra.exceptions.InvalidRequestException;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 
 public class AlterTableWithTableConstraintValidationTest extends CqlConstraintValidationTester
 {
@@ -172,5 +177,65 @@ public class AlterTableWithTableConstraintValidationTest extends CqlConstraintVa
                           "table",
                           table,
                           tableCreateStatement2));
+    }
+
+    @Test
+    public void testAlterWithConstraintsAndCdcEnabled() throws Throwable
+    {
+        try
+        {
+            createTable("CREATE TABLE %s (pk text, ck1 int, ck2 int, PRIMARY KEY ((pk),ck1, ck2)) WITH cdc = true;");
+            execute("ALTER TABLE %s ALTER ck1 CHECK ck1 < 100");
+            fail();
+        }
+        catch (Exception e)
+        {
+            assertTrue(e instanceof InvalidRequestException);
+        }
+    }
+
+    @Test
+    public void testAlterWithCdcAndPKConstraintsEnabled() throws Throwable
+    {
+        try
+        {
+            createTable("CREATE TABLE %s (pk text CHECK length(pk) = 100, ck1 int, ck2 int, PRIMARY KEY ((pk), ck1, ck2));");
+            execute("ALTER TABLE %s WITH cdc = true");
+            fail();
+        }
+        catch (Exception e)
+        {
+            assertTrue(e instanceof InvalidRequestException);
+        }
+    }
+
+    @Test
+    public void testAlterWithCdcAndRegularConstraintsEnabled() throws Throwable
+    {
+        try
+        {
+            createTable("CREATE TABLE %s (pk text, ck1 int CHECK ck1 < 100, ck2 int, PRIMARY KEY (pk));");
+            execute("ALTER TABLE %s WITH cdc = true");
+            fail();
+        }
+        catch (Exception e)
+        {
+            assertTrue(e instanceof InvalidRequestException);
+        }
+    }
+
+    @Test
+    public void testAlterWithCdcAndClusteringConstraintsEnabled() throws Throwable
+    {
+        try
+        {
+            createTable("CREATE TABLE %s (pk text, ck1 int CHECK ck1 < 100, ck2 int, PRIMARY KEY ((pk), ck1, ck2));");
+            execute("ALTER TABLE %s WITH cdc = true");
+            fail();
+        }
+        catch (Exception e)
+        {
+            assertTrue(e instanceof InvalidRequestException);
+        }
     }
 }

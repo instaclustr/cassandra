@@ -205,6 +205,8 @@ public class TableMetadata implements SchemaElement
     // two different variables.
     public final List<ColumnConstraint> partitionKeyConstraints;
     public final List<ColumnMetadata> columnsWithConstraints;
+    public final List<ColumnMetadata> clusteringColumnsWithConstraints;
+    public final boolean hasConstraints;
 
     protected TableMetadata(Builder builder)
     {
@@ -261,6 +263,18 @@ public class TableMetadata implements SchemaElement
                 columnsWithConstraints.add(column);
         }
         this.columnsWithConstraints = columnsWithConstraints;
+
+        List<ColumnMetadata> clusteringColumnsWithConstraints = new ArrayList<>();
+        for (ColumnMetadata column : this.columns())
+        {
+            if (column.isClusteringColumn())
+                clusteringColumnsWithConstraints.add(column);
+        }
+        this.clusteringColumnsWithConstraints = clusteringColumnsWithConstraints;
+
+        hasConstraints = !(this.columnsWithConstraints.isEmpty()
+                         && this.partitionKeyConstraints.isEmpty()
+                         && this.clusteringColumnsWithConstraints.isEmpty());
     }
 
     public static Builder builder(String keyspace, String table)
@@ -553,6 +567,10 @@ public class TableMetadata implements SchemaElement
             except("Missing partition keys for table %s", toString());
 
         indexes.validate(this);
+
+        if (params.cdc && hasConstraints)
+            throw new InvalidRequestException("CDC and Constraints should not be enabled at the same time as" +
+                                              " it could cause issues with node bootstraping");
 
         for (ColumnMetadata columnMetadata : columns())
         {

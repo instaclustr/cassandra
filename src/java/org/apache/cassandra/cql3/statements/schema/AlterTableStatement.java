@@ -582,6 +582,9 @@ public abstract class AlterTableStatement extends AlterSchemaStatement
         public KeyspaceMetadata apply(Epoch epoch, KeyspaceMetadata keyspace, TableMetadata table, ClusterMetadata metadata)
         {
             attrs.validate();
+            if (attrs.getBoolean(TableParams.Option.CDC.toString(), false) && table.hasConstraints)
+                throw new InvalidRequestException("CDC and Constraints should not be enabled at the same time as" +
+                                                  " it could cause issues with node bootstraping");
 
             TableParams params = attrs.asAlteredTableParams(table.params);
 
@@ -752,6 +755,10 @@ public abstract class AlterTableStatement extends AlterSchemaStatement
         @Override
         public KeyspaceMetadata apply(Epoch epoch, KeyspaceMetadata keyspace, TableMetadata table, ClusterMetadata metadata)
         {
+            if (table.params.cdc && constraints.hasRelevantConstraints())
+                throw new InvalidRequestException("CDC and Constraints should not be enabled at the same time as" +
+                                                  " it could cause issues with node bootstraping");
+
             TableMetadata.Builder tableBuilder = table.unbuild().epoch(epoch);
 
             for (ColumnMetadata column : tableBuilder.columns())

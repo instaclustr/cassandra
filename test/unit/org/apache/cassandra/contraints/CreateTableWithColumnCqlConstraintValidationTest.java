@@ -1196,4 +1196,46 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             assertTrue(e.getMessage().contains("Error setting schema for test"));
         }
     }
+
+    @Test
+    public void testCreateTableWithPKConstraintsAndCDCEnabled() throws Throwable
+    {
+        try
+        {
+            createTable("CREATE TABLE %s (pk text CHECK length(pk) = 4, ck1 int, ck2 int, PRIMARY KEY ((pk), ck1, ck2)) WITH cdc = true;");
+            fail();
+        }
+        catch (InvalidRequestException e)
+        {
+            assertTrue(e.getCause() instanceof InvalidRequestException);
+        }
+    }
+
+    @Test
+    public void testCreateTableWithClusteringConstraintsAndCDCEnabled() throws Throwable
+    {
+        try
+        {
+            createTable("CREATE TABLE %s (pk text, ck1 int CHECK ck1 < 100, ck2 int, PRIMARY KEY ((pk), ck1, ck2)) WITH cdc = true;");
+            fail();
+        }
+        catch (InvalidRequestException e)
+        {
+            assertTrue(e.getCause() instanceof InvalidRequestException);
+        }
+    }
+
+    @Test
+    public void testCreateTableWithRegularConstraintsAndCDCEnabled() throws Throwable
+    {
+        try
+        {
+            createTable("CREATE TABLE %s (pk text, ck1 int CHECK ck1 < 100, ck2 int, PRIMARY KEY (pk)) WITH cdc = true;");
+            fail();
+        }
+        catch (InvalidRequestException e)
+        {
+            assertTrue(e.getCause() instanceof InvalidRequestException);
+        }
+    }
 }
