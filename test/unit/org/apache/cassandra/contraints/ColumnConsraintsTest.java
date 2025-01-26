@@ -20,33 +20,28 @@ package org.apache.cassandra.contraints;
 
 import org.junit.Test;
 
-import org.apache.cassandra.cql3.constraints.ColumnConstraint;
-import org.apache.cassandra.cql3.constraints.ScalarColumnConstraint;
-import org.apache.cassandra.cql3.constraints.ColumnConstraints;
-import org.apache.cassandra.cql3.constraints.FunctionColumnConstraint;
+import org.apache.cassandra.cql3.constraints.ColumnConstraint.ConstraintType;
 
+import static org.apache.cassandra.cql3.constraints.ColumnConstraint.ConstraintType.COMPOSED;
+import static org.apache.cassandra.cql3.constraints.ColumnConstraint.ConstraintType.FUNCTION;
+import static org.apache.cassandra.cql3.constraints.ColumnConstraint.ConstraintType.SCALAR;
 import static org.junit.Assert.assertEquals;
 
 public class ColumnConsraintsTest
 {
-    private static final Object[][] EXPECTED_VALUES =
-    {
-    { "COMPOSED", ColumnConstraints.serializer },
-    { "FUNCTION", FunctionColumnConstraint.serializer },
-    { "SCALAR", ScalarColumnConstraint.serializer }
-    };
+    private static final ConstraintType[] EXPECTED_VALUES = { COMPOSED, FUNCTION, SCALAR };
 
     @Test
     public void testEnumCodesAndNames()
     {
-        ColumnConstraint.ConstraintType[] values = ColumnConstraint.ConstraintType.values();
+        ConstraintType[] values = ConstraintType.values();
 
         for (int i = 0; i < values.length; i++)
         {
-            assertEquals("Column Constraint Serializer mismatch in the enum " +
-                         values[i], EXPECTED_VALUES[i][0], values[i].name());
-            assertEquals("Column Constraint Serializer mismatch in the enum for value " +
-                         values[i], EXPECTED_VALUES[i][1], ColumnConstraint.ConstraintType.getSerializer(i));
+            assertEquals("Column Constraint Serializer mismatch in the enum " + values[i],
+                         EXPECTED_VALUES[i].name(), values[i].name());
+            assertEquals("Column Constraint Serializer mismatch in the enum for value " + values[i],
+                         ConstraintType.getSerializer(EXPECTED_VALUES[i].ordinal()), ConstraintType.getSerializer(i));
         }
 
         assertEquals("Column Constraint Serializer enum constants has changed. Update the test.",
