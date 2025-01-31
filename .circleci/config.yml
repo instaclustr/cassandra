@@ -80,7 +80,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -90,8 +90,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -187,7 +187,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -197,8 +197,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -304,7 +304,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -314,8 +314,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -369,7 +369,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -379,8 +379,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -458,7 +458,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -468,8 +468,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -591,7 +591,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -601,8 +601,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -656,7 +656,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -666,8 +666,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -774,7 +774,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -784,8 +784,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -882,7 +882,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -892,8 +892,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -1036,7 +1036,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -1046,8 +1046,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -1168,7 +1168,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -1178,8 +1178,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -1277,7 +1277,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -1287,8 +1287,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -1394,7 +1394,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -1404,8 +1404,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -1484,7 +1484,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -1494,8 +1494,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -1602,7 +1602,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -1612,8 +1612,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -1710,7 +1710,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -1720,8 +1720,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -1800,7 +1800,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -1810,8 +1810,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -1908,7 +1908,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -1918,8 +1918,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -2041,7 +2041,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -2051,8 +2051,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -2195,7 +2195,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -2205,8 +2205,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -2312,7 +2312,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -2322,8 +2322,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -2402,7 +2402,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -2412,8 +2412,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -2510,7 +2510,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -2520,8 +2520,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -2618,7 +2618,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -2628,8 +2628,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -2708,7 +2708,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -2718,8 +2718,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -2797,7 +2797,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -2807,8 +2807,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -2915,7 +2915,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -2925,8 +2925,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -3110,7 +3110,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -3120,8 +3120,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -3195,7 +3195,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -3205,8 +3205,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -3328,7 +3328,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -3338,8 +3338,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -3413,7 +3413,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -3423,8 +3423,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -3503,7 +3503,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -3513,8 +3513,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -3621,7 +3621,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -3631,8 +3631,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -3754,7 +3754,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -3764,8 +3764,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -3872,7 +3872,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -3882,8 +3882,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -4067,7 +4067,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -4077,8 +4077,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -4173,7 +4173,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -4183,8 +4183,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -4290,7 +4290,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -4300,8 +4300,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -4380,7 +4380,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -4390,8 +4390,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -4497,7 +4497,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -4507,8 +4507,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -4568,7 +4568,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -4578,8 +4578,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -4658,7 +4658,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -4668,8 +4668,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -4748,7 +4748,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -4758,8 +4758,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -4851,7 +4851,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -4861,8 +4861,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -4923,7 +4923,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -4933,8 +4933,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -5013,7 +5013,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -5023,8 +5023,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -5126,7 +5126,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -5136,8 +5136,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -5244,7 +5244,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -5254,8 +5254,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -5316,7 +5316,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -5326,8 +5326,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -5406,7 +5406,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -5416,8 +5416,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -5513,7 +5513,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -5523,8 +5523,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -5645,7 +5645,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -5655,8 +5655,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -5763,7 +5763,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -5773,8 +5773,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -5881,7 +5881,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -5891,8 +5891,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -6014,7 +6014,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -6024,8 +6024,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -6103,7 +6103,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -6113,8 +6113,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -6188,7 +6188,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -6198,8 +6198,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -6321,7 +6321,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -6331,8 +6331,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -6411,7 +6411,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -6421,8 +6421,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -6482,7 +6482,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -6492,8 +6492,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -6566,7 +6566,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -6576,8 +6576,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -6674,7 +6674,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -6684,8 +6684,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -6764,7 +6764,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -6774,8 +6774,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -6854,7 +6854,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -6864,8 +6864,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -6963,7 +6963,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -6973,8 +6973,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -7027,7 +7027,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -7037,8 +7037,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -7135,7 +7135,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -7145,8 +7145,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -7253,7 +7253,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -7263,8 +7263,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -7361,7 +7361,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -7371,8 +7371,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -7469,7 +7469,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -7479,8 +7479,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -7586,7 +7586,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -7596,8 +7596,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -7693,7 +7693,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -7703,8 +7703,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -7810,7 +7810,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -7820,8 +7820,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -7881,7 +7881,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -7891,8 +7891,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -7987,7 +7987,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -7997,8 +7997,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -8077,7 +8077,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -8087,8 +8087,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -8162,7 +8162,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -8172,8 +8172,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -8226,7 +8226,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -8236,8 +8236,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -8311,7 +8311,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -8321,8 +8321,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -8420,7 +8420,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -8430,8 +8430,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -8537,7 +8537,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -8547,8 +8547,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -8626,7 +8626,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -8636,8 +8636,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -8710,7 +8710,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -8720,8 +8720,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -8799,7 +8799,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -8809,8 +8809,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -8871,7 +8871,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -8881,8 +8881,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -8960,7 +8960,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -8970,8 +8970,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -9044,7 +9044,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -9054,8 +9054,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -9134,7 +9134,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -9144,8 +9144,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -9266,7 +9266,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -9276,8 +9276,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -9355,7 +9355,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -9365,8 +9365,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
@@ -9444,7 +9444,7 @@ jobs:
     - CCM_MAX_HEAP_SIZE: 1024M
     - CCM_HEAP_NEWSIZE: 256M
     - REPEATED_TESTS_STOP_ON_FAILURE: false
-    - REPEATED_UTESTS: org.apache.cassandra.contraints.CreateTableWithColumnCqlConstraintValidationTest
+    - REPEATED_UTESTS: org.apache.cassandra.contraints.ColumnConstraintsTest,org.apache.cassandra.contraints.AlterTableWithTableConstraintValidationTest
     - REPEATED_UTESTS_COUNT: 500
     - REPEATED_UTESTS_FQLTOOL: null
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
@@ -9454,8 +9454,8 @@ jobs:
     - REPEATED_UTESTS_STRESS_COUNT: 500
     - REPEATED_SIMULATOR_DTESTS: null
     - REPEATED_SIMULATOR_DTESTS_COUNT: 500
-    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.log.SnapshotTest,org.apache.cassandra.distributed.test.cdc.ToggleCDCWithConstraintsOnRepairEnabledTest
-    - REPEATED_JVM_DTESTS_COUNT: 500
+    - REPEATED_JVM_DTESTS: org.apache.cassandra.distributed.test.cdc.ToggleCDCOnRepairEnabledTest,org.apache.cassandra.distributed.test.ColumnConstraintsTest
+    - REPEATED_JVM_DTESTS_COUNT: 400
     - REPEATED_JVM_UPGRADE_DTESTS: null
     - REPEATED_JVM_UPGRADE_DTESTS_COUNT: 500
     - REPEATED_DTESTS: null
