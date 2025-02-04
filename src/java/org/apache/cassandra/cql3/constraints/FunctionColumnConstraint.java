@@ -58,6 +58,11 @@ public class FunctionColumnConstraint implements ColumnConstraint<FunctionColumn
             function = createConstraintFunction(functionName.toCQLString(), columnName);
         }
 
+        public Raw(ColumnIdentifier functionName, ColumnIdentifier columnName)
+        {
+            this(functionName, columnName, null, null);
+        }
+
         public FunctionColumnConstraint prepare()
         {
             return new FunctionColumnConstraint(function, columnName, relationType, term);
@@ -66,7 +71,8 @@ public class FunctionColumnConstraint implements ColumnConstraint<FunctionColumn
 
     private enum Functions
     {
-        LENGTH(LengthConstraint::new);
+        LENGTH(LengthConstraint::new),
+        NOT_NULL(NotNullConstraint::new);
 
         private final Function<ColumnIdentifier, ConstraintFunction> functionCreator;
 
@@ -136,6 +142,10 @@ public class FunctionColumnConstraint implements ColumnConstraint<FunctionColumn
     @Override
     public String toString()
     {
+        // constraint without relation
+        if (relationType == null)
+            return function.getName() + "(" + columnName + ") ";
+
         return function.getName() + "(" + columnName + ") " + relationType + " " + term;
     }
 

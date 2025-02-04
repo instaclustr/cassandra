@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.cassandra.cql3.constraints.ConstraintViolationException;
 import org.apache.cassandra.exceptions.InvalidRequestException;
 import org.junit.Test;
 
@@ -280,6 +281,21 @@ public class ColumnConstraintsTest extends TestBaseImpl
                                                          String.format("INSERT INTO " + tableName + " (pk, ck1, ck2, v) VALUES (" + value + ", 100, 2, 3)", "foo"),
                                                          "ck1 value length should be smaller than 100");
             }
+        }
+    }
+
+    @Test
+    public void testNotNullTableLevelConstraint() throws IOException
+    {
+        try (Cluster cluster = init(Cluster.build(1).start()))
+        {
+            String tableName = String.format(KEYSPACE + ".tbl1_not_null");
+            String createTableNotNullValue = "CREATE TABLE " + tableName + " (pk int, value int CHECK NOT_NULL(value), PRIMARY KEY (pk));";
+            cluster.schemaChange(createTableNotNullValue);
+
+            Assertions.assertThatThrownBy(() -> cluster.coordinator(1).execute(String.format("INSERT INTO " + tableName + " (pk, value) VALUES (1, null)"), ConsistencyLevel.ALL))
+                      .describedAs("Value for 'value' column can not be null.")
+                      .has(new Condition<Throwable>(t -> t.getClass().getCanonicalName().equals(ConstraintViolationException.class.getCanonicalName()), "Value for 'value' column can not be null."));
         }
     }
 
