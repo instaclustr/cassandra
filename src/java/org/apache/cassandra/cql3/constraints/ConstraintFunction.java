@@ -41,6 +41,14 @@ public interface ConstraintFunction
     void evaluate(AbstractType<?> valueType, Operator relationType, String term, ByteBuffer columnValue) throws ConstraintViolationException;
 
     /**
+     * Used mostly for unary functions which do not expect any relation type nor term.
+     */
+    default void evaluate(AbstractType<?> valueType, ByteBuffer columnValue) throws ConstraintViolationException
+    {
+        evaluate(valueType, null, null, columnValue);
+    }
+
+    /**
      * Method that validates that a condition is valid. This method is called when the CQL constraint is created to determine
      * if the CQL statement is valid or needs to be rejected as invalid throwing a {@link InvalidConstraintDefinitionException}
      */
