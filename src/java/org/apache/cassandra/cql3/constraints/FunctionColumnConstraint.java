@@ -156,8 +156,17 @@ public class FunctionColumnConstraint implements ColumnConstraint<FunctionColumn
         {
             out.writeUTF(columnConstraint.function.getName());
             out.writeUTF(columnConstraint.columnName.toCQLString());
-            columnConstraint.relationType.writeTo(out);
-            out.writeUTF(columnConstraint.term);
+
+            if (columnConstraint.relationType != null && columnConstraint.term != null)
+            {
+                out.writeBoolean(true);
+                columnConstraint.relationType.writeTo(out);
+                out.writeUTF(columnConstraint.term);
+            }
+            else
+            {
+                out.writeBoolean(false);
+            }
         }
 
         @Override
@@ -175,8 +184,18 @@ public class FunctionColumnConstraint implements ColumnConstraint<FunctionColumn
             {
                 throw new IOException(e);
             }
-            Operator relationType = Operator.readFrom(in);
-            final String term = in.readUTF();
+
+            boolean hasRelation = in.readBoolean();
+
+            Operator relationType = null;
+            String term = null;
+
+            if (hasRelation)
+            {
+                relationType = Operator.readFrom(in);
+                term = in.readUTF();
+            }
+
             return new FunctionColumnConstraint(function, columnName, relationType, term);
         }
 
@@ -185,8 +204,10 @@ public class FunctionColumnConstraint implements ColumnConstraint<FunctionColumn
         {
             return TypeSizes.sizeof(columnConstraint.function.getClass().getName())
                    + TypeSizes.sizeof(columnConstraint.columnName.toCQLString())
-                   + TypeSizes.sizeof(columnConstraint.term)
-                   + Operator.serializedSize();
+                   + (long) TypeSizes.BOOL_SIZE
+                   + (columnConstraint.relationType != null && columnConstraint.term != null
+                      ? (TypeSizes.sizeof(columnConstraint.term) + Operator.serializedSize())
+                      : 0);
         }
     }
 
@@ -201,9 +222,13 @@ public class FunctionColumnConstraint implements ColumnConstraint<FunctionColumn
 
         FunctionColumnConstraint other = (FunctionColumnConstraint) o;
 
-        return function.equals(other.function)
-               && columnName.equals(other.columnName)
-               && relationType == other.relationType
-               && term.equals(other.term);
+        if (relationType != null && term != null)
+            return function.equals(other.function)
+                   && columnName.equals(other.columnName)
+                   && relationType == other.relationType
+                   && term.equals(other.term);
+        else
+            return function.equals(other.function)
+                   && columnName.equals(other.columnName);
     }
 }
