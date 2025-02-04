@@ -41,7 +41,8 @@ public interface ColumnConstraint<T>
         // Changing this enum would affect how that int is interpreted when deserializing.
         COMPOSED(ColumnConstraints.serializer),
         FUNCTION(FunctionColumnConstraint.serializer),
-        SCALAR(ScalarColumnConstraint.serializer);
+        SCALAR(ScalarColumnConstraint.serializer),
+        UNARY_FUNCTION(UnaryFunctionColumnConstraint.serializer);
 
         private final MetadataSerializer<?> serializer;
 

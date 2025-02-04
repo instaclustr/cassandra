@@ -91,3 +91,25 @@ Finally, the constraint can be removed:
 ----
 ALTER TABLE keyspace.table ALTER name DROP CHECK;
 ----
+
+=== NOT_NULL CONSTRAINT
+
+Defines a condition that checks if a column is null.
+
+----
+CREATE TABLE keyspace.table (
+	name text CHECK NOT_NULL(name)
+	...,
+);
+----
+
+Altering that constraint can be done with:
+
+----
+ALTER TABLE keyspace.table ALTER name CHECK NOT_NULL(name);
+----
+
+Finally, the constraint can be removed:
+
+----
+ALTER TABLE keyspace.table ALTER name DROP CHECK;
