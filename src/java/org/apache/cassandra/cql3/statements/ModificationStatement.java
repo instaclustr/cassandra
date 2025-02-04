@@ -154,6 +154,42 @@ public abstract class ModificationStatement implements CQLStatement.SingleKeyspa
             modifiedColumns = metadata.regularAndStaticColumns();
 
         this.updatedColumns = modifiedColumns;
+
+        if (!this.metadata.strictlyNonNullColumns.isEmpty())
+        {
+            if (this.type.isInsertOrUpdate())
+            {
+                for (ColumnMetadata strictlyNonNullColumn : this.metadata.strictlyNonNullColumns)
+                {
+                    if (!updatedColumns.contains(strictlyNonNullColumn))
+                        throw RequestValidations.invalidRequest(String.format("Column '%s' has to be specified as part of this query.",
+                                                                              strictlyNonNullColumn.name));
+                }
+            }
+            else if (this.type.isDelete())
+            {
+                for (ColumnMetadata strictlyNonNullColumn : this.metadata.strictlyNonNullColumns)
+                {
+                    if (updatedColumns.contains(strictlyNonNullColumn))
+                        throw RequestValidations.invalidRequest(String.format("Column '%s' can not be set to null.",
+                                                                              strictlyNonNullColumn.name));
+                }
+            }
+        }
+
+        if (!this.metadata.nonNullColumns.isEmpty())
+        {
+            if (this.type.isDelete())
+            {
+                for (ColumnMetadata nonNullColumn : this.metadata.nonNullColumns)
+                {
+                    if (updatedColumns.contains(nonNullColumn))
+                        throw RequestValidations.invalidRequest(String.format("Column '%s' can not be set to null.",
+                                                                              nonNullColumn.name));
+                }
+            }
+        }
+
         this.conditionColumns = conditionColumnsBuilder.build();
         this.requiresRead = requiresReadBuilder.build();
     }

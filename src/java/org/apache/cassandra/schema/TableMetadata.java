@@ -53,6 +53,8 @@ import org.apache.cassandra.cql3.ColumnIdentifier;
 import org.apache.cassandra.cql3.CqlBuilder;
 import org.apache.cassandra.cql3.SchemaElement;
 import org.apache.cassandra.cql3.constraints.InvalidConstraintDefinitionException;
+import org.apache.cassandra.cql3.constraints.NotNullConstraint;
+import org.apache.cassandra.cql3.constraints.StrictlyNotNullConstraint;
 import org.apache.cassandra.cql3.functions.Function;
 import org.apache.cassandra.cql3.functions.masking.ColumnMask;
 import org.apache.cassandra.db.Clustering;
@@ -205,6 +207,8 @@ public class TableMetadata implements SchemaElement
     // two different variables.
     public final List<ColumnConstraint> partitionKeyConstraints;
     public final List<ColumnMetadata> columnsWithConstraints;
+    public final List<ColumnMetadata> nonNullColumns;
+    public final List<ColumnMetadata> strictlyNonNullColumns;
 
     protected TableMetadata(Builder builder)
     {
@@ -255,12 +259,24 @@ public class TableMetadata implements SchemaElement
         this.partitionKeyConstraints = pkConstraints;
 
         List<ColumnMetadata> columnsWithConstraints = new ArrayList<>();
+        List<ColumnMetadata> strictlyNonNullColumns = new ArrayList<>();
+        List<ColumnMetadata> notNullColumns = new ArrayList<>();
+
         for (ColumnMetadata column : this.columns())
         {
-            if (column.hasConstraint() && !column.isPartitionKey() && !column.isClusteringColumn())
+            if (column.hasConstraint() && !column.isPrimaryKeyColumn())
+            {
                 columnsWithConstraints.add(column);
+                if (ColumnMetadata.hasFunctionConstraint(column.getColumnConstraints(), StrictlyNotNullConstraint.FUNCTION_NAME))
+                    strictlyNonNullColumns.add(column);
+                if (ColumnMetadata.hasFunctionConstraint(column.getColumnConstraints(), NotNullConstraint.FUNCTION_NAME))
+                    notNullColumns.add(column);
+
+            }
         }
         this.columnsWithConstraints = columnsWithConstraints;
+        this.nonNullColumns = notNullColumns;
+        this.strictlyNonNullColumns = strictlyNonNullColumns;
     }
 
     public static Builder builder(String keyspace, String table)

@@ -25,18 +25,22 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.cassandra.cql3.ColumnIdentifier;
 import org.apache.cassandra.cql3.CqlBuilder;
 import org.apache.cassandra.db.TypeSizes;
 import org.apache.cassandra.db.marshal.AbstractType;
+import org.apache.cassandra.exceptions.InvalidRequestException;
 import org.apache.cassandra.io.util.DataInputPlus;
 import org.apache.cassandra.io.util.DataOutputPlus;
 import org.apache.cassandra.schema.ColumnMetadata;
 import org.apache.cassandra.tcm.serialization.MetadataSerializer;
 import org.apache.cassandra.tcm.serialization.Version;
 
+import static java.lang.String.format;
+
 
 // group of constraints for the column
-public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
+public class ColumnConstraints extends ColumnConstraint<ColumnConstraints>
 {
     public static final Serializer serializer = new Serializer();
     public static final ColumnConstraints NO_OP = new Noop();
@@ -45,6 +49,7 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
 
     public ColumnConstraints(List<ColumnConstraint<?>> constraints)
     {
+        super(null);
         this.constraints = constraints;
     }
 
@@ -66,6 +71,12 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
     {
         for (ColumnConstraint<?> constraint : constraints)
             constraint.evaluate(valueType, columnValue);
+    }
+
+    @Override
+    protected void internalEvaluate(AbstractType<?> valueType, ByteBuffer columnValue)
+    {
+        // nothing to evaluate here
     }
 
     public List<ColumnConstraint<?>> getConstraints()
@@ -92,6 +103,18 @@ public class ColumnConstraints implements ColumnConstraint<ColumnConstraints>
                 return true;
         }
         return false;
+    }
+
+    public void checkInvalidConstraintsCombinations(ColumnIdentifier columnName)
+    {
+        if (ColumnMetadata.hasFunctionConstraint(this, StrictlyNotNullConstraint.FUNCTION_NAME)
+            && ColumnMetadata.hasFunctionConstraint(this, NotNullConstraint.FUNCTION_NAME))
+        {
+            throw new InvalidRequestException(format("%s constraint can not be specified together with %s constraint on column '%s'",
+                                                     StrictlyNotNullConstraint.FUNCTION_NAME,
+                                                     NotNullConstraint.FUNCTION_NAME,
+                                                     columnName));
+        }
     }
 
     @Override
