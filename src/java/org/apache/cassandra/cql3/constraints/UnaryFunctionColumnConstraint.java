@@ -122,7 +122,7 @@ public class UnaryFunctionColumnConstraint implements ColumnConstraint<UnaryFunc
     @Override
     public String toString()
     {
-        return function.getName() + '(' + columnName + ") ";
+        return function.getName() + "(" + columnName + ")";
     }
 
     public static class Serializer implements MetadataSerializer<UnaryFunctionColumnConstraint>
@@ -159,5 +159,20 @@ public class UnaryFunctionColumnConstraint implements ColumnConstraint<UnaryFunc
             return TypeSizes.sizeof(columnConstraint.function.getClass().getName())
                    + TypeSizes.sizeof(columnConstraint.columnName.toCQLString());
         }
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+
+        if (!(o instanceof UnaryFunctionColumnConstraint))
+            return false;
+
+        UnaryFunctionColumnConstraint other = (UnaryFunctionColumnConstraint) o;
+
+        return function.equals(other.function)
+               && columnName.equals(other.columnName);
     }
 }
