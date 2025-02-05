@@ -114,6 +114,27 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
                           tableCreateStatement));
     }
 
+    @Test
+    public void testCreateTableWithColumnNotNullConstraintDescribe() throws Throwable
+    {
+        String table = createTable(KEYSPACE_PER_TEST, "CREATE TABLE %s (pk int, ck1 int, ck2 int, v int CHECK NOT_NULL(v), PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 ASC);");
+
+        String tableCreateStatement = "CREATE TABLE " + KEYSPACE_PER_TEST + "." + table + " (\n" +
+                                      "    pk int,\n" +
+                                      "    ck1 int,\n" +
+                                      "    ck2 int,\n" +
+                                      "    v int CHECK NOT_NULL(v),\n" +
+                                      "    PRIMARY KEY (pk, ck1, ck2)\n" +
+                                      ") WITH CLUSTERING ORDER BY (ck1 ASC, ck2 ASC)\n" +
+                                      "    AND " + tableParametersCql();
+
+        assertRowsNet(executeDescribeNet("DESCRIBE TABLE " + KEYSPACE_PER_TEST + "." + table),
+                      row(KEYSPACE_PER_TEST,
+                          "table",
+                          table,
+                          tableCreateStatement));
+    }
+
     // SCALAR
     @Test
     public void testCreateTableWithColumnWithClusteringColumnLessThanScalarConstraintInteger() throws Throwable
