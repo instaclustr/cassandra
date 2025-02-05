@@ -24,7 +24,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 1
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -137,7 +137,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -319,10 +319,10 @@ jobs:
   j8_dtests_large_vnode:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -401,7 +401,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -642,10 +642,10 @@ jobs:
   j8_dtests_offheap_repeat:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -769,10 +769,10 @@ jobs:
   j8_dtests_large_repeat:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -899,7 +899,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -1084,7 +1084,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -1266,10 +1266,10 @@ jobs:
   j8_dtests_large:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -1345,10 +1345,10 @@ jobs:
   j8_upgrade_dtests_repeat:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -1574,10 +1574,10 @@ jobs:
   j8_dtests_vnode_repeat:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -1701,10 +1701,10 @@ jobs:
   j8_upgrade_dtests:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -1783,7 +1783,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -1968,7 +1968,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -2145,10 +2145,10 @@ jobs:
   j8_dtests_offheap:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -2249,7 +2249,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -2359,10 +2359,10 @@ jobs:
   j8_dtests:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -2438,10 +2438,10 @@ jobs:
   j8_dtests_vnode:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -2520,7 +2520,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -2705,7 +2705,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -2882,10 +2882,10 @@ jobs:
   j8_dtests_repeat:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -3012,7 +3012,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -3197,7 +3197,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 1
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -3454,10 +3454,10 @@ jobs:
   j8_dtests_large_vnode_repeat:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -3584,7 +3584,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -3799,102 +3799,185 @@ workflows:
     - build:
         requires:
         - start_build
+        upstream:
+          start_build:
+          - success
     - start_j8_unit_tests:
         type: approval
     - j8_unit_tests:
         requires:
         - start_j8_unit_tests
         - build
+        upstream:
+          start_j8_unit_tests:
+          - success
+          build:
+          - success
     - start_j8_jvm_dtests:
         type: approval
     - j8_jvm_dtests:
         requires:
         - start_j8_jvm_dtests
         - build
+        upstream:
+          start_j8_jvm_dtests:
+          - success
+          build:
+          - success
     - start_j8_cqlshlib_tests:
         type: approval
     - j8_cqlshlib_tests:
         requires:
         - start_j8_cqlshlib_tests
         - build
+        upstream:
+          start_j8_cqlshlib_tests:
+          - success
+          build:
+          - success
     - start_j8_cqlshlib_cython_tests:
         type: approval
     - j8_cqlshlib_cython_tests:
         requires:
         - start_j8_cqlshlib_cython_tests
         - build
+        upstream:
+          start_j8_cqlshlib_cython_tests:
+          - success
+          build:
+          - success
     - start_utests_long:
         type: approval
     - utests_long:
         requires:
         - start_utests_long
         - build
+        upstream:
+          start_utests_long:
+          - success
+          build:
+          - success
     - start_utests_cdc:
         type: approval
     - utests_cdc:
         requires:
         - start_utests_cdc
         - build
+        upstream:
+          start_utests_cdc:
+          - success
+          build:
+          - success
     - start_utests_compression:
         type: approval
     - utests_compression:
         requires:
         - start_utests_compression
         - build
+        upstream:
+          start_utests_compression:
+          - success
+          build:
+          - success
     - start_utests_stress:
         type: approval
     - utests_stress:
         requires:
         - start_utests_stress
         - build
+        upstream:
+          start_utests_stress:
+          - success
+          build:
+          - success
     - start_j8_dtest_jars_build:
         type: approval
     - j8_dtest_jars_build:
         requires:
         - build
         - start_j8_dtest_jars_build
+        upstream:
+          build:
+          - success
+          start_j8_dtest_jars_build:
+          - success
     - start_jvm_upgrade_dtests:
         type: approval
     - j8_jvm_upgrade_dtests:
         requires:
         - start_jvm_upgrade_dtests
         - j8_dtest_jars_build
+        upstream:
+          start_jvm_upgrade_dtests:
+          - success
+          j8_dtest_jars_build:
+          - success
     - start_j8_dtests:
         type: approval
     - j8_dtests:
         requires:
         - start_j8_dtests
         - build
+        upstream:
+          start_j8_dtests:
+          - success
+          build:
+          - success
     - start_j8_dtests_vnode:
         type: approval
     - j8_dtests_vnode:
         requires:
         - start_j8_dtests_vnode
         - build
+        upstream:
+          start_j8_dtests_vnode:
+          - success
+          build:
+          - success
     - start_j8_dtests_large:
         type: approval
     - j8_dtests_large:
         requires:
         - start_j8_dtests_large
         - build
+        upstream:
+          start_j8_dtests_large:
+          - success
+          build:
+          - success
     - start_j8_dtests_large_vnode:
         type: approval
     - j8_dtests_large_vnode:
         requires:
         - start_j8_dtests_large_vnode
         - build
+        upstream:
+          start_j8_dtests_large_vnode:
+          - success
+          build:
+          - success
     - start_upgrade_dtests:
         type: approval
     - j8_upgrade_dtests:
         requires:
         - start_upgrade_dtests
         - build
+        upstream:
+          start_upgrade_dtests:
+          - success
+          build:
+          - success
     - start_j8_dtests_offheap:
         type: approval
     - j8_dtests_offheap:
         requires:
         - start_j8_dtests_offheap
         - build
+        upstream:
+          start_j8_dtests_offheap:
+          - success
+          build:
+          - success
   pre-commit_tests:
     jobs:
     - start_pre-commit_tests:
@@ -3902,76 +3985,145 @@ workflows:
     - build:
         requires:
         - start_pre-commit_tests
+        upstream:
+          start_pre-commit_tests:
+          - success
     - j8_unit_tests:
         requires:
         - build
+        upstream:
+          build:
+          - success
     - j8_jvm_dtests:
         requires:
         - build
+        upstream:
+          build:
+          - success
     - j8_cqlshlib_tests:
         requires:
         - build
+        upstream:
+          build:
+          - success
     - j8_cqlshlib_cython_tests:
         requires:
         - build
+        upstream:
+          build:
+          - success
     - start_utests_long:
         type: approval
     - utests_long:
         requires:
         - start_utests_long
         - build
+        upstream:
+          start_utests_long:
+          - success
+          build:
+          - success
     - start_utests_cdc:
         type: approval
     - utests_cdc:
         requires:
         - start_utests_cdc
         - build
+        upstream:
+          start_utests_cdc:
+          - success
+          build:
+          - success
     - start_utests_compression:
         type: approval
     - utests_compression:
         requires:
         - start_utests_compression
         - build
+        upstream:
+          start_utests_compression:
+          - success
+          build:
+          - success
     - start_utests_stress:
         type: approval
     - utests_stress:
         requires:
         - start_utests_stress
         - build
+        upstream:
+          start_utests_stress:
+          - success
+          build:
+          - success
     - start_jvm_upgrade_dtests:
         type: approval
     - j8_dtest_jars_build:
         requires:
         - build
         - start_jvm_upgrade_dtests
+        upstream:
+          build:
+          - success
+          start_jvm_upgrade_dtests:
+          - success
     - j8_jvm_upgrade_dtests:
         requires:
         - j8_dtest_jars_build
+        upstream:
+          j8_dtest_jars_build:
+          - success
     - j8_dtests:
         requires:
         - build
+        upstream:
+          build:
+          - success
     - j8_dtests_vnode:
         requires:
         - build
+        upstream:
+          build:
+          - success
     - start_j8_dtests_large:
         type: approval
     - j8_dtests_large:
         requires:
         - start_j8_dtests_large
         - build
+        upstream:
+          start_j8_dtests_large:
+          - success
+          build:
+          - success
     - j8_dtests_large_vnode:
         requires:
         - start_j8_dtests_large
         - build
+        upstream:
+          start_j8_dtests_large:
+          - success
+          build:
+          - success
     - start_upgrade_tests:
         type: approval
     - j8_upgrade_dtests:
         requires:
         - start_upgrade_tests
         - build
+        upstream:
+          start_upgrade_tests:
+          - success
+          build:
+          - success
     - start_j8_dtests_offheap:
         type: approval
     - j8_dtests_offheap:
         requires:
         - start_j8_dtests_offheap
         - build
+        upstream:
+          start_j8_dtests_offheap:
+          - success
+          build:
+          - success
