@@ -18,6 +18,7 @@
 
 package org.apache.cassandra.contraints;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -25,8 +26,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import org.apache.cassandra.cql3.CQL3Type;
+import org.apache.cassandra.db.marshal.EmptyType;
 import org.apache.cassandra.exceptions.InvalidRequestException;
-import org.apache.cassandra.index.sai.StorageAttachedIndex;
 
 
 @RunWith(Parameterized.class)
@@ -40,11 +42,12 @@ public class CreateTableWithColumnNotNullConstraintInvalidTest extends CqlConstr
     @Parameterized.Parameters()
     public static Collection<Object[]> data()
     {
-        return StorageAttachedIndex.SUPPORTED_TYPES.stream()
-                                                   .map(Object::toString)
-                                                   .distinct()
-                                                   .map(t -> new Object[]{ t })
-                                                   .collect(Collectors.toList());
+        return Arrays.stream(CQL3Type.Native.values())
+                     .filter(t -> !t.getType().isCounter() && !(t.getType().unwrap() instanceof EmptyType))
+                     .map(Object::toString)
+                     .distinct()
+                     .map(t -> new Object[]{ t })
+                     .collect(Collectors.toList());
     }
 
     @Test

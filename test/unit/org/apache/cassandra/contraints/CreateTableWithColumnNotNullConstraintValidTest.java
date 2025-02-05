@@ -18,6 +18,7 @@
 
 package org.apache.cassandra.contraints;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -25,13 +26,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import org.apache.cassandra.index.sai.StorageAttachedIndex;
+import org.apache.cassandra.cql3.CQL3Type;
+import org.apache.cassandra.db.marshal.StringType;
 
 
 @RunWith(Parameterized.class)
 public class CreateTableWithColumnNotNullConstraintValidTest extends CqlConstraintValidationTester
 {
-
     @Parameterized.Parameter(0)
     public String typeString;
 
@@ -41,9 +42,9 @@ public class CreateTableWithColumnNotNullConstraintValidTest extends CqlConstrai
     @Parameterized.Parameters(name = "{index}: typeString={0} value={1}")
     public static Collection<Object[]> data()
     {
-        return StorageAttachedIndex.SUPPORTED_TYPES.stream()
-               .filter(t -> t.getType().isNumber() || t.getType().unwrap() instanceof org.apache.cassandra.db.marshal.StringType)
-               .map(t -> {
+        return Arrays.stream(CQL3Type.Native.values())
+                       .filter(t -> !t.getType().isCounter() && (t.getType().isNumber() || t.getType().unwrap() instanceof StringType))
+                       .map(t -> {
                    if (t.getType().isNumber())
                        return new Object[]{ t.toString(), 123};
                    return new Object[]{ t.toString(), "'fooo'"};
