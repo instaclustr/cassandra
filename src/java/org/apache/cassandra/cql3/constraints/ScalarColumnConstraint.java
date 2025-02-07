@@ -34,9 +34,9 @@ import org.apache.cassandra.tcm.serialization.Version;
 
 public class ScalarColumnConstraint implements ColumnConstraint<ScalarColumnConstraint>
 {
-    public final ColumnIdentifier param;
-    public final Operator relationType;
-    public final String term;
+    private final ColumnIdentifier columnName;
+    private final Operator relationType;
+    private final String term;
 
     public final static Serializer serializer = new Serializer();
 
@@ -61,7 +61,7 @@ public class ScalarColumnConstraint implements ColumnConstraint<ScalarColumnCons
 
     private ScalarColumnConstraint(ColumnIdentifier param, Operator relationType, String term)
     {
-        this.param = param;
+        this.columnName = param;
         this.relationType = relationType;
         this.term = term;
     }
@@ -69,6 +69,9 @@ public class ScalarColumnConstraint implements ColumnConstraint<ScalarColumnCons
     @Override
     public void evaluate(AbstractType<?> valueType, ByteBuffer columnValue)
     {
+        if (columnValue.capacity() == 0)
+            throw new ConstraintViolationException("Column value does not satisfy value constraint for column '" + columnName + "' as it is null.");
+
         ByteBuffer value;
         try
         {
@@ -76,19 +79,19 @@ public class ScalarColumnConstraint implements ColumnConstraint<ScalarColumnCons
         }
         catch (NumberFormatException exception)
         {
-            throw new ConstraintViolationException(param + " and " + term + " need to be numbers.");
+            throw new ConstraintViolationException(columnName + " and " + term + " need to be numbers.");
         }
 
         if (!relationType.isSatisfiedBy(valueType, columnValue, value))
-            throw new ConstraintViolationException("Column value does not satisfy value constraint for column '" + param + "'. "
-                                                   + "It should be " + param + " " + relationType + " " + term);
+            throw new ConstraintViolationException("Column value does not satisfy value constraint for column '" + columnName + "'. "
+                                                   + "It should be " + columnName + " " + relationType + " " + term);
     }
 
     @Override
     public void validate(ColumnMetadata columnMetadata) throws InvalidConstraintDefinitionException
     {
         if (!columnMetadata.type.isNumber())
-            throw new InvalidConstraintDefinitionException(param + " is not a number");
+            throw new InvalidConstraintDefinitionException("Column '" + columnName + " is not a number type.");
     }
 
     @Override
@@ -100,7 +103,7 @@ public class ScalarColumnConstraint implements ColumnConstraint<ScalarColumnCons
     @Override
     public String toString()
     {
-        return param + " " + relationType + " " + term;
+        return columnName + " " + relationType + " " + term;
     }
 
     @Override
@@ -120,7 +123,7 @@ public class ScalarColumnConstraint implements ColumnConstraint<ScalarColumnCons
         @Override
         public void serialize(ScalarColumnConstraint columnConstraint, DataOutputPlus out, Version version) throws IOException
         {
-            out.writeUTF(columnConstraint.param.toCQLString());
+            out.writeUTF(columnConstraint.columnName.toCQLString());
             columnConstraint.relationType.writeTo(out);
             out.writeUTF(columnConstraint.term);
         }
@@ -138,7 +141,7 @@ public class ScalarColumnConstraint implements ColumnConstraint<ScalarColumnCons
         {
             return TypeSizes.sizeof(columnConstraint.term)
                    + Operator.serializedSize()
-                   + TypeSizes.sizeof(columnConstraint.param.toString());
+                   + TypeSizes.sizeof(columnConstraint.columnName.toString());
         }
     }
 
@@ -153,7 +156,7 @@ public class ScalarColumnConstraint implements ColumnConstraint<ScalarColumnCons
 
         ScalarColumnConstraint other = (ScalarColumnConstraint) o;
 
-        return param.equals(other.param)
+        return columnName.equals(other.columnName)
                && relationType == other.relationType
                && term.equals(other.term);
     }
