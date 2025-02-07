@@ -886,6 +886,46 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
             });
     }
 
+    @Test
+    public void testCreateTableWithColumnWithNotNullCheckScalarIntConstraints() throws Throwable
+    {
+        createTable("CREATE TABLE %s (pk int, ck1 int, ck2 int, v int CHECK v < 4 AND v >= 2, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 " + order + ");");
+        final String expectedErrorMessage = "Column value does not satisfy value constraint for column 'v' as it is null.";
+        assertInvalidThrowMessage(expectedErrorMessage, InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, null)");
+    }
+
+    @Test
+    public void testCreateTableWithColumnWithNotNullCheckScalarSmallintConstraints() throws Throwable
+    {
+        createTable("CREATE TABLE %s (pk int, ck1 int, ck2 int, v smallint CHECK v < 4 AND v >= 2, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 " + order + ");");
+        final String expectedErrorMessage = "Column value does not satisfy value constraint for column 'v' as it is null.";
+        assertInvalidThrowMessage(expectedErrorMessage, InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, null)");
+    }
+
+    @Test
+    public void testCreateTableWithColumnWithNotNullCheckScalarDecimalConstraints() throws Throwable
+    {
+        createTable("CREATE TABLE %s (pk int, ck1 int, ck2 int, v decimal CHECK v < 4 AND v >= 2, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 " + order + ");");
+        final String expectedErrorMessage = "Column value does not satisfy value constraint for column 'v' as it is null.";
+        assertInvalidThrowMessage(expectedErrorMessage, InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, null)");
+    }
+
+    @Test
+    public void testCreateTableWithColumnWithNotNullCheckScalarDoubleConstraints() throws Throwable
+    {
+        createTable("CREATE TABLE %s (pk int, ck1 int, ck2 int, v double CHECK v < 4 AND v >= 2, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 " + order + ");");
+        final String expectedErrorMessage = "Column value does not satisfy value constraint for column 'v' as it is null.";
+        assertInvalidThrowMessage(expectedErrorMessage, InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, null)");
+    }
+
+    @Test
+    public void testCreateTableWithColumnWithNotNullCheckScalarFloatConstraints() throws Throwable
+    {
+        createTable("CREATE TABLE %s (pk int, ck1 int, ck2 int, v float CHECK v < 4 AND v >= 2, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 " + order + ");");
+        final String expectedErrorMessage = "Column value does not satisfy value constraint for column 'v' as it is null.";
+        assertInvalidThrowMessage(expectedErrorMessage, InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, null)");
+    }
+
     // FUNCTION
     @Test
     public void testCreateTableWithColumnWithClusteringColumnLengthEqualToConstraint() throws Throwable
@@ -1226,6 +1266,38 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
     }
 
     @Test
+    public void testCreateTableWithColumnWithRegularColumnLengthCheckNullTextConstraint() throws Throwable
+    {
+        createTable("CREATE TABLE %s (pk int, ck1 int, ck2 int, v text CHECK LENGTH(v) <= 4, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 " + order + ");");
+        final String expectedErrorMessage = "Column value does not satisfy value constraint for column 'v' as it is null.";
+        assertInvalidThrowMessage(expectedErrorMessage, InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, null)");
+    }
+
+    @Test
+    public void testCreateTableWithColumnWithRegularColumnLengthCheckNullVarcharConstraint() throws Throwable
+    {
+        createTable("CREATE TABLE %s (pk int, ck1 int, ck2 int, v varchar CHECK LENGTH(v) <= 4, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 " + order + ");");
+        final String expectedErrorMessage = "Column value does not satisfy value constraint for column 'v' as it is null.";
+        assertInvalidThrowMessage(expectedErrorMessage, InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, null)");
+    }
+
+    @Test
+    public void testCreateTableWithColumnWithRegularColumnLengthCheckNullAsciiConstraint() throws Throwable
+    {
+        createTable("CREATE TABLE %s (pk int, ck1 int, ck2 int, v ascii CHECK LENGTH(v) <= 4, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 " + order + ");");
+        final String expectedErrorMessage = "Column value does not satisfy value constraint for column 'v' as it is null.";
+        assertInvalidThrowMessage(expectedErrorMessage, InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, null)");
+    }
+
+    @Test
+    public void testCreateTableWithColumnWithRegularColumnLengthCheckNullBlobConstraint() throws Throwable
+    {
+        createTable("CREATE TABLE %s (pk int, ck1 int, ck2 int, v blob CHECK LENGTH(v) <= 4, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 " + order + ");");
+        final String expectedErrorMessage = "Column value does not satisfy value constraint for column 'v' as it is null.";
+        assertInvalidThrowMessage(expectedErrorMessage, InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, 2, 3, null)");
+    }
+
+    @Test
     public void testCreateTableWithColumnMixedColumnsLengthConstraint() throws Throwable
     {
         createTable("CREATE TABLE %s (pk text CHECK LENGTH(pk) = 4, ck1 int, ck2 int, v text CHECK LENGTH(v) = 4, PRIMARY KEY ((pk),ck1, ck2)) WITH CLUSTERING ORDER BY (ck1 " + order + ");");
@@ -1300,7 +1372,7 @@ public class CreateTableWithColumnCqlConstraintValidationTest extends CqlConstra
         catch (InvalidRequestException e)
         {
             assertTrue(e.getCause() instanceof InvalidRequestException);
-            assertTrue(e.getCause().getMessage().equals("pk is not a number"));
+            assertTrue(e.getCause().getMessage().equals("Column 'pk' is not a number type."));
             assertTrue(e.getMessage().contains("Error setting schema for test"));
         }
     }

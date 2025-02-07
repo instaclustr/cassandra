@@ -56,7 +56,7 @@ public class CreateTableWithColumnNotNullConstraintInvalidTest extends CqlConstr
         createTable("CREATE TABLE %s (pk int, ck1 " + typeString + " CHECK NOT_NULL(ck1), ck2 int, v int, PRIMARY KEY (pk));");
 
         // Invalid
-        assertInvalidThrowMessage("Value for 'ck1' column can not be null.", InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, null, 2, 3)");
+        assertInvalidThrowMessage("Column value does not satisfy value constraint for column 'ck1' as it is null.", InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, null, 2, 3)");
     }
 
 }

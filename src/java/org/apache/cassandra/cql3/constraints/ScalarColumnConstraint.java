@@ -88,7 +88,7 @@ public class ScalarColumnConstraint extends ColumnConstraint<ScalarColumnConstra
     public void validate(ColumnMetadata columnMetadata) throws InvalidConstraintDefinitionException
     {
         if (!columnMetadata.type.isNumber())
-            throw new InvalidConstraintDefinitionException("Column '" + columnName + " is not a number type.");
+            throw new InvalidConstraintDefinitionException("Column '" + columnName + "' is not a number type.");
     }
 
     @Override

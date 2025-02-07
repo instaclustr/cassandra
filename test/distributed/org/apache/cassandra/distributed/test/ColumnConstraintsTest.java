@@ -287,15 +287,21 @@ public class ColumnConstraintsTest extends TestBaseImpl
     @Test
     public void testNotNullTableLevelConstraint() throws IOException
     {
-        try (Cluster cluster = init(Cluster.build(1).start()))
-        {
-            String tableName = String.format(KEYSPACE + ".tbl1_not_null");
-            String createTableNotNullValue = "CREATE TABLE " + tableName + " (pk int, value int CHECK NOT_NULL(value), PRIMARY KEY (pk));";
-            cluster.schemaChange(createTableNotNullValue);
+        Set<String> typesSet = Set.of("varchar", "text", "blob", "ascii", "int", "smallint", "decimal", "float", "double");
 
-            Assertions.assertThatThrownBy(() -> cluster.coordinator(1).execute(String.format("INSERT INTO " + tableName + " (pk, value) VALUES (1, null)"), ConsistencyLevel.ALL))
-                      .describedAs("Value for 'value' column can not be null.")
-                      .has(new Condition<Throwable>(t -> t.getClass().getCanonicalName().equals(ConstraintViolationException.class.getCanonicalName()), "Value for 'value' column can not be null."));
+        for (String type : typesSet)
+        {
+            try (Cluster cluster = init(Cluster.build(1).start()))
+            {
+                String tableName = String.format(KEYSPACE + ".%s_tbl1_%s", type, "st");
+                String createTableNotNullValue = "CREATE TABLE " + tableName + " (pk int, value int CHECK NOT_NULL(value), PRIMARY KEY (pk));";
+                cluster.schemaChange(createTableNotNullValue);
+
+                Assertions.assertThatThrownBy(() -> cluster.coordinator(1).execute(String.format("INSERT INTO " + tableName + " (pk, value) VALUES (1, null)"), ConsistencyLevel.ALL))
+                          .describedAs("Column value does not satisfy value constraint for column 'value' as it is null.")
+                          .has(new Condition<Throwable>(t -> t.getClass().getCanonicalName().equals(ConstraintViolationException.class.getCanonicalName()),
+                                                        "Column value does not satisfy value constraint for column 'value' as it is null."));
+            }
         }
     }
 
