@@ -36,11 +36,9 @@ public class LengthConstraint extends ConstraintFunction
 
     public static final String FUNCTION_NAME = "LENGTH";
 
-    private final ColumnIdentifier columnName;
-
     public LengthConstraint(ColumnIdentifier columnName)
     {
-        this.columnName = columnName;
+        super(columnName);
     }
 
     @Override
@@ -50,16 +48,8 @@ public class LengthConstraint extends ConstraintFunction
     }
 
     @Override
-    public String getColumnName()
+    public void internalEvaluate(AbstractType<?> valueType, Operator relationType, String term, ByteBuffer columnValue)
     {
-        return columnName.toString();
-    }
-
-    @Override
-    public void evaluate(AbstractType<?> valueType, Operator relationType, String term, ByteBuffer columnValue)
-    {
-        super.evaluate(valueType, relationType, term, columnValue);
-
         int valueLength = getValueLength(columnValue, valueType);
         int sizeConstraint = Integer.parseInt(term);
 

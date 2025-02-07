@@ -35,12 +35,11 @@ import org.apache.cassandra.utils.LocalizeString;
 
 import static org.apache.cassandra.cql3.constraints.ColumnConstraint.ConstraintType.UNARY_FUNCTION;
 
-public class UnaryFunctionColumnConstraint implements ColumnConstraint<UnaryFunctionColumnConstraint>
+public class UnaryFunctionColumnConstraint extends ColumnConstraint<UnaryFunctionColumnConstraint>
 {
     public static final Serializer serializer = new Serializer();
 
-    public final ConstraintFunction function;
-    public final ColumnIdentifier columnName;
+    private final ConstraintFunction function;
 
     public final static class Raw
     {
@@ -85,8 +84,8 @@ public class UnaryFunctionColumnConstraint implements ColumnConstraint<UnaryFunc
 
     private UnaryFunctionColumnConstraint(ConstraintFunction function, ColumnIdentifier columnName)
     {
+        super(columnName);
         this.function = function;
-        this.columnName = columnName;
     }
 
     @Override
@@ -102,7 +101,7 @@ public class UnaryFunctionColumnConstraint implements ColumnConstraint<UnaryFunc
     }
 
     @Override
-    public void evaluate(AbstractType<?> valueType, ByteBuffer columnValue) throws ConstraintViolationException
+    public void internalEvaluate(AbstractType<?> valueType, ByteBuffer columnValue) throws ConstraintViolationException
     {
         function.evaluate(valueType, columnValue);
     }

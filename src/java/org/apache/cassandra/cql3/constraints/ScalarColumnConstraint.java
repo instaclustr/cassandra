@@ -32,13 +32,12 @@ import org.apache.cassandra.schema.ColumnMetadata;
 import org.apache.cassandra.tcm.serialization.MetadataSerializer;
 import org.apache.cassandra.tcm.serialization.Version;
 
-public class ScalarColumnConstraint implements ColumnConstraint<ScalarColumnConstraint>
+public class ScalarColumnConstraint extends ColumnConstraint<ScalarColumnConstraint>
 {
-    private final ColumnIdentifier columnName;
+    public final static Serializer serializer = new Serializer();
+
     private final Operator relationType;
     private final String term;
-
-    public final static Serializer serializer = new Serializer();
 
     public final static class Raw
     {
@@ -61,17 +60,15 @@ public class ScalarColumnConstraint implements ColumnConstraint<ScalarColumnCons
 
     private ScalarColumnConstraint(ColumnIdentifier param, Operator relationType, String term)
     {
-        this.columnName = param;
+        super(param);
         this.relationType = relationType;
         this.term = term;
     }
 
-    @Override
-    public void evaluate(AbstractType<?> valueType, ByteBuffer columnValue)
-    {
-        if (columnValue.capacity() == 0)
-            throw new ConstraintViolationException("Column value does not satisfy value constraint for column '" + columnName + "' as it is null.");
 
+    @Override
+    protected void internalEvaluate(AbstractType<?> valueType, ByteBuffer columnValue)
+    {
         ByteBuffer value;
         try
         {

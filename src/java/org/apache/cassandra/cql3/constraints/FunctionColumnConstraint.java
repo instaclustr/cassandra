@@ -34,14 +34,13 @@ import org.apache.cassandra.tcm.serialization.MetadataSerializer;
 import org.apache.cassandra.tcm.serialization.Version;
 import org.apache.cassandra.utils.LocalizeString;
 
-public class FunctionColumnConstraint implements ColumnConstraint<FunctionColumnConstraint>
+public class FunctionColumnConstraint extends ColumnConstraint<FunctionColumnConstraint>
 {
     public static final Serializer serializer = new Serializer();
 
-    public final ConstraintFunction function;
-    public final ColumnIdentifier columnName;
-    public final Operator relationType;
-    public final String term;
+    private final ConstraintFunction function;
+    private final Operator relationType;
+    private final String term;
 
     public final static class Raw
     {
@@ -90,8 +89,8 @@ public class FunctionColumnConstraint implements ColumnConstraint<FunctionColumn
 
     private FunctionColumnConstraint(ConstraintFunction function, ColumnIdentifier columnName, Operator relationType, String term)
     {
+        super(columnName);
         this.function = function;
-        this.columnName = columnName;
         this.relationType = relationType;
         this.term = term;
     }
@@ -112,6 +111,12 @@ public class FunctionColumnConstraint implements ColumnConstraint<FunctionColumn
     public void evaluate(AbstractType<?> valueType, ByteBuffer columnValue)
     {
         function.evaluate(valueType, relationType, term, columnValue);
+    }
+
+    @Override
+    protected void internalEvaluate(AbstractType<?> valueType, ByteBuffer columnValue)
+    {
+        // evaluation is done on function
     }
 
     @Override
