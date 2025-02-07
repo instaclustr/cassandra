@@ -30,7 +30,7 @@ import org.apache.cassandra.db.marshal.UTF8Type;
 import org.apache.cassandra.schema.ColumnMetadata;
 import org.apache.cassandra.utils.ByteBufferUtil;
 
-public class LengthConstraint implements ConstraintFunction
+public class LengthConstraint extends ConstraintFunction
 {
     private static final AbstractType<?>[] SUPPORTED_TYPES = new AbstractType[] { BytesType.instance, UTF8Type.instance, AsciiType.instance };
 
@@ -50,10 +50,15 @@ public class LengthConstraint implements ConstraintFunction
     }
 
     @Override
+    public String getColumnName()
+    {
+        return columnName.toString();
+    }
+
+    @Override
     public void evaluate(AbstractType<?> valueType, Operator relationType, String term, ByteBuffer columnValue)
     {
-        if (columnValue.capacity() == 0)
-            throw new ConstraintViolationException("Column value does not satisfy value constraint for column '" + columnName + "' as it is null.");
+        super.evaluate(valueType, relationType, term, columnValue);
 
         int valueLength = getValueLength(columnValue, valueType);
         int sizeConstraint = Integer.parseInt(term);

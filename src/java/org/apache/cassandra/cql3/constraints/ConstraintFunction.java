@@ -27,23 +27,29 @@ import org.apache.cassandra.schema.ColumnMetadata;
 /**
  * Interface to be implemented by functions that are executed as part of CQL constraints.
  */
-public interface ConstraintFunction
+public abstract class ConstraintFunction
 {
     /**
      * @return the function name to be executed.
      */
-    String getName();
+    public abstract String getName();
+
+    public abstract String getColumnName();
 
     /**
      * Method that performs the actual condition test, executed during the write path.
      * It the test is not successful, it throws a {@link ConstraintViolationException}.
      */
-    void evaluate(AbstractType<?> valueType, Operator relationType, String term, ByteBuffer columnValue) throws ConstraintViolationException;
+    public void evaluate(AbstractType<?> valueType, Operator relationType, String term, ByteBuffer columnValue) throws ConstraintViolationException
+    {
+        if (columnValue.capacity() == 0)
+            throw new ConstraintViolationException("Value for '" + getColumnName() + "' column can not be null.");
+    }
 
     /**
      * Used mostly for unary functions which do not expect any relation type nor term.
      */
-    default void evaluate(AbstractType<?> valueType, ByteBuffer columnValue) throws ConstraintViolationException
+    public void evaluate(AbstractType<?> valueType, ByteBuffer columnValue) throws ConstraintViolationException
     {
         evaluate(valueType, null, null, columnValue);
     }
@@ -52,5 +58,5 @@ public interface ConstraintFunction
      * Method that validates that a condition is valid. This method is called when the CQL constraint is created to determine
      * if the CQL statement is valid or needs to be rejected as invalid throwing a {@link InvalidConstraintDefinitionException}
      */
-    void validate(ColumnMetadata columnMetadata) throws InvalidConstraintDefinitionException;
+    public abstract void validate(ColumnMetadata columnMetadata) throws InvalidConstraintDefinitionException;
 }

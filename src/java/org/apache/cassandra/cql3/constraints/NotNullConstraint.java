@@ -18,14 +18,10 @@
 
 package org.apache.cassandra.cql3.constraints;
 
-import java.nio.ByteBuffer;
-
 import org.apache.cassandra.cql3.ColumnIdentifier;
-import org.apache.cassandra.cql3.Operator;
-import org.apache.cassandra.db.marshal.AbstractType;
 import org.apache.cassandra.schema.ColumnMetadata;
 
-public class NotNullConstraint implements ConstraintFunction
+public class NotNullConstraint extends ConstraintFunction
 {
     public static final String FUNCTION_NAME = "NOT_NULL";
 
@@ -43,10 +39,9 @@ public class NotNullConstraint implements ConstraintFunction
     }
 
     @Override
-    public void evaluate(AbstractType<?> valueType, Operator relationType, String term, ByteBuffer columnValue) throws ConstraintViolationException
+    public String getColumnName()
     {
-        if (columnValue.capacity() == 0)
-            throw new ConstraintViolationException("Value for '" + columnName + "' column can not be null.");
+        return columnName.toString();
     }
 
     @Override
