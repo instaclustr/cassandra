@@ -20,6 +20,7 @@ package org.apache.cassandra.cql3.constraints;
 
 import java.nio.ByteBuffer;
 
+import org.apache.cassandra.cql3.ColumnIdentifier;
 import org.apache.cassandra.cql3.Operator;
 import org.apache.cassandra.db.marshal.AbstractType;
 import org.apache.cassandra.schema.ColumnMetadata;
@@ -29,12 +30,17 @@ import org.apache.cassandra.schema.ColumnMetadata;
  */
 public abstract class ConstraintFunction
 {
+    protected final ColumnIdentifier columnName;
+
+    public ConstraintFunction(ColumnIdentifier columnName)
+    {
+        this.columnName = columnName;
+    }
+
     /**
      * @return the function name to be executed.
      */
     public abstract String getName();
-
-    public abstract String getColumnName();
 
     /**
      * Method that performs the actual condition test, executed during the write path.
@@ -43,8 +49,16 @@ public abstract class ConstraintFunction
     public void evaluate(AbstractType<?> valueType, Operator relationType, String term, ByteBuffer columnValue) throws ConstraintViolationException
     {
         if (columnValue.capacity() == 0)
-            throw new ConstraintViolationException("Value for '" + getColumnName() + "' column can not be null.");
+            throw new ConstraintViolationException("Value for '" + columnName + "' column can not be null.");
+
+        internalEvaluate(valueType, relationType, term, columnValue);
     }
+
+    /**
+     * Internal evaluation method, by default called from {@link ConstraintFunction#evaluate(AbstractType, Operator, String, ByteBuffer)}.
+     * {@code columnValue} is by default guaranteed to not represent CQL value of 'null'.
+     */
+    protected abstract void internalEvaluate(AbstractType<?> valueType, Operator relationType, String term, ByteBuffer columnValue);
 
     /**
      * Used mostly for unary functions which do not expect any relation type nor term.

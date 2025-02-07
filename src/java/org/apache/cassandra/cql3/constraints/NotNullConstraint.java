@@ -18,18 +18,20 @@
 
 package org.apache.cassandra.cql3.constraints;
 
+import java.nio.ByteBuffer;
+
 import org.apache.cassandra.cql3.ColumnIdentifier;
+import org.apache.cassandra.cql3.Operator;
+import org.apache.cassandra.db.marshal.AbstractType;
 import org.apache.cassandra.schema.ColumnMetadata;
 
 public class NotNullConstraint extends ConstraintFunction
 {
     public static final String FUNCTION_NAME = "NOT_NULL";
 
-    private final ColumnIdentifier columnName;
-
     public NotNullConstraint(ColumnIdentifier columnName)
     {
-        this.columnName = columnName;
+        super(columnName);
     }
 
     @Override
@@ -39,9 +41,9 @@ public class NotNullConstraint extends ConstraintFunction
     }
 
     @Override
-    public String getColumnName()
+    public void internalEvaluate(AbstractType<?> valueType, Operator relationType, String term, ByteBuffer columnValue)
     {
-        return columnName.toString();
+        // on purpose empty as evaluate method already covered nullity
     }
 
     @Override
