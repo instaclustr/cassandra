@@ -49,7 +49,7 @@ public abstract class ConstraintFunction
     public void evaluate(AbstractType<?> valueType, Operator relationType, String term, ByteBuffer columnValue) throws ConstraintViolationException
     {
         if (columnValue.capacity() == 0)
-            throw new ConstraintViolationException("Value for '" + columnName + "' column can not be null.");
+            throw new ConstraintViolationException("Column value does not satisfy value constraint for column '" + columnName + "' as it is null.");
 
         internalEvaluate(valueType, relationType, term, columnValue);
     }
