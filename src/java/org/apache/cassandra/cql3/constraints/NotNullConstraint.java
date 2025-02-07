@@ -27,7 +27,7 @@ import org.apache.cassandra.schema.ColumnMetadata;
 
 public class NotNullConstraint extends ConstraintFunction
 {
-    public static final String FUNCTION_NAME = "NOT_NULL";
+    private static final String FUNCTION_NAME = "NOT_NULL";
 
     public NotNullConstraint(ColumnIdentifier columnName)
     {
@@ -35,7 +35,7 @@ public class NotNullConstraint extends ConstraintFunction
     }
 
     @Override
-    public String getName()
+    public String name()
     {
         return FUNCTION_NAME;
     }

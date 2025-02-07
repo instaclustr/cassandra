@@ -141,7 +141,7 @@ public class FunctionColumnConstraint extends ColumnConstraint<FunctionColumnCon
     @Override
     public String toString()
     {
-        return function.getName() + "(" + columnName + ") " + relationType + " " + term;
+        return function.name() + "(" + columnName + ") " + relationType + " " + term;
     }
 
     public static class Serializer implements MetadataSerializer<FunctionColumnConstraint>
@@ -149,7 +149,7 @@ public class FunctionColumnConstraint extends ColumnConstraint<FunctionColumnCon
         @Override
         public void serialize(FunctionColumnConstraint columnConstraint, DataOutputPlus out, Version version) throws IOException
         {
-            out.writeUTF(columnConstraint.function.getName());
+            out.writeUTF(columnConstraint.function.name());
             out.writeUTF(columnConstraint.columnName.toCQLString());
             columnConstraint.relationType.writeTo(out);
             out.writeUTF(columnConstraint.term);
