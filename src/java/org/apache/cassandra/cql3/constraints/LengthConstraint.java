@@ -34,7 +34,7 @@ public class LengthConstraint extends ConstraintFunction
 {
     private static final AbstractType<?>[] SUPPORTED_TYPES = new AbstractType[] { BytesType.instance, UTF8Type.instance, AsciiType.instance };
 
-    public static final String FUNCTION_NAME = "LENGTH";
+    private static final String FUNCTION_NAME = "LENGTH";
 
     public LengthConstraint(ColumnIdentifier columnName)
     {
@@ -42,7 +42,7 @@ public class LengthConstraint extends ConstraintFunction
     }
 
     @Override
-    public String getName()
+    public String name()
     {
         return FUNCTION_NAME;
     }

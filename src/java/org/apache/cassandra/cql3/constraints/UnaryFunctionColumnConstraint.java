@@ -121,7 +121,7 @@ public class UnaryFunctionColumnConstraint extends ColumnConstraint<UnaryFunctio
     @Override
     public String toString()
     {
-        return function.getName() + "(" + columnName + ")";
+        return function.name() + "(" + columnName + ")";
     }
 
     public static class Serializer implements MetadataSerializer<UnaryFunctionColumnConstraint>
@@ -129,7 +129,7 @@ public class UnaryFunctionColumnConstraint extends ColumnConstraint<UnaryFunctio
         @Override
         public void serialize(UnaryFunctionColumnConstraint columnConstraint, DataOutputPlus out, Version version) throws IOException
         {
-            out.writeUTF(columnConstraint.function.getName());
+            out.writeUTF(columnConstraint.function.name());
             out.writeUTF(columnConstraint.columnName.toCQLString());
         }
 

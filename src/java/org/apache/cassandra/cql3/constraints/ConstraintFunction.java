@@ -40,7 +40,7 @@ public abstract class ConstraintFunction
     /**
      * @return the function name to be executed.
      */
-    public abstract String getName();
+    public abstract String name();
 
     /**
      * Method that performs the actual condition test, executed during the write path.
