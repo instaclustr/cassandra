@@ -52,6 +52,9 @@ public class LengthConstraint implements ConstraintFunction
     @Override
     public void evaluate(AbstractType<?> valueType, Operator relationType, String term, ByteBuffer columnValue)
     {
+        if (columnValue.capacity() == 0)
+            throw new ConstraintViolationException("Column value does not satisfy value constraint for column '" + columnName + "' as it is null.");
+
         int valueLength = getValueLength(columnValue, valueType);
         int sizeConstraint = Integer.parseInt(term);
 
