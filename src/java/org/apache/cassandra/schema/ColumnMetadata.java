@@ -33,6 +33,8 @@ import com.google.common.collect.Lists;
 import org.apache.cassandra.cql3.*;
 import org.apache.cassandra.cql3.constraints.ColumnConstraint;
 import org.apache.cassandra.cql3.constraints.ColumnConstraints;
+import org.apache.cassandra.cql3.constraints.FunctionColumnConstraint;
+import org.apache.cassandra.cql3.constraints.NotNullConstraint;
 import org.apache.cassandra.cql3.constraints.StrictlyNotNullConstraint;
 import org.apache.cassandra.cql3.constraints.UnaryFunctionColumnConstraint;
 import org.apache.cassandra.cql3.functions.masking.ColumnMask;
@@ -323,12 +325,26 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
 
     public boolean hasStrictlyNotNullConstraint()
     {
+        return hasFunctionConstraint(columnConstraints, StrictlyNotNullConstraint.FUNCTION_NAME);
+    }
+
+    public boolean hasNotNullConstraint()
+    {
+        return hasFunctionConstraint(columnConstraints, NotNullConstraint.FUNCTION_NAME);
+    }
+
+    public static boolean hasFunctionConstraint(ColumnConstraints columnConstraints, String name)
+    {
         for (ColumnConstraint<?> constraint : columnConstraints.getConstraints())
         {
             if (constraint.getConstraintType() == ColumnConstraint.ConstraintType.UNARY_FUNCTION)
             {
-                UnaryFunctionColumnConstraint unaryFunctionConstraint = (UnaryFunctionColumnConstraint) constraint;
-                if (unaryFunctionConstraint.name().equals(StrictlyNotNullConstraint.FUNCTION_NAME))
+                if (((UnaryFunctionColumnConstraint) constraint).name().equals(name))
+                    return true;
+            }
+            else if (constraint.getConstraintType() == ColumnConstraint.ConstraintType.FUNCTION)
+            {
+                if (((FunctionColumnConstraint) constraint).name().equals(name))
                     return true;
             }
         }
@@ -367,6 +383,7 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
 
     public void setColumnConstraints(ColumnConstraints constraints)
     {
+        constraints.checkInvalidConstraintsCombinations(name);
         this.columnConstraints = constraints;
     }
 

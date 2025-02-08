@@ -115,6 +115,7 @@ public class UnaryFunctionColumnConstraint extends ColumnConstraint<UnaryFunctio
     @Override
     public void validate(ColumnMetadata columnMetadata) throws InvalidConstraintDefinitionException
     {
+        validateArgs(columnMetadata);
         function.validate(columnMetadata);
     }
 
@@ -122,6 +123,14 @@ public class UnaryFunctionColumnConstraint extends ColumnConstraint<UnaryFunctio
     public ConstraintType getConstraintType()
     {
         return UNARY_FUNCTION;
+    }
+
+    void validateArgs(ColumnMetadata columnMetadata)
+    {
+        if (!columnMetadata.name.equals(columnName))
+            throw new InvalidConstraintDefinitionException(String.format("Parameter of %s constraint should be the column name (%s)",
+                                                                         name(),
+                                                                         columnMetadata.name));
     }
 
     @Override

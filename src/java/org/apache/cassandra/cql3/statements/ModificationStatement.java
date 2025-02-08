@@ -172,6 +172,13 @@ public abstract class ModificationStatement implements CQLStatement.SingleKeyspa
                     throw RequestValidations.invalidRequest(String.format("Column '%s' can not be set to null.",
                                                                           strictlyNonNullColumn.name));
             }
+
+            for (ColumnMetadata nonNullColumn : this.metadata.nonNullColumns)
+            {
+                if (updatedColumns.contains(nonNullColumn))
+                    throw RequestValidations.invalidRequest(String.format("Column '%s' can not be set to null.",
+                                                                          nonNullColumn.name));
+            }
         }
 
         this.conditionColumns = conditionColumnsBuilder.build();

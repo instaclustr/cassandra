@@ -205,6 +205,7 @@ public class TableMetadata implements SchemaElement
     // two different variables.
     public final List<ColumnConstraint> partitionKeyConstraints;
     public final List<ColumnMetadata> columnsWithConstraints;
+    public final List<ColumnMetadata> nonNullColumns;
     public final List<ColumnMetadata> strictlyNonNullColumns;
 
     protected TableMetadata(Builder builder)
@@ -257,6 +258,8 @@ public class TableMetadata implements SchemaElement
 
         List<ColumnMetadata> columnsWithConstraints = new ArrayList<>();
         List<ColumnMetadata> strictlyNonNullColumns = new ArrayList<>();
+        List<ColumnMetadata> notNullColumns = new ArrayList<>();
+
         for (ColumnMetadata column : this.columns())
         {
             if (column.hasConstraint() && !column.isPrimaryKeyColumn())
@@ -264,9 +267,12 @@ public class TableMetadata implements SchemaElement
                 columnsWithConstraints.add(column);
                 if (column.hasStrictlyNotNullConstraint())
                     strictlyNonNullColumns.add(column);
+                if (column.hasNotNullConstraint())
+                    notNullColumns.add(column);
             }
         }
         this.columnsWithConstraints = columnsWithConstraints;
+        this.nonNullColumns = notNullColumns;
         this.strictlyNonNullColumns = strictlyNonNullColumns;
     }
 

@@ -29,9 +29,11 @@ import static java.lang.String.format;
 
 public class NotNullConstraint extends ConstraintFunction
 {
+    public static final String FUNCTION_NAME = "NOT_NULL";
+
     public NotNullConstraint(ColumnIdentifier columnName)
     {
-        this(columnName, "NOT_NULL");
+        this(columnName, FUNCTION_NAME);
     }
 
     public NotNullConstraint(ColumnIdentifier columnName, String name)
@@ -66,6 +68,6 @@ public class NotNullConstraint extends ConstraintFunction
 
         NotNullConstraint other = (NotNullConstraint) o;
 
-        return columnName.equals(other.columnName);
+        return columnName.equals(other.columnName) && name.equals(other.name);
     }
 }

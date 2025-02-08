@@ -28,4 +28,18 @@ public class StrictlyNotNullConstraint extends NotNullConstraint
     {
         super(columnName, FUNCTION_NAME);
     }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+
+        if (!(o instanceof StrictlyNotNullConstraint))
+            return false;
+
+        StrictlyNotNullConstraint other = (StrictlyNotNullConstraint) o;
+
+        return columnName.equals(other.columnName) && name.equals(other.name);
+    }
 }

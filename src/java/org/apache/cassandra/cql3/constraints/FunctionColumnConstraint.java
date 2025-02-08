@@ -95,6 +95,11 @@ public class FunctionColumnConstraint extends ColumnConstraint<FunctionColumnCon
         this.term = term;
     }
 
+    public String name()
+    {
+        return function.name;
+    }
+
     @Override
     public void appendCqlTo(CqlBuilder builder)
     {
@@ -135,7 +140,9 @@ public class FunctionColumnConstraint extends ColumnConstraint<FunctionColumnCon
     void validateArgs(ColumnMetadata columnMetadata)
     {
         if (!columnMetadata.name.equals(columnName))
-            throw new InvalidConstraintDefinitionException("Function parameter should be the column name");
+            throw new InvalidConstraintDefinitionException(String.format("Parameter of %s constraint should be the column name (%s)",
+                                                                         name(),
+                                                                         columnMetadata.name));
     }
 
     @Override
