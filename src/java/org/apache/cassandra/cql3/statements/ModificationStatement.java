@@ -164,6 +164,15 @@ public abstract class ModificationStatement implements CQLStatement.SingleKeyspa
                                                                           strictlyNonNullColumn.name));
             }
         }
+        else if (this.type.isDelete())
+        {
+            for (ColumnMetadata strictlyNonNullColumn : this.metadata.strictlyNonNullColumns)
+            {
+                if (updatedColumns.contains(strictlyNonNullColumn))
+                    throw RequestValidations.invalidRequest(String.format("Column '%s' can not be set to null.",
+                                                                          strictlyNonNullColumn.name));
+            }
+        }
 
         this.conditionColumns = conditionColumnsBuilder.build();
         this.requiresRead = requiresReadBuilder.build();
