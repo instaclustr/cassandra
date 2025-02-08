@@ -29,17 +29,14 @@ import static java.lang.String.format;
 
 public class NotNullConstraint extends ConstraintFunction
 {
-    private static final String FUNCTION_NAME = "NOT_NULL";
-
     public NotNullConstraint(ColumnIdentifier columnName)
     {
-        super(columnName);
+        this(columnName, "NOT_NULL");
     }
 
-    @Override
-    public String name()
+    public NotNullConstraint(ColumnIdentifier columnName, String name)
     {
-        return FUNCTION_NAME;
+        super(columnName, name);
     }
 
     @Override
@@ -53,7 +50,7 @@ public class NotNullConstraint extends ConstraintFunction
     {
         if (columnMetadata.isPrimaryKeyColumn())
             throw new InvalidConstraintDefinitionException(format("%s constraint can not be specified on a %s key column '%s'",
-                                                                  FUNCTION_NAME,
+                                                                  name,
                                                                   columnMetadata.isPartitionKey() ? "partition" : "clustering",
                                                                   columnMetadata.name));
     }

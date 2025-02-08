@@ -31,16 +31,13 @@ import org.apache.cassandra.schema.ColumnMetadata;
 public abstract class ConstraintFunction
 {
     protected final ColumnIdentifier columnName;
+    protected final String name;
 
-    public ConstraintFunction(ColumnIdentifier columnName)
+    public ConstraintFunction(ColumnIdentifier columnName, String name)
     {
         this.columnName = columnName;
+        this.name = name;
     }
-
-    /**
-     * @return the function name to be executed.
-     */
-    public abstract String name();
 
     /**
      * Method that performs the actual condition test, executed during the write path.

@@ -60,7 +60,8 @@ public class UnaryFunctionColumnConstraint extends ColumnConstraint<UnaryFunctio
 
     private enum Functions
     {
-        NOT_NULL(NotNullConstraint::new);
+        NOT_NULL(NotNullConstraint::new),
+        STRICTLY_NOT_NULL(StrictlyNotNullConstraint::new);
 
         private final Function<ColumnIdentifier, ConstraintFunction> functionCreator;
 
@@ -86,6 +87,11 @@ public class UnaryFunctionColumnConstraint extends ColumnConstraint<UnaryFunctio
     {
         super(columnName);
         this.function = function;
+    }
+
+    public String name()
+    {
+        return function.name;
     }
 
     @Override
@@ -121,7 +127,7 @@ public class UnaryFunctionColumnConstraint extends ColumnConstraint<UnaryFunctio
     @Override
     public String toString()
     {
-        return function.name() + "(" + columnName + ")";
+        return function.name + "(" + columnName + ")";
     }
 
     public static class Serializer implements MetadataSerializer<UnaryFunctionColumnConstraint>
@@ -129,7 +135,7 @@ public class UnaryFunctionColumnConstraint extends ColumnConstraint<UnaryFunctio
         @Override
         public void serialize(UnaryFunctionColumnConstraint columnConstraint, DataOutputPlus out, Version version) throws IOException
         {
-            out.writeUTF(columnConstraint.function.name());
+            out.writeUTF(columnConstraint.function.name);
             out.writeUTF(columnConstraint.columnName.toCQLString());
         }
 

@@ -205,6 +205,7 @@ public class TableMetadata implements SchemaElement
     // two different variables.
     public final List<ColumnConstraint> partitionKeyConstraints;
     public final List<ColumnMetadata> columnsWithConstraints;
+    public final List<ColumnMetadata> strictlyNonNullColumns;
 
     protected TableMetadata(Builder builder)
     {
@@ -255,12 +256,18 @@ public class TableMetadata implements SchemaElement
         this.partitionKeyConstraints = pkConstraints;
 
         List<ColumnMetadata> columnsWithConstraints = new ArrayList<>();
+        List<ColumnMetadata> strictlyNonNullColumns = new ArrayList<>();
         for (ColumnMetadata column : this.columns())
         {
-            if (column.hasConstraint() && !column.isPartitionKey() && !column.isClusteringColumn())
+            if (column.hasConstraint() && !column.isPrimaryKeyColumn())
+            {
                 columnsWithConstraints.add(column);
+                if (column.hasStrictlyNotNullConstraint())
+                    strictlyNonNullColumns.add(column);
+            }
         }
         this.columnsWithConstraints = columnsWithConstraints;
+        this.strictlyNonNullColumns = strictlyNonNullColumns;
     }
 
     public static Builder builder(String keyspace, String table)

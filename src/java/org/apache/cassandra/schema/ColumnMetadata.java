@@ -33,6 +33,8 @@ import com.google.common.collect.Lists;
 import org.apache.cassandra.cql3.*;
 import org.apache.cassandra.cql3.constraints.ColumnConstraint;
 import org.apache.cassandra.cql3.constraints.ColumnConstraints;
+import org.apache.cassandra.cql3.constraints.StrictlyNotNullConstraint;
+import org.apache.cassandra.cql3.constraints.UnaryFunctionColumnConstraint;
 import org.apache.cassandra.cql3.functions.masking.ColumnMask;
 import org.apache.cassandra.cql3.selection.Selectable;
 import org.apache.cassandra.cql3.selection.Selector;
@@ -317,6 +319,21 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
     public boolean hasConstraint()
     {
         return columnConstraints.hasRelevantConstraints();
+    }
+
+    public boolean hasStrictlyNotNullConstraint()
+    {
+        for (ColumnConstraint<?> constraint : columnConstraints.getConstraints())
+        {
+            if (constraint.getConstraintType() == ColumnConstraint.ConstraintType.UNARY_FUNCTION)
+            {
+                UnaryFunctionColumnConstraint unaryFunctionConstraint = (UnaryFunctionColumnConstraint) constraint;
+                if (unaryFunctionConstraint.name().equals(StrictlyNotNullConstraint.FUNCTION_NAME))
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     public boolean isRegular()
