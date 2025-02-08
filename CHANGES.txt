@@ -1,3 +1,6 @@
+3.11.19.1
+ * Reject empty options and invalid DC names in replication configuration while creating or altering a keyspace (CASSANDRA-12681)
+
 3.11.19
 Merged from 3.0:
  * Minimise expensive reads during authz flow in 3.0/3.11 (CASSANDRA-20293)
