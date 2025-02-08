@@ -25,6 +25,8 @@ import org.apache.cassandra.cql3.Operator;
 import org.apache.cassandra.db.marshal.AbstractType;
 import org.apache.cassandra.schema.ColumnMetadata;
 
+import static java.lang.String.format;
+
 public class NotNullConstraint extends ConstraintFunction
 {
     private static final String FUNCTION_NAME = "NOT_NULL";
@@ -49,7 +51,11 @@ public class NotNullConstraint extends ConstraintFunction
     @Override
     public void validate(ColumnMetadata columnMetadata) throws InvalidConstraintDefinitionException
     {
-        // every column is valid to check against nullity
+        if (columnMetadata.isPrimaryKeyColumn())
+            throw new InvalidConstraintDefinitionException(format("%s constraint can not be specified on a %s key column '%s'",
+                                                                  FUNCTION_NAME,
+                                                                  columnMetadata.isPartitionKey() ? "partition" : "clustering",
+                                                                  columnMetadata.name));
     }
 
     @Override
