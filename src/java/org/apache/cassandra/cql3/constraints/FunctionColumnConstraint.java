@@ -34,7 +34,7 @@ import org.apache.cassandra.tcm.serialization.MetadataSerializer;
 import org.apache.cassandra.tcm.serialization.Version;
 import org.apache.cassandra.utils.LocalizeString;
 
-public class FunctionColumnConstraint extends ColumnConstraint<FunctionColumnConstraint>
+public class FunctionColumnConstraint extends AbstractFunctionConstraint<FunctionColumnConstraint>
 {
     public static final Serializer serializer = new Serializer();
 

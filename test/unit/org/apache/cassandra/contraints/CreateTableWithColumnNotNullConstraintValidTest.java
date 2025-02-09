@@ -58,6 +58,7 @@ public class CreateTableWithColumnNotNullConstraintValidTest extends CqlConstrai
 
         // Valid
         execute("INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, " + value + ", 2, 3)");
+        execute("INSERT INTO %s (pk, ck2, v) VALUES (1, 2, 3)");
 
         // Nothing happens
     }

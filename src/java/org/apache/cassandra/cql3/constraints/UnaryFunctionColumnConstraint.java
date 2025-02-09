@@ -35,7 +35,7 @@ import org.apache.cassandra.utils.LocalizeString;
 
 import static org.apache.cassandra.cql3.constraints.ColumnConstraint.ConstraintType.UNARY_FUNCTION;
 
-public class UnaryFunctionColumnConstraint extends ColumnConstraint<UnaryFunctionColumnConstraint>
+public class UnaryFunctionColumnConstraint extends AbstractFunctionConstraint<UnaryFunctionColumnConstraint>
 {
     public static final Serializer serializer = new Serializer();
 

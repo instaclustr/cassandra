@@ -27,8 +27,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import org.apache.cassandra.cql3.CQL3Type;
+import org.apache.cassandra.cql3.constraints.InvalidConstraintDefinitionException;
+import org.apache.cassandra.db.marshal.DurationType;
 import org.apache.cassandra.db.marshal.EmptyType;
 import org.apache.cassandra.exceptions.InvalidRequestException;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 @RunWith(Parameterized.class)
@@ -43,7 +47,9 @@ public class CreateTableWithColumnNotNullConstraintInvalidTest extends CqlConstr
     public static Collection<Object[]> data()
     {
         return Arrays.stream(CQL3Type.Native.values())
-                     .filter(t -> !t.getType().isCounter() && !(t.getType().unwrap() instanceof EmptyType))
+                     .filter(t -> !t.getType().isCounter()
+                                  && !(t.getType().unwrap() instanceof EmptyType)
+                                  && !(t.getType().unwrap() instanceof DurationType))
                      .map(Object::toString)
                      .distinct()
                      .map(t -> new Object[]{ t })
@@ -57,6 +63,38 @@ public class CreateTableWithColumnNotNullConstraintInvalidTest extends CqlConstr
 
         // Invalid
         assertInvalidThrowMessage("Column value does not satisfy value constraint for column 'ck1' as it is null.", InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, null, 2, 3)");
+        assertInvalidThrowMessage("Column 'ck1' can not be set to null.", InvalidRequestException.class, "DELETE ck1 FROM %s WHERE pk = 1");
+    }
+
+    @Test
+    public void testCreateTableWithColumnStrictlyNotNullCheckNonExisting() throws Throwable
+    {
+        createTable("CREATE TABLE %s (pk int, ck1 " + typeString + " CHECK STRICTLY_NOT_NULL(ck1), ck2 int, v int, PRIMARY KEY (pk));");
+
+        // Invalid
+        assertInvalidThrowMessage("Column 'ck1' has to be specified as part of this query.", InvalidRequestException.class, "INSERT INTO %s (pk, ck2, v) VALUES (1, 2, 3)");
+    }
+
+    @Test
+    public void testInvalidSpecificationOfNotNullConstraintOnPrimaryKeys() throws Throwable
+    {
+        assertThatThrownBy(() -> createTable("CREATE TABLE %s (pk " + typeString + " CHECK NOT_NULL(pk) PRIMARY KEY)"))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasRootCauseInstanceOf(InvalidConstraintDefinitionException.class)
+        .hasRootCauseMessage("NOT_NULL constraint can not be specified on a partition key column 'pk'");
+
+        assertThatThrownBy(() -> createTable("CREATE TABLE %s (pk int, cl " + typeString + " CHECK NOT_NULL(cl), PRIMARY KEY (pk, cl))"))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasRootCauseInstanceOf(InvalidConstraintDefinitionException.class)
+        .hasRootCauseMessage("NOT_NULL constraint can not be specified on a clustering key column 'cl'");
+    }
+
+    @Test
+    public void testInvalidSpecificationOfCombinedNotNullConstraints() throws Throwable
+    {
+        assertThatThrownBy(() -> createTable("CREATE TABLE %s (pk int, val " + typeString + " CHECK NOT_NULL(val) AND STRICTLY_NOT_NULL(val), PRIMARY KEY (pk))"))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasRootCauseMessage("STRICTLY_NOT_NULL constraint can not be specified together with NOT_NULL constraint on column 'val'");
     }
 
 }

@@ -110,7 +110,7 @@ public class ColumnConstraints extends ColumnConstraint<ColumnConstraints>
         if (ColumnMetadata.hasFunctionConstraint(this, StrictlyNotNullConstraint.FUNCTION_NAME)
             && ColumnMetadata.hasFunctionConstraint(this, NotNullConstraint.FUNCTION_NAME))
         {
-            throw new InvalidRequestException(format("%s constraint can not be specified together with %s constraint on column '%s''",
+            throw new InvalidRequestException(format("%s constraint can not be specified together with %s constraint on column '%s'",
                                                      StrictlyNotNullConstraint.FUNCTION_NAME,
                                                      NotNullConstraint.FUNCTION_NAME,
                                                      columnName));

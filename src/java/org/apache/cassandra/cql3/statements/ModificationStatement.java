@@ -155,29 +155,38 @@ public abstract class ModificationStatement implements CQLStatement.SingleKeyspa
 
         this.updatedColumns = modifiedColumns;
 
-        if (this.type.isInsertOrUpdate())
+        if (!this.metadata.strictlyNonNullColumns.isEmpty())
         {
-            for (ColumnMetadata strictlyNonNullColumn : this.metadata.strictlyNonNullColumns)
+            if (this.type.isInsertOrUpdate())
             {
-                if (!updatedColumns.contains(strictlyNonNullColumn))
-                    throw RequestValidations.invalidRequest(String.format("Column '%s' has to be specified as part of this query.",
-                                                                          strictlyNonNullColumn.name));
+                for (ColumnMetadata strictlyNonNullColumn : this.metadata.strictlyNonNullColumns)
+                {
+                    if (!updatedColumns.contains(strictlyNonNullColumn))
+                        throw RequestValidations.invalidRequest(String.format("Column '%s' has to be specified as part of this query.",
+                                                                              strictlyNonNullColumn.name));
+                }
+            }
+            else if (this.type.isDelete())
+            {
+                for (ColumnMetadata strictlyNonNullColumn : this.metadata.strictlyNonNullColumns)
+                {
+                    if (updatedColumns.contains(strictlyNonNullColumn))
+                        throw RequestValidations.invalidRequest(String.format("Column '%s' can not be set to null.",
+                                                                              strictlyNonNullColumn.name));
+                }
             }
         }
-        else if (this.type.isDelete())
-        {
-            for (ColumnMetadata strictlyNonNullColumn : this.metadata.strictlyNonNullColumns)
-            {
-                if (updatedColumns.contains(strictlyNonNullColumn))
-                    throw RequestValidations.invalidRequest(String.format("Column '%s' can not be set to null.",
-                                                                          strictlyNonNullColumn.name));
-            }
 
-            for (ColumnMetadata nonNullColumn : this.metadata.nonNullColumns)
+        if (!this.metadata.nonNullColumns.isEmpty())
+        {
+            if (this.type.isDelete())
             {
-                if (updatedColumns.contains(nonNullColumn))
-                    throw RequestValidations.invalidRequest(String.format("Column '%s' can not be set to null.",
-                                                                          nonNullColumn.name));
+                for (ColumnMetadata nonNullColumn : this.metadata.nonNullColumns)
+                {
+                    if (updatedColumns.contains(nonNullColumn))
+                        throw RequestValidations.invalidRequest(String.format("Column '%s' can not be set to null.",
+                                                                              nonNullColumn.name));
+                }
             }
         }
 

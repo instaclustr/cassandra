@@ -31,6 +31,7 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 
 import org.apache.cassandra.cql3.*;
+import org.apache.cassandra.cql3.constraints.AbstractFunctionConstraint;
 import org.apache.cassandra.cql3.constraints.ColumnConstraint;
 import org.apache.cassandra.cql3.constraints.ColumnConstraints;
 import org.apache.cassandra.cql3.constraints.FunctionColumnConstraint;
@@ -337,14 +338,10 @@ public final class ColumnMetadata extends ColumnSpecification implements Selecta
     {
         for (ColumnConstraint<?> constraint : columnConstraints.getConstraints())
         {
-            if (constraint.getConstraintType() == ColumnConstraint.ConstraintType.UNARY_FUNCTION)
+            if (constraint.getConstraintType() == ColumnConstraint.ConstraintType.UNARY_FUNCTION ||
+                constraint.getConstraintType() == ColumnConstraint.ConstraintType.FUNCTION)
             {
-                if (((UnaryFunctionColumnConstraint) constraint).name().equals(name))
-                    return true;
-            }
-            else if (constraint.getConstraintType() == ColumnConstraint.ConstraintType.FUNCTION)
-            {
-                if (((FunctionColumnConstraint) constraint).name().equals(name))
+                if (((AbstractFunctionConstraint<?>) constraint).name().equals(name))
                     return true;
             }
         }

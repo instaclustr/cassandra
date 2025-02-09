@@ -94,7 +94,7 @@ ALTER TABLE keyspace.table ALTER name DROP CHECK;
 
 === NOT_NULL CONSTRAINT
 
-Defines a condition that checks if a column is null.
+Defines a condition that checks if a column is null. This nullity check is only performed against the value that has been passed on the insert statement, which means that if no value is present on the INSERT statement no constraint check is performed. The reason behind this is to support partial update insert statements, without forcing the user to specify the constrained column every time even if there is no intention of updating it. For the strict evaluation of this constraint against all the insert statements, please check the STRICTLY_NOT_NULL constraint instead.
 
 ----
 CREATE TABLE keyspace.table (
@@ -113,3 +113,27 @@ Finally, the constraint can be removed:
 
 ----
 ALTER TABLE keyspace.table ALTER name DROP CHECK;
+----
+
+=== STRICTLY_NOT_NULL CONSTRAINT
+
+Defines a condition that checks if a column is null in every insert statement.
+
+----
+CREATE TABLE keyspace.table (
+	name text CHECK STRICTLY_NOT_NULL(name)
+	...,
+);
+----
+
+Altering that constraint can be done with:
+
+----
+ALTER TABLE keyspace.table ALTER name CHECK STRICTLY_NOT_NULL(name);
+----
+
+Finally, the constraint can be removed:
+
+----
+ALTER TABLE keyspace.table ALTER name DROP CHECK;
+----
