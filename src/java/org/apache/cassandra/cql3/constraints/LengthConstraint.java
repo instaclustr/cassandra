@@ -32,11 +32,12 @@ import org.apache.cassandra.utils.ByteBufferUtil;
 
 public class LengthConstraint extends ConstraintFunction
 {
-    private static final AbstractType<?>[] SUPPORTED_TYPES = new AbstractType[] { BytesType.instance, UTF8Type.instance, AsciiType.instance };
+    private static final String NAME = "LENGTH";
+    private static final AbstractType<?>[] SUPPORTED_TYPES = new AbstractType[]{ BytesType.instance, UTF8Type.instance, AsciiType.instance };
 
     public LengthConstraint(ColumnIdentifier columnName)
     {
-        super(columnName, "LENGTH");
+        super(columnName, NAME);
     }
 
     @Override
