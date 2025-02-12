@@ -60,8 +60,7 @@ public class UnaryFunctionColumnConstraint extends AbstractFunctionConstraint<Un
 
     private enum Functions
     {
-        NOT_NULL(NotNullConstraint::new),
-        STRICTLY_NOT_NULL(StrictlyNotNullConstraint::new);
+        NOT_NULL(NotNullConstraint::new);
 
         private final Function<ColumnIdentifier, ConstraintFunction> functionCreator;
 

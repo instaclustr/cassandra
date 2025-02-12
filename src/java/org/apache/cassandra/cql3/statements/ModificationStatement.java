@@ -155,37 +155,24 @@ public abstract class ModificationStatement implements CQLStatement.SingleKeyspa
 
         this.updatedColumns = modifiedColumns;
 
-        if (!this.metadata.strictlyNonNullColumns.isEmpty())
+        if (!this.metadata.notNullColumns.isEmpty())
         {
             if (this.type.isInsertOrUpdate())
             {
-                for (ColumnMetadata strictlyNonNullColumn : this.metadata.strictlyNonNullColumns)
+                for (ColumnMetadata notNullColumn : this.metadata.notNullColumns)
                 {
-                    if (!updatedColumns.contains(strictlyNonNullColumn))
+                    if (!updatedColumns.contains(notNullColumn))
                         throw RequestValidations.invalidRequest(String.format("Column '%s' has to be specified as part of this query.",
-                                                                              strictlyNonNullColumn.name));
+                                                                              notNullColumn.name));
                 }
             }
             else if (this.type.isDelete())
             {
-                for (ColumnMetadata strictlyNonNullColumn : this.metadata.strictlyNonNullColumns)
+                for (ColumnMetadata notNullColumn : this.metadata.notNullColumns)
                 {
-                    if (updatedColumns.contains(strictlyNonNullColumn))
+                    if (updatedColumns.contains(notNullColumn))
                         throw RequestValidations.invalidRequest(String.format("Column '%s' can not be set to null.",
-                                                                              strictlyNonNullColumn.name));
-                }
-            }
-        }
-
-        if (!this.metadata.nonNullColumns.isEmpty())
-        {
-            if (this.type.isDelete())
-            {
-                for (ColumnMetadata nonNullColumn : this.metadata.nonNullColumns)
-                {
-                    if (updatedColumns.contains(nonNullColumn))
-                        throw RequestValidations.invalidRequest(String.format("Column '%s' can not be set to null.",
-                                                                              nonNullColumn.name));
+                                                                              notNullColumn.name));
                 }
             }
         }

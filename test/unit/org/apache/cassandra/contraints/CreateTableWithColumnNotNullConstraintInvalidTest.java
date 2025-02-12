@@ -57,22 +57,15 @@ public class CreateTableWithColumnNotNullConstraintInvalidTest extends CqlConstr
     }
 
     @Test
-    public void testCreateTableWithColumnNotNullCheckInvalid() throws Throwable
+    public void testCreateTableWithColumnNotNullCheckNonExisting() throws Throwable
     {
         createTable("CREATE TABLE %s (pk int, ck1 " + typeString + " CHECK NOT_NULL(ck1), ck2 int, v int, PRIMARY KEY (pk));");
 
         // Invalid
+        assertInvalidThrowMessage("Column 'ck1' has to be specified as part of this query.", InvalidRequestException.class, "INSERT INTO %s (pk, ck2, v) VALUES (1, 2, 3)");
+
         assertInvalidThrowMessage("Column value does not satisfy value constraint for column 'ck1' as it is null.", InvalidRequestException.class, "INSERT INTO %s (pk, ck1, ck2, v) VALUES (1, null, 2, 3)");
         assertInvalidThrowMessage("Column 'ck1' can not be set to null.", InvalidRequestException.class, "DELETE ck1 FROM %s WHERE pk = 1");
-    }
-
-    @Test
-    public void testCreateTableWithColumnStrictlyNotNullCheckNonExisting() throws Throwable
-    {
-        createTable("CREATE TABLE %s (pk int, ck1 " + typeString + " CHECK STRICTLY_NOT_NULL(ck1), ck2 int, v int, PRIMARY KEY (pk));");
-
-        // Invalid
-        assertInvalidThrowMessage("Column 'ck1' has to be specified as part of this query.", InvalidRequestException.class, "INSERT INTO %s (pk, ck2, v) VALUES (1, 2, 3)");
     }
 
     @Test
@@ -88,13 +81,4 @@ public class CreateTableWithColumnNotNullConstraintInvalidTest extends CqlConstr
         .hasRootCauseInstanceOf(InvalidConstraintDefinitionException.class)
         .hasRootCauseMessage("NOT_NULL constraint can not be specified on a clustering key column 'cl'");
     }
-
-    @Test
-    public void testInvalidSpecificationOfCombinedNotNullConstraints() throws Throwable
-    {
-        assertThatThrownBy(() -> createTable("CREATE TABLE %s (pk int, val " + typeString + " CHECK NOT_NULL(val) AND STRICTLY_NOT_NULL(val), PRIMARY KEY (pk))"))
-        .isInstanceOf(InvalidRequestException.class)
-        .hasRootCauseMessage("STRICTLY_NOT_NULL constraint can not be specified together with NOT_NULL constraint on column 'val'");
-    }
-
 }

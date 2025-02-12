@@ -29,15 +29,11 @@ import org.apache.cassandra.cql3.ColumnIdentifier;
 import org.apache.cassandra.cql3.CqlBuilder;
 import org.apache.cassandra.db.TypeSizes;
 import org.apache.cassandra.db.marshal.AbstractType;
-import org.apache.cassandra.exceptions.InvalidRequestException;
 import org.apache.cassandra.io.util.DataInputPlus;
 import org.apache.cassandra.io.util.DataOutputPlus;
 import org.apache.cassandra.schema.ColumnMetadata;
 import org.apache.cassandra.tcm.serialization.MetadataSerializer;
 import org.apache.cassandra.tcm.serialization.Version;
-
-import static java.lang.String.format;
-
 
 // group of constraints for the column
 public class ColumnConstraints extends ColumnConstraint<ColumnConstraints>
@@ -107,14 +103,7 @@ public class ColumnConstraints extends ColumnConstraint<ColumnConstraints>
 
     public void checkInvalidConstraintsCombinations(ColumnIdentifier columnName)
     {
-        if (ColumnMetadata.hasFunctionConstraint(this, StrictlyNotNullConstraint.FUNCTION_NAME)
-            && ColumnMetadata.hasFunctionConstraint(this, NotNullConstraint.FUNCTION_NAME))
-        {
-            throw new InvalidRequestException(format("%s constraint can not be specified together with %s constraint on column '%s'",
-                                                     StrictlyNotNullConstraint.FUNCTION_NAME,
-                                                     NotNullConstraint.FUNCTION_NAME,
-                                                     columnName));
-        }
+        // TODO check duplicities etc
     }
 
     @Override
