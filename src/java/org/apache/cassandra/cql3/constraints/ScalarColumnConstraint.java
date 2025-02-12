@@ -20,6 +20,7 @@ package org.apache.cassandra.cql3.constraints;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Set;
 
 import org.apache.cassandra.cql3.ColumnIdentifier;
 import org.apache.cassandra.cql3.CqlBuilder;
@@ -32,8 +33,16 @@ import org.apache.cassandra.schema.ColumnMetadata;
 import org.apache.cassandra.tcm.serialization.MetadataSerializer;
 import org.apache.cassandra.tcm.serialization.Version;
 
+import static org.apache.cassandra.cql3.Operator.EQ;
+import static org.apache.cassandra.cql3.Operator.GT;
+import static org.apache.cassandra.cql3.Operator.GTE;
+import static org.apache.cassandra.cql3.Operator.LT;
+import static org.apache.cassandra.cql3.Operator.LTE;
+
 public class ScalarColumnConstraint extends ColumnConstraint<ScalarColumnConstraint>
 {
+    public static final Set<Operator> SUPPORTED_OPERATORS = Set.of(EQ, GTE, GT, LTE, LT);
+
     public final static Serializer serializer = new Serializer();
 
     private final Operator relationType;
@@ -64,7 +73,6 @@ public class ScalarColumnConstraint extends ColumnConstraint<ScalarColumnConstra
         this.relationType = relationType;
         this.term = term;
     }
-
 
     @Override
     protected void internalEvaluate(AbstractType<?> valueType, ByteBuffer columnValue)
@@ -104,6 +112,12 @@ public class ScalarColumnConstraint extends ColumnConstraint<ScalarColumnConstra
     }
 
     @Override
+    public String name()
+    {
+        return columnName + " " + relationType;
+    }
+
+    @Override
     public MetadataSerializer<ScalarColumnConstraint> serializer()
     {
         return serializer;
@@ -113,6 +127,16 @@ public class ScalarColumnConstraint extends ColumnConstraint<ScalarColumnConstra
     public void appendCqlTo(CqlBuilder builder)
     {
         builder.append(toString());
+    }
+
+    public Operator relationType()
+    {
+        return relationType;
+    }
+
+    public String term()
+    {
+        return term;
     }
 
     private static class Serializer implements MetadataSerializer<ScalarColumnConstraint>

@@ -22,8 +22,11 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.cassandra.cql3.ColumnIdentifier;
 import org.apache.cassandra.cql3.CqlBuilder;
@@ -47,6 +50,12 @@ public class ColumnConstraints extends ColumnConstraint<ColumnConstraints>
     {
         super(null);
         this.constraints = constraints;
+    }
+
+    @Override
+    public String name()
+    {
+        return getConstraintType().name();
     }
 
     @Override
@@ -103,7 +112,41 @@ public class ColumnConstraints extends ColumnConstraint<ColumnConstraints>
 
     public void checkInvalidConstraintsCombinations(ColumnIdentifier columnName)
     {
-        // TODO check duplicities etc
+        Set<String> constraintNames = new TreeSet<>();
+        Set<String> duplicateConstraints = new TreeSet<>();
+        List<ColumnConstraint<?>> scalarConstraints = new LinkedList<>();
+        for (ColumnConstraint<?> columnConstraint : constraints)
+        {
+            String constraintName = columnConstraint.name();
+            if (!constraintNames.add(constraintName))
+                duplicateConstraints.add(constraintName);
+
+            if (columnConstraint.getConstraintType() == ConstraintType.SCALAR)
+                scalarConstraints.add(columnConstraint);
+        }
+
+        if (!duplicateConstraints.isEmpty())
+            throw new InvalidConstraintDefinitionException(String.format("There are duplicate constraint definitions on column '%s': %s",
+                                                                         columnName,
+                                                                         duplicateConstraints));
+        if (scalarConstraints.size() > 2)
+            throw new InvalidConstraintDefinitionException(String.format("There can not be more than 2 scalar constraints on a column '%s' but you have specified %s",
+                                                                         columnName,
+                                                                         scalarConstraints.size()));
+
+        for (ColumnConstraint<?> scalar : scalarConstraints)
+        {
+            if (!ScalarColumnConstraint.SUPPORTED_OPERATORS.contains(((ScalarColumnConstraint) scalar).relationType()))
+                throw new InvalidConstraintDefinitionException("Scalar constraint of relation '%s' is not supported.");
+        }
+
+        if (scalarConstraints.size() == 2)
+        {
+            ScalarColumnConstraint first = (ScalarColumnConstraint) scalarConstraints.get(0);
+            ScalarColumnConstraint second = (ScalarColumnConstraint) scalarConstraints.get(1);
+
+            // TODO check invalid combinations
+        }
     }
 
     @Override
@@ -135,6 +178,12 @@ public class ColumnConstraints extends ColumnConstraint<ColumnConstraints>
         public void validate(ColumnMetadata columnMetadata)
         {
             // Do nothing. It is always valid
+        }
+
+        @Override
+        public String name()
+        {
+            return "NO_OP";
         }
     }
 

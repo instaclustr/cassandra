@@ -26,6 +26,4 @@ public abstract class AbstractFunctionConstraint<T> extends ColumnConstraint<T>
     {
         super(columnName);
     }
-
-    public abstract String name();
 }

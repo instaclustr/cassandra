@@ -64,6 +64,8 @@ public abstract class ColumnConstraint<T>
         }
     }
 
+    public abstract String name();
+
     public abstract MetadataSerializer<T> serializer();
 
     public abstract void appendCqlTo(CqlBuilder builder);

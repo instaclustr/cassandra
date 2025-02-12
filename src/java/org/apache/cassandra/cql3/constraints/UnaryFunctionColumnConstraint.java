@@ -88,6 +88,7 @@ public class UnaryFunctionColumnConstraint extends AbstractFunctionConstraint<Un
         this.function = function;
     }
 
+    @Override
     public String name()
     {
         return function.name;

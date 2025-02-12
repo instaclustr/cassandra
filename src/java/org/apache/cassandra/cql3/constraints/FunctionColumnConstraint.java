@@ -95,6 +95,7 @@ public class FunctionColumnConstraint extends AbstractFunctionConstraint<Functio
         this.term = term;
     }
 
+    @Override
     public String name()
     {
         return function.name;
