@@ -18,28 +18,44 @@
 
 package org.apache.cassandra.distributed.test;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.cassandra.concurrent.ScheduledExecutors;
 import org.apache.cassandra.concurrent.ScheduledThreadPoolExecutorPlus;
 import org.apache.cassandra.config.Config;
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.db.ColumnFamilyStore;
+import org.apache.cassandra.db.DecoratedKey;
 import org.apache.cassandra.db.Keyspace;
 import org.apache.cassandra.distributed.Cluster;
 import org.apache.cassandra.distributed.api.ConsistencyLevel;
 import org.apache.cassandra.distributed.impl.CoordinatorHelper;
 import org.apache.cassandra.exceptions.ReadTimeoutException;
+import org.apache.cassandra.locator.ReplicaPlan;
+import org.apache.cassandra.locator.ReplicaPlans;
 import org.apache.cassandra.service.CassandraDaemon;
+import org.apache.cassandra.service.reads.PercentileSpeculativeRetryPolicy;
 import org.apache.cassandra.transport.Dispatcher;
 
+import static org.apache.cassandra.db.ConsistencyLevel.QUORUM;
+import static org.apache.cassandra.utils.ByteBufferUtil.bytes;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class ReadSpeculationTest extends TestBaseImpl
 {
+    private static final Logger logger = LoggerFactory.getLogger(ReadSpeculationTest.class);
+    private static final String TABLE = "tbl";
+    private static final String PK_VALUE = "1";
 
     @Test
     public void speculateTest() throws Throwable
@@ -52,10 +68,27 @@ public class ReadSpeculationTest extends TestBaseImpl
                 ((ScheduledThreadPoolExecutorPlus) ScheduledExecutors.optionalTasks).remove(CassandraDaemon.SPECULATION_THRESHOLD_UPDATER);
             });
             cluster.schemaChange("CREATE KEYSPACE IF NOT EXISTS " + KEYSPACE + " WITH replication = {'class': 'SimpleStrategy', 'replication_factor': " + 3 + "}");
-            cluster.schemaChange("CREATE TABLE IF NOT EXISTS " + KEYSPACE + ".tbl (pk int, ck int, v int, PRIMARY KEY (pk, ck)) WITH speculative_retry = '2000ms';");
+            cluster.schemaChange("CREATE TABLE IF NOT EXISTS " + KEYSPACE + "." + TABLE + " (pk int, ck int, v int, PRIMARY KEY (pk, ck)) WITH speculative_retry = '2000ms';");
 
-            // force speculation; rely on IP order
-            cluster.filters().allVerbs().from(1).to(2).drop();
+            List<InetAddress> readPlanEndpoints = cluster.get(1).applyOnInstance((none) -> {
+                Keyspace keyspace = Keyspace.openIfExists(KEYSPACE);
+                ColumnFamilyStore cfs = keyspace.getColumnFamilyStore(TABLE);
+                DecoratedKey dk = cfs.decorateKey(bytes(PK_VALUE));
+                ReplicaPlan.ForTokenRead plan = ReplicaPlans.forRead(keyspace, dk.getToken(), null,
+                                                                     QUORUM, PercentileSpeculativeRetryPolicy.NINETY_NINE_P);
+                return plan.readCandidates().endpointList().stream().map(InetSocketAddress::getAddress).collect(Collectors.toList());
+            }, null);
+            int secondReplicaToRead = 0;
+            Assert.assertTrue("Local node 1 must be the first replica to read from", match(cluster, 1, readPlanEndpoints, 0));
+            for (int i = 1; i < 3; i++)
+                if (match(cluster, i, readPlanEndpoints, 1))
+                {
+                    secondReplicaToRead = i;
+                    break;
+                }
+            logger.info("Replicas provided in a read plan: {}, 2nd replica to read from: {}", readPlanEndpoints, secondReplicaToRead);
+            // force speculation by dropping all messages sent to the 2nd read replica
+            cluster.filters().allVerbs().from(1).to(secondReplicaToRead).drop();
 
 
             cluster.get(1).runOnInstance(() -> {
@@ -157,12 +190,12 @@ public class ReadSpeculationTest extends TestBaseImpl
             DatabaseDescriptor.setReadRpcTimeout(rpcTimeoutMs);
             DatabaseDescriptor.setCQLStartTime(cqlStartTime);
 
-            ColumnFamilyStore cfs = Keyspace.open(KEYSPACE).getColumnFamilyStore("tbl");
+            ColumnFamilyStore cfs = Keyspace.open(KEYSPACE).getColumnFamilyStore(TABLE);
             long speculatedBefore = cfs.metric.speculativeRetries.getCount();
             long before = System.nanoTime();
             cfs.sampleReadLatencyMicros = speculationTimeoutMicros;
 
-            CoordinatorHelper.unsafeExecuteInternal("SELECT * FROM " + KEYSPACE + ".tbl WHERE pk = 1",
+            CoordinatorHelper.unsafeExecuteInternal("SELECT * FROM " + KEYSPACE + "." + TABLE + " WHERE pk = " + PK_VALUE,
                                                     ConsistencyLevel.QUORUM,
                                                     ConsistencyLevel.QUORUM,
                                                     new Dispatcher.RequestTime(before - enqueuedNsAgo,
@@ -180,14 +213,14 @@ public class ReadSpeculationTest extends TestBaseImpl
             DatabaseDescriptor.setReadRpcTimeout(rpcTimeoutMs);
             DatabaseDescriptor.setCQLStartTime(cqlStartTime);
 
-            ColumnFamilyStore cfs = Keyspace.open(KEYSPACE).getColumnFamilyStore("tbl");
+            ColumnFamilyStore cfs = Keyspace.open(KEYSPACE).getColumnFamilyStore(TABLE);
             long speculatedBefore = cfs.metric.speculativeRetries.getCount();
             long before = System.nanoTime();
             cfs.sampleReadLatencyMicros = speculationTimeoutMicros;
 
             try
             {
-                CoordinatorHelper.unsafeExecuteInternal("SELECT * FROM " + KEYSPACE + ".tbl WHERE pk = 1",
+                CoordinatorHelper.unsafeExecuteInternal("SELECT * FROM " + KEYSPACE + "." + TABLE + " WHERE pk = " + PK_VALUE,
                                                         ConsistencyLevel.QUORUM,
                                                         ConsistencyLevel.QUORUM,
                                                         new Dispatcher.RequestTime(before - enqueuedNsAgo,
@@ -204,6 +237,11 @@ public class ReadSpeculationTest extends TestBaseImpl
             long speculatedAfter = cfs.metric.speculativeRetries.getCount();
             Assert.assertEquals(speculatedAfter, speculatedBefore);
         }
+    }
+
+    private static boolean match(Cluster cluster, int instanceId, List<InetAddress> readCandidates, int positionInThePlan)
+    {
+        return cluster.get(instanceId).broadcastAddress().getAddress().equals(readCandidates.get(positionInThePlan));
     }
 
 }
