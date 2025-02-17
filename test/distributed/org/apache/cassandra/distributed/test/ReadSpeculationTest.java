@@ -21,6 +21,7 @@ package org.apache.cassandra.distributed.test;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -30,6 +31,10 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import net.bytebuddy.implementation.MethodDelegation;
+import net.bytebuddy.implementation.bind.annotation.SuperCall;
 import org.apache.cassandra.concurrent.ScheduledExecutors;
 import org.apache.cassandra.concurrent.ScheduledThreadPoolExecutorPlus;
 import org.apache.cassandra.config.Config;
@@ -39,13 +44,18 @@ import org.apache.cassandra.db.DecoratedKey;
 import org.apache.cassandra.db.Keyspace;
 import org.apache.cassandra.distributed.Cluster;
 import org.apache.cassandra.distributed.api.ConsistencyLevel;
+import org.apache.cassandra.distributed.api.IInstanceInitializer;
 import org.apache.cassandra.distributed.impl.CoordinatorHelper;
 import org.apache.cassandra.exceptions.ReadTimeoutException;
+import org.apache.cassandra.locator.InetAddressAndPort;
+import org.apache.cassandra.locator.NetworkTopologyProximity;
+import org.apache.cassandra.locator.ReplicaCollection;
 import org.apache.cassandra.locator.ReplicaPlan;
 import org.apache.cassandra.locator.ReplicaPlans;
 import org.apache.cassandra.service.CassandraDaemon;
 import org.apache.cassandra.transport.Dispatcher;
 
+import static net.bytebuddy.matcher.ElementMatchers.named;
 import static org.apache.cassandra.db.ConsistencyLevel.QUORUM;
 import static org.apache.cassandra.utils.ByteBufferUtil.bytes;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -60,6 +70,7 @@ public class ReadSpeculationTest extends TestBaseImpl
     public void speculateTest() throws Throwable
     {
         try (Cluster cluster = builder().withNodes(3)
+                                        .withInstanceInitializer(new FixNodeOrderForReads())
                                         .start())
         {
             cluster.forEach(instance -> instance.runOnInstance(() -> {
@@ -89,13 +100,13 @@ public class ReadSpeculationTest extends TestBaseImpl
                     secondReplica = i;
             }
             logger.info("1st replica to read from: {}, 2nd replica: {}", firstReplica, secondReplica);
-            Assert.assertNotEquals(0, firstReplica);
-            Assert.assertNotEquals(0, secondReplica);
+            Assert.assertEquals(1, firstReplica);
+            Assert.assertEquals(2, secondReplica);
             // force speculation by dropping all messages sent to the 2nd read replica
-            cluster.filters().allVerbs().from(firstReplica).to(secondReplica).drop();
+            cluster.filters().allVerbs().from(1).to(2).drop();
 
 
-            cluster.get(firstReplica).runOnInstance(() -> {
+            cluster.get(1).runOnInstance(() -> {
 
 
                 // Will speculate: have enough time till RPC timeout and client deadline
@@ -248,4 +259,20 @@ public class ReadSpeculationTest extends TestBaseImpl
         return cluster.get(instanceId).broadcastAddress().getAddress().equals(readCandidates.get(positionInThePlan));
     }
 
+    public static class FixNodeOrderForReads implements IInstanceInitializer
+    {
+        @Override
+        public void initialise(ClassLoader cl, ThreadGroup group, int node, int generation)
+        {
+            new ByteBuddy().rebase(NetworkTopologyProximity.class)
+                           .method(named("sortedByProximity")).intercept(MethodDelegation.to(FixNodeOrderForReads.class))
+                           .make()
+                           .load(cl, ClassLoadingStrategy.Default.INJECTION);
+        }
+
+        public static <C extends ReplicaCollection<? extends C>> C sortedByProximity(final InetAddressAndPort address, C replicas, @SuperCall Callable<C> real) throws Exception
+        {
+            return replicas.sorted(java.util.Comparator.naturalOrder());
+        }
+    }
 }
