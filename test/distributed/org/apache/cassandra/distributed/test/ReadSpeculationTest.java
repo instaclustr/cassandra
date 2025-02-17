@@ -70,6 +70,7 @@ public class ReadSpeculationTest extends TestBaseImpl
     public void speculateTest() throws Throwable
     {
         try (Cluster cluster = builder().withNodes(3)
+                                        .withConfig(config -> config.set("dynamic_snitch", false))
                                         .withInstanceInitializer(new FixNodeOrderForReads())
                                         .start())
         {
