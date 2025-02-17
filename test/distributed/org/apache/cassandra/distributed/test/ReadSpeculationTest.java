@@ -44,7 +44,6 @@ import org.apache.cassandra.exceptions.ReadTimeoutException;
 import org.apache.cassandra.locator.ReplicaPlan;
 import org.apache.cassandra.locator.ReplicaPlans;
 import org.apache.cassandra.service.CassandraDaemon;
-import org.apache.cassandra.service.reads.PercentileSpeculativeRetryPolicy;
 import org.apache.cassandra.transport.Dispatcher;
 
 import static org.apache.cassandra.db.ConsistencyLevel.QUORUM;
@@ -63,10 +62,10 @@ public class ReadSpeculationTest extends TestBaseImpl
         try (Cluster cluster = builder().withNodes(3)
                                         .start())
         {
-            cluster.get(1).runOnInstance(() -> {
+            cluster.forEach(instance -> instance.runOnInstance(() -> {
                 // Disable updater since we will force time
                 ((ScheduledThreadPoolExecutorPlus) ScheduledExecutors.optionalTasks).remove(CassandraDaemon.SPECULATION_THRESHOLD_UPDATER);
-            });
+            }));
             cluster.schemaChange("CREATE KEYSPACE IF NOT EXISTS " + KEYSPACE + " WITH replication = {'class': 'SimpleStrategy', 'replication_factor': " + 3 + "}");
             cluster.schemaChange("CREATE TABLE IF NOT EXISTS " + KEYSPACE + "." + TABLE + " (pk int, ck int, v int, PRIMARY KEY (pk, ck)) WITH speculative_retry = '2000ms';");
 
@@ -75,23 +74,28 @@ public class ReadSpeculationTest extends TestBaseImpl
                 ColumnFamilyStore cfs = keyspace.getColumnFamilyStore(TABLE);
                 DecoratedKey dk = cfs.decorateKey(bytes(PK_VALUE));
                 ReplicaPlan.ForTokenRead plan = ReplicaPlans.forRead(keyspace, dk.getToken(), null,
-                                                                     QUORUM, PercentileSpeculativeRetryPolicy.NINETY_NINE_P);
-                return plan.readCandidates().endpointList().stream().map(InetSocketAddress::getAddress).collect(Collectors.toList());
+                                                                     QUORUM, cfs.metadata().params.speculativeRetry);
+                return plan.contacts().endpointList().stream().map(InetSocketAddress::getAddress).collect(Collectors.toList());
             }, null);
-            int secondReplicaToRead = 0;
-            Assert.assertTrue("Local node 1 must be the first replica to read from", match(cluster, 1, readPlanEndpoints, 0));
-            for (int i = 1; i < 3; i++)
+            logger.info("Replicas provided in a read plan contacts: {}", readPlanEndpoints);
+            logger.info("Cluster instances: {}", cluster.stream().map(instance -> instance.broadcastAddress().getAddress()).collect(Collectors.toList()));
+            int firstReplica = 0;
+            int secondReplica = 0;
+            for (int i = 1; i <= 3; i++)
+            {
+                if (match(cluster, i, readPlanEndpoints, 0))
+                    firstReplica = i;
                 if (match(cluster, i, readPlanEndpoints, 1))
-                {
-                    secondReplicaToRead = i;
-                    break;
-                }
-            logger.info("Replicas provided in a read plan: {}, 2nd replica to read from: {}", readPlanEndpoints, secondReplicaToRead);
+                    secondReplica = i;
+            }
+            logger.info("1st replica to read from: {}, 2nd replica: {}", firstReplica, secondReplica);
+            Assert.assertNotEquals(0, firstReplica);
+            Assert.assertNotEquals(0, secondReplica);
             // force speculation by dropping all messages sent to the 2nd read replica
-            cluster.filters().allVerbs().from(1).to(secondReplicaToRead).drop();
+            cluster.filters().allVerbs().from(firstReplica).to(secondReplica).drop();
 
 
-            cluster.get(1).runOnInstance(() -> {
+            cluster.get(firstReplica).runOnInstance(() -> {
 
 
                 // Will speculate: have enough time till RPC timeout and client deadline
