@@ -78,7 +78,6 @@ public abstract class ColumnConstraint<T>
         public static SatisfiabilityChecker[] getSatisfiabilityCheckers()
         {
             List<SatisfiabilityChecker> result = new ArrayList<>();
-
             for (ConstraintType constraintType : ConstraintType.values())
                 result.addAll(Arrays.asList(constraintType.satisfiabilityCheckers));
 
