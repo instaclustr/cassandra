@@ -37,8 +37,6 @@ import org.apache.cassandra.tcm.serialization.MetadataSerializer;
  */
 public abstract class ColumnConstraint<T>
 {
-    public static final SatisfiabilityChecker[] allSatisfiabilityCheckers = ConstraintType.getSatisfiabilityCheckers();
-
     protected final ColumnIdentifier columnName;
 
     public ColumnConstraint(ColumnIdentifier columnName)
@@ -77,9 +75,10 @@ public abstract class ColumnConstraint<T>
             return ConstraintType.values()[i].serializer;
         }
 
-        private static SatisfiabilityChecker[] getSatisfiabilityCheckers()
+        public static SatisfiabilityChecker[] getSatisfiabilityCheckers()
         {
             List<SatisfiabilityChecker> result = new ArrayList<>();
+
             for (ConstraintType constraintType : ConstraintType.values())
                 result.addAll(Arrays.asList(constraintType.satisfiabilityCheckers));
 

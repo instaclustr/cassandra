@@ -126,7 +126,7 @@ public class ColumnConstraints extends ColumnConstraint<ColumnConstraints>
 
         // this will look at constraints as a whole,
         // checking if combinations of a particular constraint make sense (duplicities, satisfiability etc.).
-        for (SatisfiabilityChecker satisfiabilityChecker : allSatisfiabilityCheckers)
+        for (SatisfiabilityChecker satisfiabilityChecker : ConstraintType.getSatisfiabilityCheckers())
             satisfiabilityChecker.checkSatisfiability(constraints, columnMetadata);
 
         // this validation will check whether it makes sense to execute such constraint on a given column
