@@ -20,7 +20,9 @@ package org.apache.cassandra.cql3.constraints;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 import org.apache.cassandra.cql3.ColumnIdentifier;
@@ -96,9 +98,9 @@ public class UnaryFunctionColumnConstraint extends AbstractFunctionConstraint<Un
     }
 
     @Override
-    public List<Operator> getSupportedOperators()
+    public Set<Operator> getSupportedOperators()
     {
-        return List.of();
+        return new LinkedHashSet<>();
     }
 
     @Override

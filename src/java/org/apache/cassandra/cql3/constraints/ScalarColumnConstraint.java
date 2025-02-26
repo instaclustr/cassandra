@@ -20,7 +20,9 @@ package org.apache.cassandra.cql3.constraints;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -59,7 +61,7 @@ public class ScalarColumnConstraint extends AbstractFunctionConstraint<ScalarCol
             ShortType.instance);
 
     @VisibleForTesting
-    public static final List<Operator> SUPPORTED_OPERATORS = List.of(EQ, NEQ, GTE, GT, LTE, LT);
+    public static final Set<Operator> SUPPORTED_OPERATORS = new LinkedHashSet<>(List.of(EQ, NEQ, GTE, GT, LTE, LT));
 
     public static final Serializer serializer = new Serializer();
 
@@ -97,7 +99,7 @@ public class ScalarColumnConstraint extends AbstractFunctionConstraint<ScalarCol
     }
 
     @Override
-    public List<Operator> getSupportedOperators()
+    public Set<Operator> getSupportedOperators()
     {
         return SUPPORTED_OPERATORS;
     }
