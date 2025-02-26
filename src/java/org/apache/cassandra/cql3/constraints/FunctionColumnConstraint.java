@@ -21,7 +21,6 @@ package org.apache.cassandra.cql3.constraints;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 
 import org.apache.cassandra.cql3.ColumnIdentifier;
@@ -100,9 +99,15 @@ public class FunctionColumnConstraint extends AbstractFunctionConstraint<Functio
     }
 
     @Override
-    public Set<Operator> getSupportedOperators()
+    public List<Operator> getSupportedOperators()
     {
         return function.getSupportedOperators();
+    }
+
+    @Override
+    public List<AbstractType<?>> getSupportedTypes()
+    {
+        return function.getSupportedTypes();
     }
 
     @Override
@@ -145,6 +150,7 @@ public class FunctionColumnConstraint extends AbstractFunctionConstraint<Functio
     public void validate(ColumnMetadata columnMetadata)
     {
         validateArgs(columnMetadata);
+        validateTypes(columnMetadata);
         function.validate(columnMetadata);
     }
 

@@ -31,6 +31,8 @@ import org.apache.cassandra.db.marshal.AbstractType;
 import org.apache.cassandra.schema.ColumnMetadata;
 import org.apache.cassandra.tcm.serialization.MetadataSerializer;
 
+import static java.lang.String.format;
+
 /**
  * Common class for the conditions that a CQL Constraint needs to implement to be integrated in the
  * CQL Constraints framework, with T as a constraint serializer.
@@ -140,4 +142,37 @@ public abstract class ColumnConstraint<T>
      * @return the Constraint type serializer
      */
     public abstract ConstraintType getConstraintType();
+
+
+    /**
+     * Tells what types of columns are supported by this constraint.
+     * Returning empty list means that all types are supported.
+     *
+     * @return supported types for given constraint
+     */
+    public abstract List<AbstractType<?>> getSupportedTypes();
+
+    protected void validateTypes(ColumnMetadata columnMetadata)
+    {
+        if (getSupportedTypes() == null || getSupportedTypes().isEmpty())
+            return;
+
+        boolean supported = false;
+        AbstractType<?> unwrapped = columnMetadata.type.unwrap();
+
+        for (AbstractType<?> supportedType : getSupportedTypes())
+        {
+            if (supportedType == unwrapped)
+            {
+                supported = true;
+                break;
+            }
+        }
+
+        if (!supported)
+            throw new InvalidConstraintDefinitionException(format("Constraint '%s' can be used only for columns of type %s but it was %s",
+                                                                  name(),
+                                                                  getSupportedTypes(),
+                                                                  columnMetadata.type.getClass()));
+    }
 }
