@@ -54,7 +54,7 @@ public abstract class ColumnConstraint<T>
         // We are serializing its enum position instead of its name.
         // Changing this enum would affect how that int is interpreted when deserializing.
         COMPOSED(ColumnConstraints.serializer, new DuplicatesChecker()),
-        FUNCTION(FunctionColumnConstraint.serializer, FunctionColumnConstraint.Functions.values()),
+        FUNCTION(FunctionColumnConstraint.serializer, FunctionColumnConstraint.getSatisfiabilityCheckers()),
         SCALAR(ScalarColumnConstraint.serializer, new ScalarColumnConstraintSatisfiabilityChecker()),
         UNARY_FUNCTION(UnaryFunctionColumnConstraint.serializer, UnaryFunctionColumnConstraint.Functions.values());
 

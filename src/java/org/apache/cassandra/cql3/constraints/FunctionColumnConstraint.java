@@ -63,16 +63,21 @@ public class FunctionColumnConstraint extends AbstractFunctionConstraint<Functio
         }
     }
 
-    public enum Functions implements SatisfiabilityChecker
+    public static SatisfiabilityChecker[] getSatisfiabilityCheckers()
     {
-        LENGTH(LengthConstraint::new)
+        SatisfiabilityChecker[] satisfiabilityCheckers = new SatisfiabilityChecker[Functions.values().length];
+        for (int i = 0; i < Functions.values().length; i++)
         {
-            @Override
-            public void checkSatisfiability(List<ColumnConstraint<?>> constraints, ColumnMetadata columnMetadata)
-            {
-                FUNCTION_SATISFIABILITY_CHECKER.check(name(), constraints, columnMetadata);
-            }
-        };
+            String name = Functions.values()[i].name();
+            satisfiabilityCheckers[i] = (constraints, columnMetadata) -> FUNCTION_SATISFIABILITY_CHECKER.check(name, constraints, columnMetadata);
+        }
+
+        return satisfiabilityCheckers;
+    }
+
+    public enum Functions
+    {
+        LENGTH(LengthConstraint::new);
 
         private final Function<ColumnIdentifier, ConstraintFunction> functionCreator;
 
