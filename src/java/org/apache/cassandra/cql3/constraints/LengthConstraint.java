@@ -20,6 +20,7 @@ package org.apache.cassandra.cql3.constraints;
 
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.cassandra.cql3.ColumnIdentifier;
 import org.apache.cassandra.cql3.Operator;
@@ -62,7 +63,7 @@ public class LengthConstraint extends ConstraintFunction
     }
 
     @Override
-    public List<Operator> getSupportedOperators()
+    public Set<Operator> getSupportedOperators()
     {
         return DEFAULT_FUNCTION_OPERATORS;
     }

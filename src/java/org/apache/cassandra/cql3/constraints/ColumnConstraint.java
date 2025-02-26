@@ -157,17 +157,7 @@ public abstract class ColumnConstraint<T>
         if (getSupportedTypes() == null || getSupportedTypes().isEmpty())
             return;
 
-        boolean supported = false;
-        AbstractType<?> unwrapped = columnMetadata.type.unwrap();
-
-        for (AbstractType<?> supportedType : getSupportedTypes())
-        {
-            if (supportedType == unwrapped)
-            {
-                supported = true;
-                break;
-            }
-        }
+        boolean supported = getSupportedTypes().contains(columnMetadata.type.unwrap());
 
         if (!supported)
             throw new InvalidConstraintDefinitionException(format("Constraint '%s' can be used only for columns of type %s but it was %s",

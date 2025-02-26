@@ -19,7 +19,9 @@
 package org.apache.cassandra.cql3.constraints;
 
 import java.nio.ByteBuffer;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.cassandra.cql3.ColumnIdentifier;
 import org.apache.cassandra.cql3.Operator;
@@ -38,7 +40,7 @@ import static org.apache.cassandra.cql3.Operator.NEQ;
  */
 public abstract class ConstraintFunction
 {
-    public static final List<Operator> DEFAULT_FUNCTION_OPERATORS = List.of(EQ, NEQ, GTE, GT, LTE, LT);
+    public static final Set<Operator> DEFAULT_FUNCTION_OPERATORS = new LinkedHashSet<>(List.of(EQ, NEQ, GTE, GT, LTE, LT));
 
     protected final ColumnIdentifier columnName;
     protected final String name;
@@ -84,11 +86,11 @@ public abstract class ConstraintFunction
     /**
      * Return operators this function supports. By default, it returns an empty list, modelling unary function.
      *
-     * @return list of operators this function is allowed to have.
+     * @return set of operators this function is allowed to have.
      */
-    public List<Operator> getSupportedOperators()
+    public Set<Operator> getSupportedOperators()
     {
-        return List.of();
+        return new LinkedHashSet<>();
     }
 
     /**
