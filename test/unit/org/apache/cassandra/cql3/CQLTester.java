@@ -620,13 +620,15 @@ public abstract class CQLTester
     public static void requireNativeProtocolClientEncryption()
     {
         DatabaseDescriptor.updateNativeProtocolEncryptionOptions((encryptionOptions) ->
-                                                                 encryptionOptions.withEnabled(true)
-                                                                                  .withKeyStore(TlsTestUtils.SERVER_KEYSTORE_PATH)
-                                                                                  .withKeyStorePassword(TlsTestUtils.SERVER_KEYSTORE_PASSWORD)
-                                                                                  .withTrustStore(TlsTestUtils.SERVER_TRUSTSTORE_PATH)
-                                                                                  .withTrustStorePassword(TlsTestUtils.SERVER_TRUSTSTORE_PASSWORD)
-                                                                                  .withRequireEndpointVerification(false)
-                                                                                  .withRequireClientAuth(EncryptionOptions.ClientAuth.OPTIONAL));
+                                                                 new EncryptionOptions.ClientEncryptionOptions.Builder(encryptionOptions)
+                                                                 .withEnabled(true)
+                                                                 .withKeyStore(TlsTestUtils.SERVER_KEYSTORE_PATH)
+                                                                 .withKeyStorePassword(TlsTestUtils.SERVER_KEYSTORE_PASSWORD)
+                                                                 .withTrustStore(TlsTestUtils.SERVER_TRUSTSTORE_PATH)
+                                                                 .withTrustStorePassword(TlsTestUtils.SERVER_TRUSTSTORE_PASSWORD)
+                                                                 .withRequireEndpointVerification(false)
+                                                                 .withRequireClientAuth(EncryptionOptions.ClientEncryptionOptions.ClientAuth.OPTIONAL)
+                                                                 .build());
     }
 
     /**
@@ -1648,7 +1650,7 @@ public abstract class CQLTester
 
     protected SimpleClient newSimpleClient(ProtocolVersion version) throws IOException
     {
-        return new SimpleClient(nativeAddr.getHostAddress(), nativePort, version, version.isBeta(), new EncryptionOptions().applyConfig())
+        return new SimpleClient(nativeAddr.getHostAddress(), nativePort, version, version.isBeta(), new EncryptionOptions.ClientEncryptionOptions().applyConfig())
                .connect(false, false);
     }
 

@@ -17,7 +17,6 @@
  */
 package org.apache.cassandra.config;
 
-import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -52,7 +51,7 @@ public class JMXServerOptions
     public final Boolean authenticate;
 
     // ssl options
-    public final EncryptionOptions jmx_encryption_options;
+    public final EncryptionOptions.ClientEncryptionOptions jmx_encryption_options;
 
     // options for using Cassandra's own authentication mechanisms
     public final String login_config_name;
@@ -71,11 +70,11 @@ public class JMXServerOptions
     public JMXServerOptions()
     {
         this(true, false, 7199, 0, false,
-             new EncryptionOptions(), null, null, null,
+             new EncryptionOptions.ClientEncryptionOptions(), null, null, null,
              null, null);
     }
 
-    public static JMXServerOptions create(boolean enabled, boolean local, int jmxPort, EncryptionOptions options)
+    public static JMXServerOptions create(boolean enabled, boolean local, int jmxPort, EncryptionOptions.ClientEncryptionOptions options)
     {
         return new JMXServerOptions(enabled, !local, jmxPort, 0, false,
                                     options, null, null, null,
@@ -95,7 +94,7 @@ public class JMXServerOptions
                             int jmxPort,
                             int rmiPort,
                             Boolean authenticate,
-                            EncryptionOptions jmx_encryption_options,
+                            EncryptionOptions.ClientEncryptionOptions jmx_encryption_options,
                             String loginConfigName,
                             String loginConfigFile,
                             String passwordFile,
@@ -198,27 +197,22 @@ public class JMXServerOptions
         // in the `cassandra.yaml`. Since the JMX SSL Config can also leverage it as per CASSANDRA-18508, password file
         // support is not added to the JMX SSL configuration via the system properties. Hence, `null` is used as
         // the password file arguments for the keystore and the truststore while constructing the encryption options here.
-        EncryptionOptions encryptionOptions = new EncryptionOptions(new ParameterizedClass("org.apache.cassandra.security.DefaultSslContextFactory", new HashMap<>()),
-                                                                    keystore,
-                                                                    keystorePassword,
-                                                                    null,
-                                                                    truststore,
-                                                                    truststorePassword,
-                                                                    null,
-                                                                    cipherSuites,
-                                                                    null, // protocol
-                                                                    acceptedProtocols,
-                                                                    null, // algorithm
-                                                                    null, // store_type
-                                                                    requireClientAuth,
-                                                                    false, // require endpoint verification
-                                                                    sslEnabled,
-                                                                    false, // optional
-                                                                    null, // max_certificate_validity_period
-                                                                    null); // certificate_validity_warn_threshold
+
+        EncryptionOptions.ClientEncryptionOptions options = new EncryptionOptions.ClientEncryptionOptions.Builder()
+                                                            .withKeyStore(keystore)
+                                                            .withKeyStorePassword(keystorePassword)
+                                                            .withTrustStore(truststore)
+                                                            .withTrustStorePassword(truststorePassword)
+                                                            .withCipherSuites(cipherSuites)
+                                                            .withAcceptedProtocols(acceptedProtocols)
+                                                            .withRequireClientAuth(EncryptionOptions.ClientEncryptionOptions.ClientAuth.from(requireClientAuth))
+                                                            .withRequireEndpointVerification(false)
+                                                            .withEnabled(sslEnabled)
+                                                            .withOptional(false)
+                                                            .build();
 
         return new JMXServerOptions(enabled, remote, jmxPort, rmiPort, authenticate,
-                                    encryptionOptions, loginConfigName, loginConfigFile, passwordFile, accessFile,
+                                    options, loginConfigName, loginConfigFile, passwordFile, accessFile,
                                     authorizer);
     }
 
