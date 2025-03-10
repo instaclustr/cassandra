@@ -114,9 +114,9 @@ public interface StorageServiceMBean extends NotificationEmitter
     public String getGitSHA();
 
     /**
-     * Fetch a string representation of the Cassandra Ant build date.
-     * The format: 2024-06-19 23:54:09 CST
-     * @return A string representation of the Cassandra Ant build date.
+     * Fetch a string representation of the Cassandra's build date.
+     * The format: {@code yyyy-MM-dd'T'HH:mm:ss.SSS'Z'}
+     * @return A string representation of the Cassandra's build date.
      */
     String getBuildDate();
 

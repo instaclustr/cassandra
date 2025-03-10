@@ -95,7 +95,7 @@ import org.apache.cassandra.utils.concurrent.UncheckedInterruptedException;
 import org.objectweb.asm.Opcodes;
 
 import static org.apache.cassandra.config.CassandraRelevantProperties.CASSANDRA_AVAILABLE_PROCESSORS;
-import static org.apache.cassandra.config.CassandraRelevantProperties.ANT_BUILD_DATE;
+import static org.apache.cassandra.config.CassandraRelevantProperties.BUILD_DATE;
 import static org.apache.cassandra.config.CassandraRelevantProperties.GIT_SHA;
 import static org.apache.cassandra.config.CassandraRelevantProperties.LINE_SEPARATOR;
 import static org.apache.cassandra.config.CassandraRelevantProperties.OS_NAME;
@@ -114,9 +114,7 @@ public class FBUtilities
     }
 
     private static final Logger logger = LoggerFactory.getLogger(FBUtilities.class);
-    public static final String UNKNOWN_RELEASE_VERSION = "Unknown";
-    public static final String UNKNOWN_GIT_SHA = "Unknown";
-    public static final String UNKNOWN_BUILD_DATE = "Unknown";
+    private static final String UNKNOWN = "Unknown";
 
     public static final BigInteger TWO = new BigInteger("2");
     private static final String DEFAULT_TRIGGER_DIR = "triggers";
@@ -469,7 +467,7 @@ public class FBUtilities
     {
         Properties props = loadedProperties.get();
         if (props == null)
-            return RELEASE_VERSION.getString(UNKNOWN_RELEASE_VERSION);
+            return RELEASE_VERSION.getString(UNKNOWN);
         return props.getProperty("CassandraVersion");
     }
 
@@ -477,22 +475,22 @@ public class FBUtilities
     {
         Properties props = loadedProperties.get();
         if (props == null)
-            return GIT_SHA.getString(UNKNOWN_GIT_SHA);
-        return props.getProperty("GitSHA", UNKNOWN_GIT_SHA);
+            return GIT_SHA.getString(UNKNOWN);
+        return props.getProperty("GitSHA", UNKNOWN);
     }
 
     public static String getBuildDate()
     {
         Properties props = loadedProperties.get();
         if (props == null)
-            return ANT_BUILD_DATE.getString(UNKNOWN_BUILD_DATE);
-        return props.getProperty("BuildDate", UNKNOWN_BUILD_DATE);
+            return BUILD_DATE.getString(UNKNOWN);
+        return props.getProperty("BuildDate", UNKNOWN);
     }
 
     public static String getReleaseVersionMajor()
     {
         String releaseVersion = FBUtilities.getReleaseVersionString();
-        if (FBUtilities.UNKNOWN_RELEASE_VERSION.equals(releaseVersion))
+        if (FBUtilities.UNKNOWN.equals(releaseVersion))
         {
             throw new AssertionError("Release version is unknown");
         }

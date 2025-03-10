@@ -51,7 +51,6 @@ public enum CassandraRelevantProperties
     ALLOW_UNSAFE_JOIN("cassandra.allow_unsafe_join"),
     ALLOW_UNSAFE_REPLACE("cassandra.allow_unsafe_replace"),
     ALLOW_UNSAFE_TRANSIENT_CHANGES("cassandra.allow_unsafe_transient_changes"),
-    ANT_BUILD_DATE("cassandra.buildDate"),
     APPROXIMATE_TIME_PRECISION_MS("cassandra.approximate_time_precision_ms", "2"),
     /** 2 ** GENSALT_LOG2_ROUNDS rounds of hashing will be performed. */
     AUTH_BCRYPT_GENSALT_LOG2_ROUNDS("cassandra.auth_bcrypt_gensalt_log2_rounds"),
@@ -75,6 +74,7 @@ public enum CassandraRelevantProperties
     BROADCAST_INTERVAL_MS("cassandra.broadcast_interval_ms", "60000"),
     BTREE_BRANCH_SHIFT("cassandra.btree.branchshift", "5"),
     BTREE_FAN_FACTOR("cassandra.btree.fanfactor"),
+    BUILD_DATE("cassandra.buildDate"),
     /** Represents the maximum size (in bytes) of a serialized mutation that can be cached **/
     CACHEABLE_MUTATION_SIZE_LIMIT("cassandra.cacheable_mutation_size_limit_bytes", convertToString(1_000_000)),
     CASSANDRA_ALLOW_SIMPLE_STRATEGY("cassandra.allow_simplestrategy"),

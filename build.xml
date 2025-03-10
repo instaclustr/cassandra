@@ -503,11 +503,10 @@
     <!-- set ant build date -->
     <target name="_set-build-date">
         <tstamp>
-            <format property="build.date" pattern="yyyy-MM-dd HH:mm:ss z"/>
+            <format property="build.date" pattern="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"/>
         </tstamp>
         <!-- Include timezone information -->
-        <property environment="env"/>
-        <property name="build.date" value="${build.date} ${env.TZ}"/>
+        <property name="build.date" value="${build.date}"/>
     </target>
 
     <target name="test-run" depends="jar"
