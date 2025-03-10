@@ -18,13 +18,11 @@
 
 package org.apache.cassandra.tools;
 
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import org.apache.cassandra.io.util.File;
 import org.junit.Test;
 
+import org.apache.cassandra.distributed.shared.WithProperties;
+import org.apache.cassandra.io.util.File;
+import org.apache.cassandra.io.util.FileUtils;
 import org.apache.cassandra.tools.ToolRunner.ToolResult;
 
 import static org.apache.cassandra.config.CassandraRelevantProperties.LOG_DIR;
@@ -39,39 +37,38 @@ public class CompactionStressTest extends OfflineToolUtils
     }
 
     @Test
-    public void testWriteAndCompact() throws Exception
+    public void testWriteAndCompact()
     {
-        Path tmpDir = Files.createTempDirectory("CompactionStressTest");
+        File tmpDir = FileUtils.getTempDir();
+        tmpDir.deleteRecursiveOnExit();
+
         // For the implementation of CompactionLogger, set the LOG_DIR to a tmp
         // directory, the generated compaction.log file will be thrown in.
-        LOG_DIR.setString(tmpDir.toString());
+        try (WithProperties ignore = new WithProperties().set(LOG_DIR, tmpDir.toString()))
+        {
+            ClassLoader classLoader = getClass().getClassLoader();
+            File file = new File(classLoader.getResource("blogpost.yaml").getFile());
+            String profileFile = file.absolutePath();
 
-        ClassLoader classLoader = getClass().getClassLoader();
-        File file = new File(classLoader.getResource("blogpost.yaml").getFile());
-        String profileFile = file.absolutePath();
+            ToolRunner.invokeClass("org.apache.cassandra.stress.CompactionStress",
+                                   "write",
+                                   "-d",
+                                   "build/test/cassandra",
+                                   "-g",
+                                   "0",
+                                   "-p",
+                                   profileFile,
+                                   "-t",
+                                   "8").assertOnCleanExit();
 
-        ToolResult tool = ToolRunner.invokeClass("org.apache.cassandra.stress.CompactionStress",
-                                                 "write",
-                                                 "-d",
-                                                 "build/test/cassandra",
-                                                 "-g",
-                                                 "0",
-                                                 "-p",
-                                                 profileFile,
-                                                 "-t",
-                                                 "8");
-        tool.assertOnCleanExit();
-
-        tool = ToolRunner.invokeClass("org.apache.cassandra.stress.CompactionStress",
-                                      "compact",
-                                      "-d",
-                                      "build/test/cassandra",
-                                      "-p",
-                                      profileFile,
-                                      "-t",
-                                      "8");
-        tool.assertOnCleanExit();
-        // clear property
-        LOG_DIR.clearValue(); // checkstyle: suppress nearby 'clearValueSystemPropertyUsage'
+            ToolRunner.invokeClass("org.apache.cassandra.stress.CompactionStress",
+                                   "compact",
+                                   "-d",
+                                   "build/test/cassandra",
+                                   "-p",
+                                   profileFile,
+                                   "-t",
+                                   "8").assertOnCleanExit();
+        }
     }
 }
