@@ -20,7 +20,14 @@
 
 # Variables
 GO_VERSION="1.23.1"
-GO_TAR="go${GO_VERSION}.linux-amd64.tar.gz"
+
+GO_ARCH=linux-amd64
+
+if [ $(uname) = "Darwin" ]; then
+  GO_ARCH=darwin-arm64
+fi
+
+GO_TAR="go${GO_VERSION}.${GO_ARCH}.tar.gz"
 TMPDIR="${TMPDIR:-/tmp}"
 
 check_go_version() {
