@@ -23,13 +23,13 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
 import org.apache.cassandra.auth.AllowAllAuthorizer;
 import org.apache.cassandra.auth.IAuthorizer;
 import org.apache.cassandra.exceptions.ConfigurationException;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class ParameterizedClassTest
 {
@@ -41,15 +41,17 @@ public class ParameterizedClassTest
     }
 
     @Test
-    public void testParameterizedClassConstructorWithClassNameHasNonNullParameters() {
+    public void testParameterizedClassConstructorWithClassNameHasNonNullParameters()
+    {
         ParameterizedClass parameterizedClass = new ParameterizedClass("TestClass");
         assertNotNull(parameterizedClass.parameters);
     }
 
     @Test
-    public void testParameterizedClassConstructorWithClassNameAndParametersHasNonNullParamters() {
+    public void testParameterizedClassConstructorWithClassNameAndParametersHasNullParamters()
+    {
         ParameterizedClass parameterizedClass = new ParameterizedClass("TestClass", null);
-        assertNotNull(parameterizedClass.parameters);
+        assertNull(parameterizedClass.parameters);
     }
 
     @Test

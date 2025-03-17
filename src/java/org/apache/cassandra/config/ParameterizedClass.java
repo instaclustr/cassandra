@@ -54,14 +54,14 @@ public class ParameterizedClass
     public ParameterizedClass(String class_name, Map<String, String> parameters)
     {
         this.class_name = class_name;
-        this.parameters = parameters == null ? Collections.emptyMap() : parameters;
+        this.parameters = parameters;
     }
 
     @SuppressWarnings("unchecked")
     public ParameterizedClass(Map<String, ?> p)
     {
         this((String)p.get(CLASS_NAME),
-             p.containsKey(PARAMETERS) ? (Map<String, String>)((List<?>)p.get(PARAMETERS)).get(0) : Collections.emptyMap());
+             p.containsKey(PARAMETERS) ? (Map<String, String>)((List<?>)p.get(PARAMETERS)).get(0) : null);
     }
 
     static public <K> K newInstance(ParameterizedClass parameterizedClass, List<String> searchPackages)
