@@ -47,9 +47,9 @@ public class ParameterizedClassTest
     }
 
     @Test
-    public void testParameterizedClassConstructorWithClassNameAndParametersHasNonNullParamters() {
+    public void testParameterizedClassConstructorWithClassNameAndParametersHasNullParamters() {
         ParameterizedClass parameterizedClass = new ParameterizedClass("TestClass", null);
-        assertNotNull(parameterizedClass.parameters);
+        assertNull(parameterizedClass.parameters);
     }
 
     @Test
