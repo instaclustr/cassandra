@@ -49,8 +49,15 @@ public class ColumnConstraints extends ColumnConstraint<ColumnConstraints>
 
     public ColumnConstraints(List<ColumnConstraint<?>> constraints)
     {
-        super(null);
         this.constraints = constraints;
+    }
+
+    @Override
+    public void setColumnName(ColumnIdentifier columnName)
+    {
+        this.columnName = columnName;
+        for (ColumnConstraint<?> constraint : constraints)
+            constraint.setColumnName(columnName);
     }
 
     @Override
@@ -218,18 +225,24 @@ public class ColumnConstraints extends ColumnConstraint<ColumnConstraints>
 
             for (ColumnConstraint<?> constraint : constraints)
             {
-                if (constraint.columnName != null && !column.equals(constraint.columnName))
-                    throw new InvalidConstraintDefinitionException(format("Constraint %s was not specified on a column it operates on: %s but on: %s",
-                                                                          constraint, column.toCQLString(), constraint.columnName));
+                if (constraint.getConstraintType() == ConstraintType.SCALAR)
+                {
+                    if (!column.equals(constraint.columnName))
+                    {
+                        throw new InvalidConstraintDefinitionException(format("Constraint %s was not specified on a column it operates on: %s but on: %s",
+                                                                              constraint, column.toCQLString(), constraint.columnName));
+                    }
+                }
             }
 
-            return new ColumnConstraints(constraints);
+            ColumnConstraints columnConstraints = new ColumnConstraints(constraints);
+            columnConstraints.setColumnName(column);
+            return columnConstraints;
         }
     }
 
     public static class Serializer implements MetadataSerializer<ColumnConstraints>
     {
-
         @Override
         public void serialize(ColumnConstraints columnConstraint, DataOutputPlus out, Version version) throws IOException
         {
@@ -255,6 +268,10 @@ public class ColumnConstraints extends ColumnConstraint<ColumnConstraints>
                                                                        .deserialize(in, version);
                 columnConstraints.add(constraint);
             }
+
+            // we are not setting column name here on purpose
+            // that is deffered in ColumnMetadata's constructor,
+            // we do not have the access to a column name here anyway
             return new ColumnConstraints(columnConstraints);
         }
 

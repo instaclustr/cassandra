@@ -613,10 +613,8 @@ public final class CreateTableStatement extends AlterSchemaStatement
 
             if (isStatic)
                 staticColumns.add(column);
-            if (null == constraints)
-                columnConstraints.put(column, ColumnConstraints.NO_OP);
-            else
-                columnConstraints.put(column, constraints.prepare(column));
+
+            columnConstraints.put(column, constraints == null ? ColumnConstraints.NO_OP : constraints.prepare(column));
         }
 
         public void setCompactStorage()

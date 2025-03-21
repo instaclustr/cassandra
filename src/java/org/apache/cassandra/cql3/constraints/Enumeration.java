@@ -25,18 +25,17 @@ import org.apache.cassandra.cql3.Operator;
 import org.apache.cassandra.db.marshal.AbstractType;
 import org.apache.cassandra.db.marshal.AsciiType;
 import org.apache.cassandra.db.marshal.UTF8Type;
-import org.apache.cassandra.serializers.MarshalException;
-import org.apache.cassandra.utils.JsonUtils;
 
 import static java.lang.String.format;
 
-public class JsonConstraint extends UnaryConstraintFunction
+// TODO DO NOT COMMIT
+public class Enumeration extends UnaryConstraintFunction
 {
     private static final List<AbstractType<?>> SUPPORTED_TYPES = List.of(UTF8Type.instance, AsciiType.instance);
 
-    public static final String FUNCTION_NAME = "JSON";
+    public static final String FUNCTION_NAME = "ENUM";
 
-    public JsonConstraint(List<String> args)
+    public Enumeration(List<String> args)
     {
         super(FUNCTION_NAME, args);
     }
@@ -44,15 +43,12 @@ public class JsonConstraint extends UnaryConstraintFunction
     @Override
     public void internalEvaluate(AbstractType<?> valueType, Operator relationType, String term, ByteBuffer columnValue)
     {
-        try
+        if (!args.contains(valueType.getString(columnValue)))
         {
-            JsonUtils.decodeJson(valueType.getString(columnValue));
-        }
-        catch (MarshalException ex)
-        {
-            throw new ConstraintViolationException(format("Value for column '%s' violated %s constraint as it is not a valid JSON.",
+            throw new ConstraintViolationException(format("Value for column '%s' violated %s constraint as its value is not one of %s.",
                                                           columnName.toCQLString(),
-                                                          name));
+                                                          name,
+                                                          args));
         }
     }
 
@@ -63,15 +59,21 @@ public class JsonConstraint extends UnaryConstraintFunction
     }
 
     @Override
+    public boolean isParameterless()
+    {
+        return false;
+    }
+
+    @Override
     public boolean equals(Object o)
     {
         if (this == o)
             return true;
 
-        if (!(o instanceof JsonConstraint))
+        if (!(o instanceof Enumeration))
             return false;
 
-        JsonConstraint other = (JsonConstraint) o;
+        Enumeration other = (Enumeration) o;
 
         return columnName.equals(other.columnName) && name.equals(other.name);
     }
