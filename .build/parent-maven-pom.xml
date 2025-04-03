@@ -257,9 +257,9 @@
       <dependencies>
         <dependency>
           <groupId>software.amazon.cryptools</groupId>
-          <artifactId>AmazonCorrettoCryptoProvider</artifactId>
+          <artifactId>AmazonCorrettoCryptoProvider-FIPS</artifactId>
           <classifier>linux-x86_64</classifier>
-          <version>2.2.0</version>
+          <version>2.5.0</version>
           <scope>provided</scope>
         </dependency>
       </dependencies>
@@ -274,9 +274,9 @@
       <dependencies>
         <dependency>
           <groupId>software.amazon.cryptools</groupId>
-          <artifactId>AmazonCorrettoCryptoProvider</artifactId>
+          <artifactId>AmazonCorrettoCryptoProvider-FIPS</artifactId>
           <classifier>linux-aarch_64</classifier>
-          <version>2.2.0</version>
+          <version>2.5.0</version>
           <scope>provided</scope>
         </dependency>
       </dependencies>

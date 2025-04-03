@@ -21,6 +21,9 @@ package org.apache.cassandra.security;
 import java.util.Map;
 import javax.crypto.Cipher;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.amazon.corretto.crypto.provider.AmazonCorrettoCryptoProvider;
 
 /**
@@ -31,6 +34,8 @@ import com.amazon.corretto.crypto.provider.AmazonCorrettoCryptoProvider;
  */
 public class DefaultCryptoProvider extends AbstractCryptoProvider
 {
+    private static final Logger logger = LoggerFactory.getLogger(DefaultCryptoProvider.class);
+
     public DefaultCryptoProvider(Map<String, String> args)
     {
         super(args);
@@ -61,6 +66,11 @@ public class DefaultCryptoProvider extends AbstractCryptoProvider
             return false;
 
         AmazonCorrettoCryptoProvider.INSTANCE.assertHealthy();
+
+        if (AmazonCorrettoCryptoProvider.INSTANCE.isFips())
+            logger.info("Running FIPS-certified " + getProviderName());
+        else
+            logger.info("Running FIPS-uncertified " + getProviderName());
 
         return true;
     }
