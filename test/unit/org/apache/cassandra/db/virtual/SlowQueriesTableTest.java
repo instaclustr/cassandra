@@ -61,6 +61,7 @@ public class SlowQueriesTableTest extends AbstractLoggerVirtualTableTest<Operati
 
         int numberOfRows = 1000;
         List<LoggingEvent> loggingEvents = getLoggingEvents(numberOfRows);
+        assertEquals(1000, loggingEvents.size());
         loggingEvents.forEach(table::add);
 
         // even we inserted 1000 rows, only 100 are present as its capacity is bounded
