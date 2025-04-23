@@ -65,7 +65,7 @@ public class SlowQueriesTableTest extends AbstractLoggerVirtualTableTest<Operati
         loggingEvents.forEach(table::add);
 
         // even we inserted 1000 rows, only 100 are present as its capacity is bounded
-        assertEquals(100, numberOfPartitions());
+        assertEquals(100, executeNet(query("select * from %s")).all().size());
     }
 
     @Test
