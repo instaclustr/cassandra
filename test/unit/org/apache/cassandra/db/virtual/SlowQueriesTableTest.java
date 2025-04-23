@@ -27,7 +27,6 @@ import ch.qos.logback.classic.spi.LoggingEvent;
 import org.apache.cassandra.db.monitoring.MonitorableImpl;
 import org.apache.cassandra.db.monitoring.MonitoringTask;
 import org.apache.cassandra.db.monitoring.MonitoringTask.Operation;
-import org.apache.cassandra.utils.Clock;
 import org.apache.cassandra.utils.Generators;
 import org.quicktheories.impl.JavaRandom;
 
@@ -112,7 +111,7 @@ public class SlowQueriesTableTest extends AbstractLoggerVirtualTableTest<Operati
 
 
     @Override
-    protected String getMessage()
+    protected String getMessage(long timestamp)
     {
         MonitoringTask.SlowOperation slowOperation = new MonitoringTask.SlowOperation(new MonitorableImpl()
         {
@@ -139,7 +138,7 @@ public class SlowQueriesTableTest extends AbstractLoggerVirtualTableTest<Operati
             {
                 return random.nextBoolean();
             }
-        }, Clock.Global.currentTimeMillis());
+        }, timestamp);
 
         return Operation.serialize(List.of(slowOperation));
     }

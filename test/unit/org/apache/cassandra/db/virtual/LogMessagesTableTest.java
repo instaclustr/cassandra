@@ -26,7 +26,6 @@ import org.junit.Test;
 
 import ch.qos.logback.classic.spi.LoggingEvent;
 import com.datastax.driver.core.Row;
-import org.apache.cassandra.utils.Clock;
 
 import static org.apache.cassandra.config.CassandraRelevantProperties.LOGS_VIRTUAL_TABLE_MAX_ROWS;
 import static org.apache.cassandra.db.virtual.LogMessagesTable.LOGS_VIRTUAL_TABLE_DEFAULT_ROWS;
@@ -109,8 +108,8 @@ public class LogMessagesTableTest extends AbstractLoggerVirtualTableTest<Logging
     }
 
     @Override
-    protected String getMessage()
+    protected String getMessage(long timestamp)
     {
-        return "message " + Clock.Global.currentTimeMillis();
+        return "message " + timestamp;
     }
 }

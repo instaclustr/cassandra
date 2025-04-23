@@ -157,7 +157,7 @@ public abstract class AbstractLoggerVirtualTableTest<U> extends CQLTester
     {
         LoggingEvent event = new LoggingEvent();
         event.setLevel(Level.INFO);
-        event.setMessage(getMessage());
+        event.setMessage(getMessage(timestamp));
         event.setLoggerName(AbstractLoggerVirtualTableTest.class.getName());
         event.setThreadName(Thread.currentThread().getName());
         event.setTimeStamp(timestamp);
@@ -165,5 +165,5 @@ public abstract class AbstractLoggerVirtualTableTest<U> extends CQLTester
         return event;
     }
 
-    protected abstract String getMessage();
+    protected abstract String getMessage(long timestamp);
 }
