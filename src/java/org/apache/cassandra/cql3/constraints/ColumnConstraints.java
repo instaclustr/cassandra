@@ -124,6 +124,17 @@ public class ColumnConstraints extends ColumnConstraint<ColumnConstraints>
         return false;
     }
 
+    public boolean containsNotNullConstraint()
+    {
+        for (ColumnConstraint<?> c : constraints)
+        {
+            if (c.toString().equals(NotNullConstraint.CQL_FUNCTION_NAME))
+                return true;
+        }
+
+        return false;
+    }
+
     @Override
     public void validate(ColumnMetadata columnMetadata) throws InvalidConstraintDefinitionException
     {

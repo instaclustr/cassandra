@@ -19,6 +19,7 @@
 package org.apache.cassandra.cql3.constraints;
 
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.cassandra.cql3.Operator;
@@ -29,7 +30,15 @@ import static java.lang.String.format;
 
 public class NotNullConstraint extends UnaryConstraintFunction
 {
-    public static final String FUNCTION_NAME = "NOT_NULL";
+    public static final String FUNCTION_NAME = "NOT_NULL"; // as enum item
+    public static final String CQL_FUNCTION_NAME = "NOT NULL";
+
+    private static final List<String> emptyArguments = Collections.emptyList();
+
+    public NotNullConstraint()
+    {
+        super(FUNCTION_NAME, emptyArguments);
+    }
 
     public NotNullConstraint(List<String> args)
     {
@@ -62,7 +71,7 @@ public class NotNullConstraint extends UnaryConstraintFunction
     @Override
     public String toString()
     {
-        return "NOT NULL";
+        return CQL_FUNCTION_NAME;
     }
 
     @Override

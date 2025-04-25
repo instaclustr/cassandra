@@ -87,7 +87,7 @@ public class UnaryFunctionColumnConstraint extends AbstractFunctionConstraint<Un
         return getEnum(Functions.class, functionName).functionCreator.apply(arguments);
     }
 
-    private UnaryFunctionColumnConstraint(ConstraintFunction function)
+    public UnaryFunctionColumnConstraint(ConstraintFunction function)
     {
         super(null, null);
         this.function = function;
