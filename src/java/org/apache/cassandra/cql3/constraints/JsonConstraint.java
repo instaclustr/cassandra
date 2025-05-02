@@ -51,7 +51,7 @@ public class JsonConstraint extends UnaryConstraintFunction
         catch (MarshalException ex)
         {
             throw new ConstraintViolationException(format("Value for column '%s' violated %s constraint as it is not a valid JSON.",
-                                                          columnName.toCQLString(),
+                                                          columnName,
                                                           name));
         }
     }

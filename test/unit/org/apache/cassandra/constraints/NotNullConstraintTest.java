@@ -61,6 +61,9 @@ public class NotNullConstraintTest
     @Test
     public void testNotNullConstraintValidation()
     {
+        unaryConstraint.setColumnName(columnIdentifier);
+        scalarConstraint.setColumnName(columnIdentifier);
+        functionConstraint.setColumnName(columnIdentifier);
         // unary
         unaryConstraint.validate(getColumnOfType(UTF8Type.instance));
         assertThatThrownBy(() -> unaryConstraint.evaluate(UTF8Type.instance, EMPTY_BYTE_BUFFER))
@@ -95,6 +98,9 @@ public class NotNullConstraintTest
     @Test
     public void testCollections()
     {
+        unaryConstraint.setColumnName(columnIdentifier);
+        scalarConstraint.setColumnName(columnIdentifier);
+        functionConstraint.setColumnName(columnIdentifier);
         checkList(false);
         checkSet(false);
         checkMap(false);

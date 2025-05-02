@@ -236,6 +236,8 @@ public class ColumnConstraints extends ColumnConstraint<ColumnConstraints>
 
             for (ColumnConstraint<?> constraint : constraints)
             {
+                // We only check scalar constraints column name, as the rest of the constraints
+                // imply the name from the column they are defined at
                 if (constraint.getConstraintType() == ConstraintType.SCALAR)
                 {
                     if (!column.equals(constraint.columnName))
