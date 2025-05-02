@@ -105,7 +105,7 @@ For example, we can create a constraint that checks that name can't be longer th
 
 ----
 CREATE TABLE ks.tb (
-	name text CHECK LENGTH(name) < 256
+	name text CHECK LENGTH() < 256
 	...,
 );
 ----
@@ -113,7 +113,7 @@ CREATE TABLE ks.tb (
 Altering that constraint can be done with:
 
 ----
-ALTER TABLE ks.tb ALTER name LENGTH(name) < 512;
+ALTER TABLE ks.tb ALTER name LENGTH() < 512;
 ----
 
 Finally, the constraint can be removed:
@@ -130,7 +130,7 @@ For example, we can create a constraint that checks that name can't be bigger th
 
 ----
 CREATE TABLE ks.tb (
-	name text CHECK OCTET_LENGTH(name) < 2
+	name text CHECK OCTET_LENGTH() < 2
 	...,
 );
 ----
@@ -158,8 +158,8 @@ For example, let's have this table:
 CREATE TABLE ks.tb (
     id int,
     cl int,
-    col1 int CHECK NOT_NULL(col1),
-    col2 int CHECK NOT_NULL(col2),
+    col1 int CHECK NOT NULL,
+    col2 int CHECK NOT NULL,
     PRIMARY KEY (id, cl)
 );
 ----
@@ -205,7 +205,7 @@ Defines a constraint which checks if a column contains a string which is a valid
 ----
 CREATE TABLE ks.tb (
     id int primary key,
-    val text CHECK JSON(val)
+    val text CHECK JSON()
 );
 
 -- valid JSON string
@@ -230,7 +230,7 @@ Defines a constraint which checks text-like values againt a regular expression.
 ----
 CREATE TABLE ks.tb (
     id int primary key,
-    value CHECK REGEXP(value) = 'a.*b'
+    value CHECK REGEXP() = 'a.*b'
 )
 ----
 
@@ -243,7 +243,7 @@ cassandra@cqlsh> INSERT INTO ks.tb (id , value ) VALUES ( 1, 'aaaaa');
 Negation can be also used:
 
 ----
-ALTER TABLE ks.tb ALTER value CHECK REGEXP(value) != 'a.*b';
+ALTER TABLE ks.tb ALTER value CHECK REGEXP() != 'a.*b';
 ----
 
 which would logically invert the condition:
