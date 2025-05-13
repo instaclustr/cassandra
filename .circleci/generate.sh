@@ -133,6 +133,8 @@ if $has_env_vars && $check_env_vars; then
        [ "$key" != "REPEATED_UTESTS_COUNT" ] &&
        [ "$key" != "REPEATED_UTESTS_FQLTOOL" ] &&
        [ "$key" != "REPEATED_UTESTS_FQLTOOL_COUNT" ] &&
+       [ "$key" != "REPEATED_UTESTS_SSTABLELOADER" ] &&
+       [ "$key" != "REPEATED_UTESTS_SSTABLELOADER_COUNT" ] &&
        [ "$key" != "REPEATED_UTESTS_LONG" ] &&
        [ "$key" != "REPEATED_UTESTS_LONG_COUNT" ] &&
        [ "$key" != "REPEATED_UTESTS_STRESS" ] &&
