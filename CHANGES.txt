@@ -1,4 +1,5 @@
 5.1
+ * Migrate sstableloader code to its own tools directory and artifact (CASSANDRA-20328)
  * When a custom disk error handler fails to initiate, fail the startup of a node instead of using the no-op handler (CASSANDRA-20614)
  * Rewrite constraint framework to remove column specification from constraint definition, introduce SQL-like NOT NULL (CASSANDRA-20563)
  * Fix a bug in AutoRepair duration metric calculation if schedule finishes quickly (CASSANDRA-20622)
@@ -189,7 +190,6 @@
  * Add ELAPSED command to cqlsh (CASSANDRA-18861)
  * Add the ability to disable bulk loading of SSTables (CASSANDRA-18781)
  * Clean up obsolete functions and simplify cql_version handling in cqlsh (CASSANDRA-18787)
- * Migrate sstableloader code to its own tools directory and artifact (CASSANDRA-20328)
 Merged from 5.0:
  * Optimize initial skipping logic for SAI queries on large partitions (CASSANDRA-20191)
  * zero copy streaming allocates direct memory that isn't used, but does help to fragment the memory space (CASSANDRA-20577)
