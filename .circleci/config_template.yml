@@ -3221,8 +3221,8 @@ commands:
     steps:
       - run_repeated_utests:
           target: sstableloader-test
-          tests: ${REPEATED_UTESTS_FQLTOOL}
-          count: ${REPEATED_UTESTS_FQLTOOL_COUNT}
+          tests: ${REPEATED_UTESTS_SSTABLELOADER}
+          count: ${REPEATED_UTESTS_SSTABLELOADER_COUNT}
           stop_on_failure: ${REPEATED_TESTS_STOP_ON_FAILURE}
 
   run_utests_stress_repeat:
