@@ -3678,13 +3678,14 @@ public class StorageService extends NotificationBroadcasterSupport implements IE
 
     public Mode operationMode()
     {
-        if (!isInitialized())
-            return Mode.STARTING;
-
         if (transientMode.isPresent())
             return transientMode.get();
 
         NodeState nodeState = ClusterMetadata.current().myNodeState();
+
+        if (nodeState == null)
+            return Mode.STARTING;
+
         switch (nodeState)
         {
             case REGISTERED:
