@@ -58,7 +58,6 @@ public class CommitLogReaderTest extends CQLTester
     {
         prePrepareServer();
 
-        DatabaseDescriptor.setCommitFailurePolicy(Config.CommitFailurePolicy.ignore);
         JVMStabilityInspector.replaceKiller(new KillerForTests(false));
 
         DatabaseDescriptor.setCommitLogSync(Config.CommitLogSync.batch);
@@ -72,6 +71,10 @@ public class CommitLogReaderTest extends CQLTester
     {
         clearCorruptedCommitLogFile();
         CommitLog.instance.resetUnsafe(true);
+
+        // always reset to what Cassandra's default is and let each test method
+        // handle its expected failure policy itself for better test encapsulation.
+        DatabaseDescriptor.setCommitFailurePolicy(Config.CommitFailurePolicy.stop);
     }
 
     @Test
@@ -179,8 +182,6 @@ public class CommitLogReaderTest extends CQLTester
     @Test
     public void testSyncMarkerChecksumReadFailed_ignoreReplayErrorsDisabled() throws Throwable
     {
-        DatabaseDescriptor.setCommitFailurePolicy(Config.CommitFailurePolicy.stop);
-
         File corruptedSegmentFile = createAndWriteCorruptedCommitLogFile();
         CommitLogReader reader = new CommitLogReader();
         // use real CLR handler to test actual behavior
@@ -202,7 +203,6 @@ public class CommitLogReaderTest extends CQLTester
     {
         try (WithProperties properties = new WithProperties().set(COMMITLOG_IGNORE_REPLAY_ERRORS, "true"))
         {
-            DatabaseDescriptor.setCommitFailurePolicy(Config.CommitFailurePolicy.stop);
             File corruptedSegmentFile = createAndWriteCorruptedCommitLogFile();
 
             CommitLogReader reader = new CommitLogReader();
@@ -273,7 +273,7 @@ public class CommitLogReaderTest extends CQLTester
                 continue;
             results.add(f);
         }
-        Assert.assertTrue("Didn't find any commit log files.", 0 != results.size());
+        Assert.assertFalse("Didn't find any commit log files.", results.isEmpty());
         return results;
     }
 
@@ -295,22 +295,21 @@ public class CommitLogReaderTest extends CQLTester
             this.metadata = metadata;
         }
 
-        public boolean shouldSkipSegmentOnError(CommitLogReadException exception) throws IOException
+        public boolean shouldSkipSegmentOnError(CommitLogReadException exception)
         {
             sawStopOnErrorCheck = true;
             return false;
         }
 
-        public void handleUnrecoverableError(CommitLogReadException exception) throws IOException
+        public void handleUnrecoverableError(CommitLogReadException exception)
         {
             sawStopOnErrorCheck = true;
         }
 
         public void handleMutation(Mutation m, int size, int entryLocation, CommitLogDescriptor desc)
         {
-            if ((metadata == null) || (metadata != null && m.getPartitionUpdate(metadata) != null)) {
+            if (metadata == null || m.getPartitionUpdate(metadata) != null)
                 seenMutations.add(m);
-            }
         }
 
         public int seenMutationCount() { return seenMutations.size(); }
