@@ -1,3 +1,6 @@
+3.11.19.2
+* No notable changes - being released for purely internal NetApp Instaclustr purposes.
+
 3.11.19.1
  * Reject empty options and invalid DC names in replication configuration while creating or altering a keyspace (CASSANDRA-12681)
 
