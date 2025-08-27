@@ -320,10 +320,7 @@ public class SettingsTableTest extends CQLTester
     @Test
     public void testRedaction()
     {
-        assertValue("transparent_data_encryption_options.key_provider.parameters",
-                    String.format("{keystore_password=%s, keystore=conf/.keystore, key_password=%s}",
-                                  Redacted.REDACTED_STRING,
-                                  Redacted.REDACTED_STRING));
+        assertValue("transparent_data_encryption_options.key_provider.parameters", Redacted.REDACTED_STRING);
 
         Set<Map.Entry<String, Property>> entries = new DefaultLoader().flatten(Config.class)
                                                                       .entrySet()
