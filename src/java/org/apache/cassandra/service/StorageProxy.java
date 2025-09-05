@@ -3637,14 +3637,8 @@ public class StorageProxy implements StorageProxyMBean
     @Override
     public void loadPartitionDenylist()
     {
-        checkPartitionDenylistEnabled();
+        ensurePartitionDenylistEnabled();
         partitionDenylist.load();
-    }
-
-    @Override
-    public boolean getPartitionDenylistEnabled()
-    {
-        return DatabaseDescriptor.getPartitionDenylistEnabled();
     }
 
     @Override
@@ -3663,6 +3657,12 @@ public class StorageProxy implements StorageProxyMBean
     public void setEnablePartitionDenylist(boolean enabled)
     {
         DatabaseDescriptor.setPartitionDenylistEnabled(enabled);
+    }
+
+    @Override
+    public boolean getPartitionDenylistEnabled()
+    {
+        return DatabaseDescriptor.getPartitionDenylistEnabled();
     }
 
     @Override
@@ -3705,7 +3705,7 @@ public class StorageProxy implements StorageProxyMBean
     @Override
     public boolean denylistKey(String keyspace, String table, String partitionKeyAsString)
     {
-        checkPartitionDenylistEnabled();
+        ensurePartitionDenylistEnabled();
         if (!Schema.instance.getKeyspaces().contains(keyspace))
             return false;
 
@@ -3727,7 +3727,7 @@ public class StorageProxy implements StorageProxyMBean
     @Override
     public boolean removeDenylistKey(String keyspace, String table, String partitionKeyAsString)
     {
-        checkPartitionDenylistEnabled();
+        ensurePartitionDenylistEnabled();
         if (!Schema.instance.getKeyspaces().contains(keyspace))
             return false;
 
@@ -3744,7 +3744,7 @@ public class StorageProxy implements StorageProxyMBean
      */
     public boolean isKeyDenylisted(String keyspace, String table, String partitionKeyAsString)
     {
-        checkPartitionDenylistEnabled();
+        ensurePartitionDenylistEnabled();
         if (!Schema.instance.getKeyspaces().contains(keyspace))
             return false;
 
@@ -3756,10 +3756,10 @@ public class StorageProxy implements StorageProxyMBean
         return !partitionDenylist.isKeyPermitted(keyspace, table, bytes);
     }
 
-    private void checkPartitionDenylistEnabled() {
-        if (!getPartitionDenylistEnabled()) {
-            throw new UnsupportedOperationException("Denylisting partitions is disabled");
-        }
+    private void ensurePartitionDenylistEnabled()
+    {
+        if (!getPartitionDenylistEnabled())
+            throw new RuntimeException("Denylisting partitions is disabled.");
     }
 
     @Override

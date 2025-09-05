@@ -449,7 +449,8 @@ public class PartitionDenylistTest
     }
 
     @Test
-    public void testJmxThrowExcepitonWhenDenylistDisable() {
+    public void testJmxThrowExcepitonWhenDenylistDisable()
+    {
         // Disable denylisting
         DatabaseDescriptor.setPartitionDenylistEnabled(false);
         // read and write work well
@@ -459,16 +460,16 @@ public class PartitionDenylistTest
         process("INSERT INTO " + ks_cql + ".table1 (keyone, keytwo, qux, quz, foo) VALUES ('bbb', 'ccc', 'eee', 'fff', 'w')", ConsistencyLevel.ONE);
         // when denylisting is disabled, JMX operation will throw excepiton
         assertThatThrownBy(() -> denylist("table1", "foo:bar"))
-                            .isInstanceOf(UnsupportedOperationException.class)
+                            .isInstanceOf(RuntimeException.class)
                             .hasMessageContaining("Denylisting partitions is disabled");
-        assertThatThrownBy(() -> refreshList())
-                            .isInstanceOf(UnsupportedOperationException.class)
+        assertThatThrownBy(PartitionDenylistTest::refreshList)
+                            .isInstanceOf(RuntimeException.class)
                             .hasMessageContaining("Denylisting partitions is disabled");
         assertThatThrownBy(() -> removeDenylist(ks_cql, "table1", "foo:bar"))
-                            .isInstanceOf(UnsupportedOperationException.class)
+                            .isInstanceOf(RuntimeException.class)
                             .hasMessageContaining("Denylisting partitions is disabled");
         assertThatThrownBy(() -> StorageProxy.instance.isKeyDenylisted(ks_cql, "table1", "bbb:ccc"))
-                            .isInstanceOf(UnsupportedOperationException.class)
+                            .isInstanceOf(RuntimeException.class)
                             .hasMessageContaining("Denylisting partitions is disabled");
     }
 
