@@ -442,9 +442,9 @@
       <dependency>
         <groupId>com.fasterxml.jackson.dataformat</groupId>
         <artifactId>jackson-dataformat-yaml</artifactId>
-        <!-- CASSANDRA-20848 2.19.x would bring snakeyaml 2.4 which is for now incompatible with rest of the codebase -->
-        <version>2.15.3</version>
+        <version>2.19.2</version>
         <scope>test</scope>
+        <!-- CASSANDRA-20848 2.19.x would bring snakeyaml 2.4 which is for now incompatible with rest of the codebase -->
         <exclusions>
           <exclusion>
             <artifactId>snakeyaml</artifactId>
