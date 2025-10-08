@@ -56,6 +56,11 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.konloch</groupId>
+            <artifactId>safeyaml</artifactId>
+            <version>1.34.1</version>
+        </dependency>
 
     </dependencies>
 
