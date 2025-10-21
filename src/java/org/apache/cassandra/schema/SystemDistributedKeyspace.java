@@ -496,7 +496,7 @@ public final class SystemDistributedKeyspace
             while (iterator.hasNext())
             {
                 UntypedResultSet.Row row = iterator.next();
-                dictionaries.add(CompressionDictionary.createFromRowSimple(row, false));
+                dictionaries.add(CompressionDictionary.createFromRowSimple(row));
             }
 
             return dictionaries;

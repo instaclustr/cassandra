@@ -137,7 +137,7 @@ public interface CompressionDictionary extends AutoCloseable
         return dictionary;
     }
 
-    static CompressionDictionary createFromRowSimple(UntypedResultSet.Row row, boolean withRawDict)
+    static CompressionDictionary createFromRowSimple(UntypedResultSet.Row row)
     {
         String kindStr = row.getString("kind");
         long dictId = row.getLong("dict_id");
@@ -156,7 +156,7 @@ public interface CompressionDictionary extends AutoCloseable
                 @Override
                 public byte[] rawDictionary()
                 {
-                    return withRawDict ? row.getByteArray("dict") : null;
+                    return null;
                 }
 
                 @Override
