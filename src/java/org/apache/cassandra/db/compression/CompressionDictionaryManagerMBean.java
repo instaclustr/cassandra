@@ -18,7 +18,9 @@
 
 package org.apache.cassandra.db.compression;
 
+import javax.annotation.Nullable;
 import javax.management.openmbean.CompositeData;
+import javax.management.openmbean.TabularData;
 
 public interface CompressionDictionaryManagerMBean
 {
@@ -33,7 +35,7 @@ public interface CompressionDictionaryManagerMBean
      * @param force force the dictionary training even if there are not enough samples;
      *              otherwise, dictionary training won't start if the trainer is not ready
      * @throws UnsupportedOperationException if table doesn't support dictionary compression
-     * @throws IllegalStateException if no SSTables available after flush
+     * @throws IllegalStateException         if no SSTables available after flush
      */
     void train(boolean force);
 
@@ -44,4 +46,31 @@ public interface CompressionDictionaryManagerMBean
      * @return CompositeData representing {@link TrainingState}
      */
     CompositeData getTrainingState();
+
+    /**
+     * Gets dictionaries for given keyspace and table.
+     *
+     * @param keyspace keyspace to get dictionaries from
+     * @param table    table to get dictionaries from
+     * @return dictionaries for given keyspace and table
+     */
+    TabularData getDictionaries(String keyspace, String table);
+
+    /**
+     * Get compression dictionary.
+     *
+     * @param keyspace keyspace to get dictionary for
+     * @param table    table to get dictionary for
+     * @param dictId   id of dictionary to get
+     * @return CompositeData representing dictionary or null of not found
+     */
+    @Nullable
+    CompositeData getDictionary(String keyspace, String table, long dictId);
+
+    /**
+     * Import a dictionary.
+     *
+     * @param dictionary dictionary to import
+     */
+    void importDictionary(CompositeData dictionary);
 }

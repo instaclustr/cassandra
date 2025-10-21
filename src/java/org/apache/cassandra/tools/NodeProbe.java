@@ -89,6 +89,7 @@ import org.apache.cassandra.batchlog.BatchlogManagerMBean;
 import org.apache.cassandra.db.ColumnFamilyStoreMBean;
 import org.apache.cassandra.db.compaction.CompactionManager;
 import org.apache.cassandra.db.compaction.CompactionManagerMBean;
+import org.apache.cassandra.db.compression.CompressionDictionaryDetailsTabularData;
 import org.apache.cassandra.db.compression.CompressionDictionaryManagerMBean;
 import org.apache.cassandra.db.compression.TrainingState;
 import org.apache.cassandra.db.guardrails.Guardrails;
@@ -2702,6 +2703,80 @@ public class NodeProbe implements AutoCloseable
         try
         {
             proxy.train(force);
+        }
+        catch (Exception e)
+        {
+            if (e.getCause() instanceof InstanceNotFoundException)
+            {
+                String message = String.format("Table %s.%s does not exist or does not support dictionary compression",
+                                               keyspace, table);
+                throw new IOException(message);
+            }
+            else
+            {
+                throw new IOException(e.getMessage());
+            }
+        }
+    }
+
+    public CompositeData getCompressionDictionary(String keyspace, String table, long dictId) throws IOException
+    {
+        CompressionDictionaryManagerMBean proxy = getDictionaryManagerProxy(keyspace, table);
+        try
+        {
+            return proxy.getDictionary(keyspace, table, dictId);
+        }
+        catch (Exception e)
+        {
+            if (e.getCause() instanceof InstanceNotFoundException)
+            {
+                String message = String.format("Table %s.%s does not exist or does not support dictionary compression",
+                                               keyspace, table);
+                throw new IOException(message);
+            }
+            else
+            {
+                throw new IOException(e.getMessage());
+            }
+        }
+    }
+
+    public TabularData listCompressionDictionaries(String keyspace, String table) throws IOException
+    {
+        CompressionDictionaryManagerMBean proxy = getDictionaryManagerProxy(keyspace, table);
+        try
+        {
+            return proxy.getDictionaries(keyspace, table);
+        }
+        catch (Exception e)
+        {
+            if (e.getCause() instanceof InstanceNotFoundException)
+            {
+                String message = String.format("Table %s.%s does not exist or does not support dictionary compression",
+                                               keyspace, table);
+                throw new IOException(message);
+            }
+            else
+            {
+                throw new IOException(e.getMessage());
+            }
+        }
+    }
+
+    public void importCompressionDictionary(CompositeData compositeData) throws IOException
+    {
+        String keyspace = (String) compositeData.get(CompressionDictionaryDetailsTabularData.KEYSPACE_NAME);
+        String table = (String) compositeData.get(CompressionDictionaryDetailsTabularData.TABLE_NAME);
+
+        if (keyspace == null || table == null)
+        {
+            throw new IllegalStateException("Argument mush have keyspace and table values.");
+        }
+
+        CompressionDictionaryManagerMBean proxy = getDictionaryManagerProxy(keyspace, table);
+        try
+        {
+            proxy.importDictionary(compositeData);
         }
         catch (Exception e)
         {

@@ -19,9 +19,12 @@
 package org.apache.cassandra.db.compression;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 import javax.management.openmbean.CompositeData;
+import javax.management.openmbean.TabularData;
+import javax.management.openmbean.TabularDataSupport;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
@@ -29,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.db.ColumnFamilyStore;
+import org.apache.cassandra.db.compression.CompressionDictionaryDetailsTabularData.CompressionDictionaryPojo;
 import org.apache.cassandra.io.sstable.format.SSTableReader;
 import org.apache.cassandra.schema.CompressionParams;
 import org.apache.cassandra.schema.SystemDistributedKeyspace;
@@ -244,6 +248,47 @@ public class CompressionDictionaryManager implements CompressionDictionaryManage
         return dictionaryTrainer.getTrainingState().toCompositeData();
     }
 
+    @Override
+    public TabularData getDictionaries(String keyspace, String table)
+    {
+        List<CompressionDictionary> dictionaries = SystemDistributedKeyspace.listCompressionDictionaries(keyspace, table);
+        TabularDataSupport tableData = new TabularDataSupport(CompressionDictionaryDetailsTabularData.TABULAR_TYPE);
+
+        if (dictionaries == null)
+        {
+            return tableData;
+        }
+
+        for (CompressionDictionary dictionary : dictionaries)
+        {
+            CompressionDictionaryDetailsTabularData.from(keyspace, table, dictionary, tableData);
+        }
+
+        return tableData;
+    }
+
+    @Override
+    public CompositeData getDictionary(String keyspace, String table, long dictId)
+    {
+        CompressionDictionary compressionDictionary = SystemDistributedKeyspace.retrieveCompressionDictionary(keyspaceName, tableName, dictId);
+        if (compressionDictionary == null)
+            return null;
+
+        return CompressionDictionaryDetailsTabularData.from(keyspace, table, compressionDictionary);
+    }
+
+    @Override
+    public void importDictionary(CompositeData compositeData)
+    {
+        // TODO - add validation that keyspace and table exists
+        CompressionDictionaryPojo pojo = CompressionDictionaryDetailsTabularData.from(compositeData);
+
+        CompressionDictionary.Kind kind = CompressionDictionary.Kind.valueOf(pojo.kind);
+        CompressionDictionary.DictId dictId = new CompressionDictionary.DictId(kind, pojo.dictId);
+        CompressionDictionary dictionary = kind.createDictionary(dictId, pojo.dict);
+        importDictionary(dictionary);
+    }
+
     /**
      * Close all the resources. The method can be called multiple times.
      */
@@ -265,6 +310,12 @@ public class CompressionDictionaryManager implements CompressionDictionaryManage
         // sequence meatters; persist the new dictionary before broadcasting to others.
         storeDictionary(dictionary);
         onNewDictionaryTrained(dictionary.dictId());
+    }
+
+    // TODO Trying to figure out how to do this most effectively
+    public void importDictionary(CompressionDictionary dictionary)
+    {
+        handleNewDictionary(dictionary);
     }
 
     private CompressionDictionaryTrainingConfig createTrainingConfig()

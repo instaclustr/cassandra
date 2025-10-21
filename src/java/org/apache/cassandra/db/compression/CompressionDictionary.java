@@ -137,6 +137,41 @@ public interface CompressionDictionary extends AutoCloseable
         return dictionary;
     }
 
+    static CompressionDictionary createFromRowSimple(UntypedResultSet.Row row, boolean withRawDict)
+    {
+        String kindStr = row.getString("kind");
+        long dictId = row.getLong("dict_id");
+
+        try
+        {
+            Kind kind = CompressionDictionary.Kind.valueOf(kindStr);
+            return new CompressionDictionary()
+            {
+                @Override
+                public DictId dictId()
+                {
+                    return new DictId(kind, dictId);
+                }
+
+                @Override
+                public byte[] rawDictionary()
+                {
+                    return withRawDict ? row.getByteArray("dict") : null;
+                }
+
+                @Override
+                public void close()
+                {
+
+                }
+            };
+        }
+        catch (IllegalArgumentException ex)
+        {
+            throw new IllegalStateException(kindStr + " compression dictionary is not created for dict id " + dictId);
+        }
+    }
+
     static CompressionDictionary createFromRow(UntypedResultSet.Row row)
     {
         String kindStr = row.getString("kind");

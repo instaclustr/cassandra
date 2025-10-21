@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -460,14 +461,45 @@ public final class SystemDistributedKeyspace
      * @return the compression dictionary identified by the specified keyspace, table and dictionaryId,
      *         or null if no dictionary exists or if an error occurs during retrieval
      */
-    public static CompressionDictionary retrieveCompressionDictionary(String keyspaceName, String tableName, CompressionDictionary.DictId dictionaryId)
+    public static CompressionDictionary retrieveCompressionDictionary(String keyspaceName, String tableName, long dictionaryId)
     {
         String query = "SELECT kind, dict_id, dict FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s' AND dict_id=%s";
-        String fmtQuery = format(query, SchemaConstants.DISTRIBUTED_KEYSPACE_NAME, COMPRESSION_DICTIONARIES, keyspaceName, tableName, dictionaryId.id);
+        String fmtQuery = format(query, SchemaConstants.DISTRIBUTED_KEYSPACE_NAME, COMPRESSION_DICTIONARIES, keyspaceName, tableName, dictionaryId);
         try
         {
             UntypedResultSet.Row row = QueryProcessor.execute(fmtQuery, ConsistencyLevel.ONE).one();
             return CompressionDictionary.createFromRow(row);
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+    }
+
+    /**
+     * Retrieves all dictionaries for a given keyspace and table.
+     *
+     * @param keyspaceName the keyspace name to retrieve the dictionary for
+     * @param tableName the table name to retrieve the dictionary for
+     * @return the compression dictionaries identified by the specified keyspace and table,
+     *         or null if no dictionary exists or if an error occurs during retrieval
+     */
+    public static List<CompressionDictionary> listCompressionDictionaries(String keyspaceName, String tableName)
+    {
+        String query = "SELECT kind, dict_id FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s'";
+        String fmtQuery = format(query, SchemaConstants.DISTRIBUTED_KEYSPACE_NAME, COMPRESSION_DICTIONARIES, keyspaceName, tableName);
+        try
+        {
+            List<CompressionDictionary> dictionaries = new ArrayList<>();
+            UntypedResultSet result = QueryProcessor.execute(fmtQuery, ConsistencyLevel.ONE);
+            Iterator<UntypedResultSet.Row> iterator = result.iterator();
+            while (iterator.hasNext())
+            {
+                UntypedResultSet.Row row = iterator.next();
+                dictionaries.add(CompressionDictionary.createFromRowSimple(row, false));
+            }
+
+            return dictionaries;
         }
         catch (Exception e)
         {
