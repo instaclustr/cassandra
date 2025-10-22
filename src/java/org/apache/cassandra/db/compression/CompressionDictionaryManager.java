@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.db.ColumnFamilyStore;
+import org.apache.cassandra.db.compression.CompressionDictionary.LightweightCompressionDictionary;
 import org.apache.cassandra.db.compression.CompressionDictionaryDetailsTabularData.CompressionDictionaryPojo;
 import org.apache.cassandra.io.sstable.format.SSTableReader;
 import org.apache.cassandra.schema.CompressionParams;
@@ -249,9 +250,9 @@ public class CompressionDictionaryManager implements CompressionDictionaryManage
     }
 
     @Override
-    public TabularData getDictionaries(String keyspace, String table)
+    public TabularData listDictionaries(String keyspace, String table)
     {
-        List<CompressionDictionary> dictionaries = SystemDistributedKeyspace.listCompressionDictionaries(keyspace, table);
+        List<LightweightCompressionDictionary> dictionaries = SystemDistributedKeyspace.retrieveLightweightCompressionDictionaries(keyspace, table);
         TabularDataSupport tableData = new TabularDataSupport(CompressionDictionaryDetailsTabularData.TABULAR_TYPE);
 
         if (dictionaries == null)
@@ -259,12 +260,22 @@ public class CompressionDictionaryManager implements CompressionDictionaryManage
             return tableData;
         }
 
-        for (CompressionDictionary dictionary : dictionaries)
+        for (LightweightCompressionDictionary dictionary : dictionaries)
         {
             CompressionDictionaryDetailsTabularData.from(keyspace, table, dictionary, tableData);
         }
 
         return tableData;
+    }
+
+    @Override
+    public CompositeData getDictionary(String keyspace, String table)
+    {
+        CompressionDictionary compressionDictionary = SystemDistributedKeyspace.retrieveLatestCompressionDictionary(keyspaceName, tableName);
+        if (compressionDictionary == null)
+            return null;
+
+        return CompressionDictionaryDetailsTabularData.from(keyspace, table, compressionDictionary);
     }
 
     @Override
@@ -280,13 +291,28 @@ public class CompressionDictionaryManager implements CompressionDictionaryManage
     @Override
     public void importDictionary(CompositeData compositeData)
     {
-        // TODO - add validation that keyspace and table exists
         CompressionDictionaryPojo pojo = CompressionDictionaryDetailsTabularData.from(compositeData);
-
         CompressionDictionary.Kind kind = CompressionDictionary.Kind.valueOf(pojo.kind);
         CompressionDictionary.DictId dictId = new CompressionDictionary.DictId(kind, pojo.dictId);
-        CompressionDictionary dictionary = kind.createDictionary(dictId, pojo.dict);
-        importDictionary(dictionary);
+
+        CompressionDictionary latestCompressionDictionary = SystemDistributedKeyspace.retrieveLightweightLatestCompressionDictionary(keyspaceName, tableName);
+        if (latestCompressionDictionary != null && latestCompressionDictionary.dictId().id > dictId.id)
+        {
+            throw new IllegalArgumentException(String.format("Dictionary to import has older dictionary id (%s) than the latest compression dictionary (%s) for table %s.%s",
+                                                             dictId.id, latestCompressionDictionary.dictId().id, keyspaceName, tableName));
+        }
+
+
+        int checksumOfDictionaryToImport = CompressionDictionary.calculateChecksum((byte) kind.ordinal(), dictId.id, pojo.dict);
+
+        if (checksumOfDictionaryToImport != pojo.checksum)
+        {
+            throw new IllegalArgumentException(String.format("Computed checksum of dictionary to import (%s) is different from checksum specified on input (%s).",
+                                                             checksumOfDictionaryToImport,
+                                                             pojo.checksum));
+        }
+
+        importDictionary(kind.createDictionary(dictId, pojo.dict));
     }
 
     /**

@@ -137,34 +137,14 @@ public interface CompressionDictionary extends AutoCloseable
         return dictionary;
     }
 
-    static CompressionDictionary createFromRowSimple(UntypedResultSet.Row row)
+    static LightweightCompressionDictionary createFromRowLightweight(UntypedResultSet.Row row)
     {
         String kindStr = row.getString("kind");
         long dictId = row.getLong("dict_id");
 
         try
         {
-            Kind kind = CompressionDictionary.Kind.valueOf(kindStr);
-            return new CompressionDictionary()
-            {
-                @Override
-                public DictId dictId()
-                {
-                    return new DictId(kind, dictId);
-                }
-
-                @Override
-                public byte[] rawDictionary()
-                {
-                    return null;
-                }
-
-                @Override
-                public void close()
-                {
-
-                }
-            };
+            return new LightweightCompressionDictionary(new DictId(CompressionDictionary.Kind.valueOf(kindStr), dictId));
         }
         catch (IllegalArgumentException ex)
         {
@@ -295,6 +275,46 @@ public interface CompressionDictionary extends AutoCloseable
                    "kind=" + kind +
                    ", id=" + id +
                    '}';
+        }
+    }
+
+    /**
+     * The purpose of lightweight dictionary is to not carry the actual dictionary bytes for performance reasons.
+     * Handy for situations when retrieval from the database does not need to contain dictionary
+     * or the instatiation of a proper dictionary object is not desirable or unnecessary for other,
+     * mostly performance-related, reasons.
+     */
+    class LightweightCompressionDictionary implements CompressionDictionary
+    {
+        private final DictId dictId;
+
+        public LightweightCompressionDictionary(DictId dictId)
+        {
+            this.dictId = dictId;
+        }
+
+        @Override
+        public DictId dictId()
+        {
+            return dictId;
+        }
+
+        @Override
+        public byte[] rawDictionary()
+        {
+            return null;
+        }
+
+        @Override
+        public void serialize(DataOutput out) throws IOException
+        {
+            throw new UnsupportedOperationException("Lightweight compression dictionary is not meant to be serialized.");
+        }
+
+        @Override
+        public void close() throws Exception
+        {
+            // intentionally empty
         }
     }
 }

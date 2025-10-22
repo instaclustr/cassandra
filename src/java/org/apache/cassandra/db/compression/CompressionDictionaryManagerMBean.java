@@ -48,13 +48,24 @@ public interface CompressionDictionaryManagerMBean
     CompositeData getTrainingState();
 
     /**
-     * Gets dictionaries for given keyspace and table.
+     * Lists dictionaries for given keyspace and table. Returned dictionaries
+     * do not contain raw dictionary bytes.
      *
      * @param keyspace keyspace to get dictionaries from
      * @param table    table to get dictionaries from
      * @return dictionaries for given keyspace and table
      */
-    TabularData getDictionaries(String keyspace, String table);
+    TabularData listDictionaries(String keyspace, String table);
+
+    /**
+     * Get latest compression dictionary.
+     *
+     * @param keyspace keyspace to get dictionary for
+     * @param table    table to get dictionary for
+     * @return CompositeData representing dictionary or null of not found
+     */
+    @Nullable
+    CompositeData getDictionary(String keyspace, String table);
 
     /**
      * Get compression dictionary.

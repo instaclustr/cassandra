@@ -141,6 +141,14 @@ public class CompressionDictionaryDetailsTabularData
         }
     }
 
+    /**
+     * Deserializes data to convenience object to work further with.
+     *
+     * @param compositeData data to create pojo from
+     * @return deserialized composite data to convenience object
+     * @throws IllegalArgumentException if values in deserialized object are invalid.
+     * @see CompressionDictionaryPojo#validate()
+     */
     public static CompressionDictionaryPojo from(CompositeData compositeData)
     {
         String keyspace = (String) compositeData.get(CompressionDictionaryDetailsTabularData.KEYSPACE_NAME);
@@ -160,10 +168,11 @@ public class CompressionDictionaryDetailsTabularData
         pojo.checksum = checksum;
         pojo.size = size;
 
+        pojo.validate();
+
         return pojo;
     }
 
-    // for now here until better place is found
     public static class CompressionDictionaryPojo
     {
         public String keyspace;
@@ -173,5 +182,36 @@ public class CompressionDictionaryDetailsTabularData
         public String kind;
         public int checksum;
         public int size;
+
+        /**
+         * Dictionary is valid if, keyspace and table are specified, dictionary id is strictly positive integer,
+         * dictionary byte array is not nor not empty,
+         * kind corresponds to {@code Kind}, checksum and size are bigger than 0.
+         */
+        public void validate()
+        {
+            if (keyspace == null)
+                throw new IllegalArgumentException();
+            if (table == null)
+                throw new IllegalArgumentException();
+            if (dictId <= 0)
+                throw new IllegalArgumentException("Provided dictionary id is lower than 0, it is '" + dictId + "'.'");
+            if (dict == null || dict.length == 0)
+                throw new IllegalArgumentException("Provided dictionary byte array is null or empty.");
+            if (kind == null)
+                throw new IllegalArgumentException("Provided kind is null.");
+            try
+            {
+                CompressionDictionary.Kind.valueOf(kind);
+            }
+            catch (IllegalArgumentException ex)
+            {
+                throw new IllegalArgumentException("There is no such Kind as '" + kind + "'.");
+            }
+            if (checksum <= 0)
+                throw new IllegalArgumentException("Checksum has to be strictly positive number, it is '" + checksum + "'.");
+            if (size <= 0)
+                throw new IllegalArgumentException("Size has to be strictly positive number, it is '" + size + "'.");
+        }
     }
 }

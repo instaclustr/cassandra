@@ -2699,32 +2699,80 @@ public class NodeProbe implements AutoCloseable
      */
     public void trainCompressionDictionary(String keyspace, String table, boolean force) throws IOException
     {
-        CompressionDictionaryManagerMBean proxy = getDictionaryManagerProxy(keyspace, table);
-        try
+        doWithCompressionDictionaryManagerMBean(new java.util.function.Function<CompressionDictionaryManagerMBean, Void>()
         {
-            proxy.train(force);
-        }
-        catch (Exception e)
-        {
-            if (e.getCause() instanceof InstanceNotFoundException)
+            @Override
+            public Void apply(CompressionDictionaryManagerMBean proxy)
             {
-                String message = String.format("Table %s.%s does not exist or does not support dictionary compression",
-                                               keyspace, table);
-                throw new IOException(message);
+                proxy.train(force);
+                return null;
             }
-            else
-            {
-                throw new IOException(e.getMessage());
-            }
-        }
+        }, keyspace, table);
     }
 
+    /**
+     * Returns latest dictionary for given keyspace and table.
+     *
+     * @param keyspace the keyspace name
+     * @param table the table name
+     * @return the latest dictionary for given keyspace and table
+     * @throws IOException if there's an error accessing the MBean
+     * @throws IllegalArgumentException if table doesn't support dictionary compression
+     */
+    public CompositeData getCompressionDictionary(String keyspace, String table) throws IOException
+    {
+        return doWithCompressionDictionaryManagerMBean(proxy -> proxy.getDictionary(keyspace, table), keyspace, table);
+    }
+
+    /**
+     * Returns the dictionary for given keyspace and table and dictionary id.
+     *
+     * @param keyspace the keyspace name
+     * @param table the table name
+     * @param dictId id of dictionary to get
+     * @return the dictionary for given keyspace and table and dictionary id.
+     * @throws IOException if there's an error accessing the MBean
+     * @throws IllegalArgumentException if table doesn't support dictionary compression
+     */
     public CompositeData getCompressionDictionary(String keyspace, String table, long dictId) throws IOException
     {
-        CompressionDictionaryManagerMBean proxy = getDictionaryManagerProxy(keyspace, table);
+        return doWithCompressionDictionaryManagerMBean(proxy -> proxy.getDictionary(keyspace, table, dictId), keyspace, table);
+    }
+
+    /**
+     * Imports dictionary in composite data to database.
+     *
+     * @param compositeData data to import
+     * @throws IOException if there's an error accessing the MBean
+     * @throws IllegalArgumentException if table doesn't support dictionary compression
+     */
+    public void importCompressionDictionary(CompositeData compositeData) throws IOException
+    {
+        String keyspace = (String) compositeData.get(CompressionDictionaryDetailsTabularData.KEYSPACE_NAME);
+        String table = (String) compositeData.get(CompressionDictionaryDetailsTabularData.TABLE_NAME);
+
+        if (keyspace == null || table == null)
+        {
+            throw new IllegalStateException("Argument mush have keyspace and table values.");
+        }
+
+        doWithCompressionDictionaryManagerMBean(new java.util.function.Function<CompressionDictionaryManagerMBean, Void>()
+        {
+            @Override
+            public Void apply(CompressionDictionaryManagerMBean proxy)
+            {
+                proxy.importDictionary(compositeData);
+                return null;
+            }
+        }, keyspace, table);
+    }
+
+    private <T> T doWithCompressionDictionaryManagerMBean(java.util.function.Function<CompressionDictionaryManagerMBean, T> func,
+                                                          String keyspace, String table) throws IOException
+    {
         try
         {
-            return proxy.getDictionary(keyspace, table, dictId);
+            return func.apply(getDictionaryManagerProxy(keyspace, table));
         }
         catch (Exception e)
         {
@@ -2732,7 +2780,7 @@ public class NodeProbe implements AutoCloseable
             {
                 String message = String.format("Table %s.%s does not exist or does not support dictionary compression",
                                                keyspace, table);
-                throw new IOException(message);
+                throw new IllegalArgumentException(message);
             }
             else
             {
@@ -2746,37 +2794,7 @@ public class NodeProbe implements AutoCloseable
         CompressionDictionaryManagerMBean proxy = getDictionaryManagerProxy(keyspace, table);
         try
         {
-            return proxy.getDictionaries(keyspace, table);
-        }
-        catch (Exception e)
-        {
-            if (e.getCause() instanceof InstanceNotFoundException)
-            {
-                String message = String.format("Table %s.%s does not exist or does not support dictionary compression",
-                                               keyspace, table);
-                throw new IOException(message);
-            }
-            else
-            {
-                throw new IOException(e.getMessage());
-            }
-        }
-    }
-
-    public void importCompressionDictionary(CompositeData compositeData) throws IOException
-    {
-        String keyspace = (String) compositeData.get(CompressionDictionaryDetailsTabularData.KEYSPACE_NAME);
-        String table = (String) compositeData.get(CompressionDictionaryDetailsTabularData.TABLE_NAME);
-
-        if (keyspace == null || table == null)
-        {
-            throw new IllegalStateException("Argument mush have keyspace and table values.");
-        }
-
-        CompressionDictionaryManagerMBean proxy = getDictionaryManagerProxy(keyspace, table);
-        try
-        {
-            proxy.importDictionary(compositeData);
+            return proxy.listDictionaries(keyspace, table);
         }
         catch (Exception e)
         {

@@ -40,16 +40,20 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static java.nio.file.StandardOpenOption.WRITE;
+
 @Command(name = "compressiondictionary",
-         description = "Manage compression dictionaries",
-         subcommands = { CompressionDictionary.Train.class,
-                         CompressionDictionary.List.class,
-                         CompressionDictionary.Export.class,
-                         CompressionDictionary.Import.class })
+description = "Manage compression dictionaries",
+subcommands = { CompressionDictionary.Train.class,
+                CompressionDictionary.List.class,
+                CompressionDictionary.Export.class,
+                CompressionDictionary.Import.class })
 public class CompressionDictionary
 {
     @Command(name = "train",
-             description = "Manually trigger compression dictionary training for a table. If no SSTables are available, the memtable will be flushed first.")
+    description = "Manually trigger compression dictionary training for a table. If no SSTables are available, the memtable will be flushed first.")
     public static class Train extends AbstractCommand
     {
         @Parameters(index = "0", description = "The keyspace name", arity = "1")
@@ -190,24 +194,57 @@ public class CompressionDictionary
         @Parameters(index = "1", description = "The table name", arity = "1")
         private String table;
 
-        @Parameters(index = "2", description = "The keyspace name", arity = "1")
-        private long dictId;
+        @Option(paramLabel = "dictionaryPath", names = { "-f", "--file" },
+        description = "The path to a file to save dictionary to. When not set, standard output is used.")
+        private String dictionaryPath;
+
+        @Option(paramLabel = "dictId", names = { "-i", "--id" },
+        description = "The dictionary id. When not specified, the current dictionary is returned.")
+        private long dictId = -1;
 
         @Override
         protected void execute(NodeProbe probe)
         {
+            if (dictId <= 0 && dictId != -1)
+            {
+                probe.output().err.printf("Dictionary id has to be strictly positive number.%n");
+                System.exit(1);
+            }
+
             try
             {
-                CompositeData compressionDictionary = probe.getCompressionDictionary(keyspace, table, dictId);
+                CompositeData compressionDictionary;
+
+                if (dictId == -1)
+                    compressionDictionary = probe.getCompressionDictionary(keyspace, table);
+                else
+                    compressionDictionary = probe.getCompressionDictionary(keyspace, table, dictId);
 
                 if (compressionDictionary == null)
                 {
-                    probe.output().err.printf("Given dictionary does not exist.%n");
+                    probe.output().err.printf("Dictionary does not exist.%n");
                     System.exit(1);
                 }
 
                 CompressionDictionaryPojo pojo = CompressionDictionaryDetailsTabularData.from(compressionDictionary);
-                probe.output().out.printf(JsonUtils.writeAsPrettyJsonString(pojo));
+
+                String dictionary = JsonUtils.writeAsPrettyJsonString(pojo);
+
+                if (dictionaryPath == null)
+                {
+                    probe.output().out.println(dictionary);
+                }
+                else
+                {
+                    try
+                    {
+                        FileUtils.write(new File(dictionaryPath), java.util.List.of(dictionary), CREATE, TRUNCATE_EXISTING, WRITE);
+                    }
+                    catch (Throwable t)
+                    {
+                        throw new RuntimeException(t.getMessage());
+                    }
+                }
             }
             catch (Exception e)
             {
@@ -239,7 +276,7 @@ public class CompressionDictionary
             }
             catch (Throwable t)
             {
-                probe.output().err.printf("Unable to deserialize dictionary JSON: %s%n", t.getMessage());
+                probe.output().err.printf("Unable to import dictionary JSON: %s%n", t.getMessage());
                 System.exit(1);
             }
         }

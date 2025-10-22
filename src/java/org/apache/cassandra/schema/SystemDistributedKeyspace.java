@@ -50,6 +50,7 @@ import org.apache.cassandra.cql3.statements.schema.CreateTableStatement;
 import org.apache.cassandra.db.ColumnFamilyStore;
 import org.apache.cassandra.db.ConsistencyLevel;
 import org.apache.cassandra.db.Keyspace;
+import org.apache.cassandra.db.compression.CompressionDictionary.LightweightCompressionDictionary;
 import org.apache.cassandra.dht.Range;
 import org.apache.cassandra.dht.Token;
 import org.apache.cassandra.db.compression.CompressionDictionary;
@@ -453,7 +454,33 @@ public final class SystemDistributedKeyspace
     }
 
     /**
-     * Retrieves a specific compression dictionary for a given keyspace and table.
+     * Retrieves the latest compression dictionary for a given keyspace and table
+     * backed by {@link LightweightCompressionDictionary} object.
+     *
+     * @param keyspaceName the keyspace name to retrieve the dictionary for
+     * @param tableName the table name to retrieve the dictionary for
+     * @return the latest compression dictionary for the specified keyspace and table,
+     *         or null if no dictionary exists or if an error occurs during retrieval
+     */
+    @Nullable
+    public static LightweightCompressionDictionary retrieveLightweightLatestCompressionDictionary(String keyspaceName, String tableName)
+    {
+        String query = "SELECT kind, dict_id FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s' LIMIT 1";
+        String fmtQuery = format(query, SchemaConstants.DISTRIBUTED_KEYSPACE_NAME, COMPRESSION_DICTIONARIES, keyspaceName, tableName);
+        try
+        {
+            UntypedResultSet.Row row = QueryProcessor.execute(fmtQuery, ConsistencyLevel.ONE).one();
+            return CompressionDictionary.createFromRowLightweight(row);
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+    }
+
+    /**
+     * Retrieves a specific compression dictionary for a given keyspace and table
+     * backed by {@link LightweightCompressionDictionary} object.
      *
      * @param keyspaceName the keyspace name to retrieve the dictionary for
      * @param tableName the table name to retrieve the dictionary for
@@ -484,19 +511,19 @@ public final class SystemDistributedKeyspace
      * @return the compression dictionaries identified by the specified keyspace and table,
      *         or null if no dictionary exists or if an error occurs during retrieval
      */
-    public static List<CompressionDictionary> listCompressionDictionaries(String keyspaceName, String tableName)
+    public static List<LightweightCompressionDictionary> retrieveLightweightCompressionDictionaries(String keyspaceName, String tableName)
     {
         String query = "SELECT kind, dict_id FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s'";
         String fmtQuery = format(query, SchemaConstants.DISTRIBUTED_KEYSPACE_NAME, COMPRESSION_DICTIONARIES, keyspaceName, tableName);
         try
         {
-            List<CompressionDictionary> dictionaries = new ArrayList<>();
+            List<LightweightCompressionDictionary> dictionaries = new ArrayList<>();
             UntypedResultSet result = QueryProcessor.execute(fmtQuery, ConsistencyLevel.ONE);
             Iterator<UntypedResultSet.Row> iterator = result.iterator();
             while (iterator.hasNext())
             {
                 UntypedResultSet.Row row = iterator.next();
-                dictionaries.add(CompressionDictionary.createFromRowSimple(row));
+                dictionaries.add(CompressionDictionary.createFromRowLightweight(row));
             }
 
             return dictionaries;
