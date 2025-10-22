@@ -38,6 +38,8 @@ public class ZstdCompressionDictionary implements CompressionDictionary, SelfRef
 
     private final DictId dictId;
     private final byte[] rawDictionary;
+    private volatile int checksum = 0;
+    private final int size;
     // One ZstdDictDecompress and multiple ZstdDictCompress (per level) can be derived from the same raw dictionary content
     private final ConcurrentHashMap<Integer, ZstdDictCompress> zstdDictCompressPerLevel = new ConcurrentHashMap<>();
     private volatile ZstdDictDecompress dictDecompress;
@@ -46,8 +48,18 @@ public class ZstdCompressionDictionary implements CompressionDictionary, SelfRef
 
     public ZstdCompressionDictionary(DictId dictId, byte[] rawDictionary)
     {
+        this(dictId,
+             rawDictionary,
+             0, // will be computed lazily / on demand
+             rawDictionary.length);
+    }
+
+    public ZstdCompressionDictionary(DictId dictId, byte[] rawDictionary, int checksum, int size)
+    {
         this.dictId = dictId;
         this.rawDictionary = rawDictionary;
+        this.checksum = checksum;
+        this.size = size;
         this.selfRef = new Ref<>(this, new Tidy(zstdDictCompressPerLevel, dictDecompress));
     }
 
@@ -67,6 +79,21 @@ public class ZstdCompressionDictionary implements CompressionDictionary, SelfRef
     public byte[] rawDictionary()
     {
         return rawDictionary;
+    }
+
+    @Override
+    public int checksum()
+    {
+        if (checksum == 0)
+            checksum = CompressionDictionary.calculateChecksum((byte) dictId.kind.ordinal(), dictId.id, rawDictionary);
+
+        return checksum;
+    }
+
+    @Override
+    public int size()
+    {
+        return size;
     }
 
     @Override

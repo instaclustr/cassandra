@@ -50,6 +50,20 @@ public interface CompressionDictionary extends AutoCloseable
     byte[] rawDictionary();
 
     /**
+     * Get checkum of this dictionary.
+     *
+     * @return checksum of this dictionary
+     */
+    int checksum();
+
+    /**
+     * Get size of raw dictionary.
+     *
+     * @return size of raw dictionary, in bytes
+     */
+    int size();
+
+    /**
      * Get the kind of the compression algorithm
      *
      * @return compression algorithm kind
@@ -141,10 +155,13 @@ public interface CompressionDictionary extends AutoCloseable
     {
         String kindStr = row.getString("kind");
         long dictId = row.getLong("dict_id");
+        int checksum = row.getInt("checksum");
+        int size = row.getInt("size");
 
         try
         {
-            return new LightweightCompressionDictionary(new DictId(CompressionDictionary.Kind.valueOf(kindStr), dictId));
+            return new LightweightCompressionDictionary(new DictId(CompressionDictionary.Kind.valueOf(kindStr), dictId),
+                                                        checksum, size);
         }
         catch (IllegalArgumentException ex)
         {
@@ -156,11 +173,13 @@ public interface CompressionDictionary extends AutoCloseable
     {
         String kindStr = row.getString("kind");
         long dictId = row.getLong("dict_id");
+        int checksum = row.getInt("checksum");
+        int size = row.getInt("size");
 
         try
         {
             Kind kind = CompressionDictionary.Kind.valueOf(kindStr);
-            return kind.createDictionary(new DictId(kind, dictId), row.getByteArray("dict"));
+            return kind.createDictionary(new DictId(kind, dictId), row.getByteArray("dict"), checksum, size);
         }
         catch (IllegalArgumentException ex)
         {
@@ -187,6 +206,12 @@ public interface CompressionDictionary extends AutoCloseable
             public CompressionDictionary createDictionary(DictId dictId, byte[] dict)
             {
                 return new ZstdCompressionDictionary(dictId, dict);
+            }
+
+            @Override
+            public CompressionDictionary createDictionary(DictId dictId, byte[] dict, int checksum, int size)
+            {
+                return new ZstdCompressionDictionary(dictId, dict, checksum, size);
             }
 
             @Override
@@ -219,6 +244,17 @@ public interface CompressionDictionary extends AutoCloseable
          * @return a compression dictionary instance
          */
         public abstract CompressionDictionary createDictionary(CompressionDictionary.DictId dictId, byte[] dict);
+
+        /**
+         * Creates a compression dictionary instance for this kind
+         *
+         * @param dictId the dictionary identifier
+         * @param dict the raw dictionary bytes
+         * @param checksum checksum of this dictionary
+         * @param size size of raw dictionary bytes
+         * @return a compression dictionary instance
+         */
+        public abstract CompressionDictionary createDictionary(CompressionDictionary.DictId dictId, byte[] dict, int checksum, int size);
 
         /**
          * Creates a dictionary compressor for this kind
@@ -287,10 +323,14 @@ public interface CompressionDictionary extends AutoCloseable
     class LightweightCompressionDictionary implements CompressionDictionary
     {
         private final DictId dictId;
+        private final int checksum;
+        private final int size;
 
-        public LightweightCompressionDictionary(DictId dictId)
+        public LightweightCompressionDictionary(DictId dictId, int checksum, int size)
         {
             this.dictId = dictId;
+            this.checksum = checksum;
+            this.size = size;
         }
 
         @Override
@@ -303,6 +343,18 @@ public interface CompressionDictionary extends AutoCloseable
         public byte[] rawDictionary()
         {
             return null;
+        }
+
+        @Override
+        public int checksum()
+        {
+            return checksum;
+        }
+
+        @Override
+        public int size()
+        {
+            return size;
         }
 
         @Override

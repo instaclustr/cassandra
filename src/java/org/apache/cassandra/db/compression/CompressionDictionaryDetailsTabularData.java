@@ -103,13 +103,8 @@ public class CompressionDictionaryDetailsTabularData
                                             dictionary.dictId().id,
                                             dictionary.rawDictionary(),
                                             dictionary.kind().name(),
-                                            // why am I computing this here? It should be stored already, 0 for now
-                                            dictionary.rawDictionary() == null ? 0 :
-                                            CompressionDictionary.calculateChecksum((byte) dictionary.kind().ordinal(),
-                                                                                    dictionary.dictId().id,
-                                                                                    dictionary.rawDictionary()),
-                                            // why am I computing this here? It should be stored already, 0 for now
-                                            dictionary.rawDictionary() == null ? 0 : dictionary.rawDictionary().length,
+                                            dictionary.checksum(),
+                                            dictionary.size(),
                                             });
         }
         catch (OpenDataException e)

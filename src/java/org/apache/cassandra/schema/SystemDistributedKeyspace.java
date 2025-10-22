@@ -201,6 +201,8 @@ public final class SystemDistributedKeyspace
                                                               "kind text," +
                                                               "dict_id bigint," +
                                                               "dict blob," +
+                                                              "checksum int," +
+                                                              "size int," +
                                                               "PRIMARY KEY ((keyspace_name, table_name), dict_id)) " +
                                                               "WITH CLUSTERING ORDER BY (dict_id DESC)"; // in order to retrieve the latest dictionary; the contract is the newer the dictionary the larger the dict_id
 
@@ -416,14 +418,16 @@ public final class SystemDistributedKeyspace
      */
     public static void storeCompressionDictionary(String keyspaceName, String tableName, CompressionDictionary dictionary)
     {
-        String query = "INSERT INTO %s.%s (keyspace_name, table_name, kind, dict_id, dict) VALUES ('%s', '%s', '%s', %s, ?)";
+        String query = "INSERT INTO %s.%s (keyspace_name, table_name, kind, dict_id, checksum, size, dict) VALUES ('%s', '%s', '%s', %s, %s, %s, ?)";
         String fmtQuery = format(query,
                                  SchemaConstants.DISTRIBUTED_KEYSPACE_NAME,
                                  COMPRESSION_DICTIONARIES,
                                  keyspaceName,
                                  tableName,
                                  dictionary.kind(),
-                                 dictionary.dictId().id);
+                                 dictionary.dictId().id,
+                                 dictionary.checksum(),
+                                 dictionary.size());
         noThrow(fmtQuery,
                 () -> QueryProcessor.process(fmtQuery, ConsistencyLevel.ONE,
                                              Collections.singletonList(ByteBuffer.wrap(dictionary.rawDictionary()))));
@@ -440,7 +444,7 @@ public final class SystemDistributedKeyspace
     @Nullable
     public static CompressionDictionary retrieveLatestCompressionDictionary(String keyspaceName, String tableName)
     {
-        String query = "SELECT kind, dict_id, dict FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s' LIMIT 1";
+        String query = "SELECT kind, dict_id, dict, checksum, size FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s' LIMIT 1";
         String fmtQuery = format(query, SchemaConstants.DISTRIBUTED_KEYSPACE_NAME, COMPRESSION_DICTIONARIES, keyspaceName, tableName);
         try
         {
@@ -465,7 +469,7 @@ public final class SystemDistributedKeyspace
     @Nullable
     public static LightweightCompressionDictionary retrieveLightweightLatestCompressionDictionary(String keyspaceName, String tableName)
     {
-        String query = "SELECT kind, dict_id FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s' LIMIT 1";
+        String query = "SELECT kind, dict_id, checksum, size FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s' LIMIT 1";
         String fmtQuery = format(query, SchemaConstants.DISTRIBUTED_KEYSPACE_NAME, COMPRESSION_DICTIONARIES, keyspaceName, tableName);
         try
         {
@@ -490,7 +494,7 @@ public final class SystemDistributedKeyspace
      */
     public static CompressionDictionary retrieveCompressionDictionary(String keyspaceName, String tableName, long dictionaryId)
     {
-        String query = "SELECT kind, dict_id, dict FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s' AND dict_id=%s";
+        String query = "SELECT kind, dict_id, dict, checksum, size FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s' AND dict_id=%s";
         String fmtQuery = format(query, SchemaConstants.DISTRIBUTED_KEYSPACE_NAME, COMPRESSION_DICTIONARIES, keyspaceName, tableName, dictionaryId);
         try
         {
@@ -513,7 +517,7 @@ public final class SystemDistributedKeyspace
      */
     public static List<LightweightCompressionDictionary> retrieveLightweightCompressionDictionaries(String keyspaceName, String tableName)
     {
-        String query = "SELECT kind, dict_id FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s'";
+        String query = "SELECT kind, dict_id, checksum, size FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s'";
         String fmtQuery = format(query, SchemaConstants.DISTRIBUTED_KEYSPACE_NAME, COMPRESSION_DICTIONARIES, keyspaceName, tableName);
         try
         {
