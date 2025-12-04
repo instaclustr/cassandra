@@ -97,6 +97,7 @@ import org.apache.cassandra.gms.IEndpointStateChangeSubscriber;
 import org.apache.cassandra.gms.IFailureDetector;
 import org.apache.cassandra.gms.VersionedValue;
 import org.apache.cassandra.io.FSWriteError;
+import org.apache.cassandra.io.compress.CompressorRegistry;
 import org.apache.cassandra.io.sstable.format.SSTableFormat;
 import org.apache.cassandra.io.sstable.format.big.BigFormat;
 import org.apache.cassandra.io.util.DiskOptimizationStrategy;
@@ -372,6 +373,8 @@ public class DatabaseDescriptor
 
         applyCompatibilityMode();
 
+        applyCompressionProvider();
+
         applySSTableFormats();
 
         applySimpleConfig();
@@ -438,6 +441,7 @@ public class DatabaseDescriptor
         applyCompatibilityMode();
         diskOptimizationStrategy = new SpinningDiskOptimizationStrategy();
         applySSTableFormats();
+        applyCompressionProvider();
     }
 
     private static void assertNotDaemonInitialized()
@@ -551,6 +555,8 @@ public class DatabaseDescriptor
 
         applySSTableFormats();
 
+        applyCompressionProvider();
+
         applyCryptoProvider();
 
         applySimpleConfig();
@@ -578,6 +584,11 @@ public class DatabaseDescriptor
         applyAccord();
 
         applyStartupChecks();
+    }
+
+    public static void applyCompressionProvider()
+    {
+        CompressorRegistry.instance.registerServices(conf.compression_provider_options);
     }
 
     private static void applySimpleConfig()
@@ -6270,4 +6281,5 @@ public class DatabaseDescriptor
     {
         conf.gossip_quarantine_disabled = disabled;
     }
+
 }
