@@ -199,13 +199,14 @@ public final class SystemDistributedKeyspace
     public static final String COMPRESSION_DICTIONARIES_CQL = "CREATE TABLE IF NOT EXISTS %s (" +
                                                               "keyspace_name text," +
                                                               "table_name text," +
+                                                              "table_id text," +
                                                               "kind text," +
                                                               "dict_id bigint," +
                                                               "dict blob," +
                                                               "dict_length int," +
                                                               "dict_checksum int," +
-                                                              "PRIMARY KEY ((keyspace_name, table_name), dict_id)) " +
-                                                              "WITH CLUSTERING ORDER BY (dict_id DESC)"; // in order to retrieve the latest dictionary; the contract is the newer the dictionary the larger the dict_id
+                                                              "PRIMARY KEY ((keyspace_name, table_name), table_id, dict_id)) " +
+                                                              "WITH CLUSTERING ORDER BY (table_id DESC, dict_id DESC)"; // in order to retrieve the latest dictionary; the contract is the newer the dictionary the larger the dict_id
 
     private static final TableMetadata CompressionDictionariesTable =
         parse(COMPRESSION_DICTIONARIES, "Compression dictionaries for applicable tables", COMPRESSION_DICTIONARIES_CQL).build();
@@ -415,17 +416,22 @@ public final class SystemDistributedKeyspace
      *
      * @param keyspaceName the keyspace name to associate with the dictionary
      * @param tableName the table name to associate with the dictionary
+     * @param tableId the unique id of a table to associate with the dictionary
      * @param dictionary the compression dictionary to store
      */
-    public static void storeCompressionDictionary(String keyspaceName, String tableName, CompressionDictionary dictionary)
+    public static void storeCompressionDictionary(String keyspaceName,
+                                                  String tableName,
+                                                  String tableId,
+                                                  CompressionDictionary dictionary)
     {
         byte[] dict = dictionary.rawDictionary();
-        String query = "INSERT INTO %s.%s (keyspace_name, table_name, kind, dict_id, dict, dict_length, dict_checksum) VALUES ('%s', '%s', '%s', %s, ?, %s, %s)";
+        String query = "INSERT INTO %s.%s (keyspace_name, table_name, table_id, kind, dict_id, dict, dict_length, dict_checksum) VALUES ('%s', '%s', '%s', '%s', %s, ?, %s, %s)";
         String fmtQuery = format(query,
                                  SchemaConstants.DISTRIBUTED_KEYSPACE_NAME,
                                  COMPRESSION_DICTIONARIES,
                                  keyspaceName,
                                  tableName,
+                                 tableId,
                                  dictionary.kind(),
                                  dictionary.dictId().id,
                                  dict.length,
@@ -440,14 +446,15 @@ public final class SystemDistributedKeyspace
      *
      * @param keyspaceName the keyspace name to retrieve the dictionary for
      * @param tableName the table name to retrieve the dictionary for
+     * @param tableId the id of the table to retrieve the dictionary for
      * @return the latest compression dictionary for the specified keyspace and table,
      *         or null if no dictionary exists or if an error occurs during retrieval
      */
     @Nullable
-    public static CompressionDictionary retrieveLatestCompressionDictionary(String keyspaceName, String tableName)
+    public static CompressionDictionary retrieveLatestCompressionDictionary(String keyspaceName, String tableName, String tableId)
     {
-        String query = "SELECT kind, dict_id, dict, dict_length, dict_checksum FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s' LIMIT 1";
-        String fmtQuery = format(query, SchemaConstants.DISTRIBUTED_KEYSPACE_NAME, COMPRESSION_DICTIONARIES, keyspaceName, tableName);
+        String query = "SELECT kind, dict_id, dict, dict_length, dict_checksum FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s' AND table_id='%s' LIMIT 1";
+        String fmtQuery = format(query, SchemaConstants.DISTRIBUTED_KEYSPACE_NAME, COMPRESSION_DICTIONARIES, keyspaceName, tableName, tableId);
         try
         {
             return CompressionDictionary.createFromRow(QueryProcessor.execute(fmtQuery, ConsistencyLevel.ONE).one());
@@ -464,14 +471,15 @@ public final class SystemDistributedKeyspace
      *
      * @param keyspaceName the keyspace name to retrieve the dictionary for
      * @param tableName the table name to retrieve the dictionary for
+     * @param tableId the table id to retrieve the dictionary for
      * @return the latest compression dictionary for the specified keyspace and table,
      *         or null if no dictionary exists or if an error occurs during retrieval
      */
     @Nullable
-    public static LightweightCompressionDictionary retrieveLightweightLatestCompressionDictionary(String keyspaceName, String tableName)
+    public static LightweightCompressionDictionary retrieveLightweightLatestCompressionDictionary(String keyspaceName, String tableName, String tableId)
     {
-        String query = "SELECT keyspace_name, table_name, kind, dict_id, dict_checksum, dict_length FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s' LIMIT 1";
-        String fmtQuery = format(query, SchemaConstants.DISTRIBUTED_KEYSPACE_NAME, COMPRESSION_DICTIONARIES, keyspaceName, tableName);
+        String query = "SELECT keyspace_name, table_name, table_id, kind, dict_id, dict_checksum, dict_length FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s' AND table_id='%s' LIMIT 1";
+        String fmtQuery = format(query, SchemaConstants.DISTRIBUTED_KEYSPACE_NAME, COMPRESSION_DICTIONARIES, keyspaceName, tableName, tableId);
         try
         {
             return CompressionDictionary.createFromRowLightweight(QueryProcessor.execute(fmtQuery, ConsistencyLevel.ONE).one());
@@ -488,15 +496,16 @@ public final class SystemDistributedKeyspace
      *
      * @param keyspaceName the keyspace name to retrieve the dictionary for
      * @param tableName the table name to retrieve the dictionary for
+     * @param tableId the table id to retrieve the dictionary for
      * @param dictionaryId the dictionary id to retrieve the dictionary for
      * @return the compression dictionary identified by the specified keyspace, table and dictionaryId,
      *         or null if no dictionary exists or if an error occurs during retrieval
      */
     @Nullable
-    public static CompressionDictionary retrieveCompressionDictionary(String keyspaceName, String tableName, long dictionaryId)
+    public static CompressionDictionary retrieveCompressionDictionary(String keyspaceName, String tableName, String tableId, long dictionaryId)
     {
-        String query = "SELECT kind, dict_id, dict, dict_length, dict_checksum FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s' AND dict_id=%s";
-        String fmtQuery = format(query, SchemaConstants.DISTRIBUTED_KEYSPACE_NAME, COMPRESSION_DICTIONARIES, keyspaceName, tableName, dictionaryId);
+        String query = "SELECT kind, dict_id, dict, dict_length, dict_checksum FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s' AND table_id='%s' AND dict_id=%s";
+        String fmtQuery = format(query, SchemaConstants.DISTRIBUTED_KEYSPACE_NAME, COMPRESSION_DICTIONARIES, keyspaceName, tableName, tableId, dictionaryId);
         try
         {
             return CompressionDictionary.createFromRow(QueryProcessor.execute(fmtQuery, ConsistencyLevel.ONE).one());
@@ -512,14 +521,15 @@ public final class SystemDistributedKeyspace
      *
      * @param keyspaceName the keyspace name to retrieve the dictionary for
      * @param tableName the table name to retrieve the dictionary for
+     * @param tableId the table id to retrieve the dictionary for
      * @return the compression dictionaries identified by the specified keyspace and table,
      *         or null if no dictionary exists or if an error occurs during retrieval
      */
     @Nullable
-    public static List<LightweightCompressionDictionary> retrieveLightweightCompressionDictionaries(String keyspaceName, String tableName)
+    public static List<LightweightCompressionDictionary> retrieveLightweightCompressionDictionaries(String keyspaceName, String tableName, String tableId)
     {
-        String query = "SELECT keyspace_name, table_name, kind, dict_id, dict_length, dict_checksum FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s'";
-        String fmtQuery = format(query, SchemaConstants.DISTRIBUTED_KEYSPACE_NAME, COMPRESSION_DICTIONARIES, keyspaceName, tableName);
+        String query = "SELECT keyspace_name, table_name, table_id, kind, dict_id, dict_length, dict_checksum FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s' AND table_id='%s'";
+        String fmtQuery = format(query, SchemaConstants.DISTRIBUTED_KEYSPACE_NAME, COMPRESSION_DICTIONARIES, keyspaceName, tableName, tableId);
         try
         {
             UntypedResultSet result = QueryProcessor.execute(fmtQuery, ConsistencyLevel.ONE);
