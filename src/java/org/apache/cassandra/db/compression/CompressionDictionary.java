@@ -451,5 +451,18 @@ public interface CompressionDictionary
             this.checksum = checksum;
             this.size = size;
         }
+
+        @Override
+        public String toString()
+        {
+            return "LightweightCompressionDictionary{" +
+                   "keyspaceName='" + keyspaceName + '\'' +
+                   ", tableName='" + tableName + '\'' +
+                   ", tableId='" + tableId + '\'' +
+                   ", dictId=" + dictId +
+                   ", checksum=" + checksum +
+                   ", size=" + size +
+                   '}';
+        }
     }
 }

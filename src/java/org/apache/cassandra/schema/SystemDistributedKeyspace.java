@@ -58,6 +58,7 @@ import org.apache.cassandra.dht.Token;
 import org.apache.cassandra.locator.InetAddressAndPort;
 import org.apache.cassandra.repair.CommonRange;
 import org.apache.cassandra.repair.messages.RepairOption;
+import org.apache.cassandra.tcm.ClusterMetadata;
 import org.apache.cassandra.utils.FBUtilities;
 import org.apache.cassandra.utils.TimeUUID;
 
@@ -523,16 +524,85 @@ public final class SystemDistributedKeyspace
      * @param tableName the table name to retrieve the dictionary for
      * @param tableId the table id to retrieve the dictionary for
      * @return the compression dictionaries identified by the specified keyspace and table,
-     *         or null if no dictionary exists or if an error occurs during retrieval
+     *         empty list if no dictionary exists or null if an error occurs during retrieval
      */
     @Nullable
     public static List<LightweightCompressionDictionary> retrieveLightweightCompressionDictionaries(String keyspaceName, String tableName, String tableId)
     {
         String query = "SELECT keyspace_name, table_name, table_id, kind, dict_id, dict_length, dict_checksum FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s' AND table_id='%s'";
         String fmtQuery = format(query, SchemaConstants.DISTRIBUTED_KEYSPACE_NAME, COMPRESSION_DICTIONARIES, keyspaceName, tableName, tableId);
+        return retrieveLightweightCompressionDictionariesInternal(fmtQuery);
+    }
+
+    /**
+     * Retrieves all compression dictionaries in a lightweight form.
+     *
+     * @return all compression dictionaries, lightweight form, empty list if no dictionary exists
+     *         or null if an error occurs during retrieval
+     */
+    @Nullable
+    public static List<LightweightCompressionDictionary> retrieveLightweightCompressionDictionaries()
+    {
+        String query = "SELECT keyspace_name, table_name, table_id, kind, dict_id, dict_length, dict_checksum FROM %s.%s";
+        String fmtQuery = format(query, SchemaConstants.DISTRIBUTED_KEYSPACE_NAME, COMPRESSION_DICTIONARIES);
+        return retrieveLightweightCompressionDictionariesInternal(fmtQuery);
+    }
+
+    /**
+     * Retrieves all orphaned compression dictionaries in a lightweight form.
+     *
+     * @return all orphaned compression dictionaries, lightweight form, empty list if no dictionary exists
+     *         or null if an error occurs during retrieval
+     */
+    public static List<LightweightCompressionDictionary> retrieveOrphanedLightweightCompressionDictionaries()
+    {
+        List<LightweightCompressionDictionary> dicts = SystemDistributedKeyspace.retrieveLightweightCompressionDictionaries();
+        if (dicts == null || dicts.isEmpty())
+            return List.of();
+
+        List<LightweightCompressionDictionary> orphaned = new ArrayList<>();
+        for (LightweightCompressionDictionary dict : dicts)
+        {
+            TableMetadata tableMetadata = ClusterMetadata.current().schema.getTableMetadata(dict.keyspaceName, dict.tableName);
+            if (tableMetadata == null || !tableMetadata.id.toLongString().equals(dict.tableId))
+                orphaned.add(dict);
+        }
+
+        return orphaned;
+    }
+
+    /**
+     * Removes all orphaned compression dictionaries.
+     */
+    public static void clearOrphanedCompressionDictionaries()
+    {
+        for (LightweightCompressionDictionary orphanedDict : SystemDistributedKeyspace.retrieveOrphanedLightweightCompressionDictionaries())
+        {
+            try
+            {
+                QueryProcessor.execute(String.format("DELETE FROM %s.%s WHERE keyspace_name='%s' AND table_name='%s' AND table_id='%s' AND dict_id=%s",
+                                                     SchemaConstants.DISTRIBUTED_KEYSPACE_NAME,
+                                                     SystemDistributedKeyspace.COMPRESSION_DICTIONARIES,
+                                                     orphanedDict.keyspaceName,
+                                                     orphanedDict.tableName,
+                                                     orphanedDict.tableId,
+                                                     orphanedDict.dictId.id),
+                                       ConsistencyLevel.ONE);
+            }
+            catch (Exception e)
+            {
+                logger.error("Unable to delete orphaned compression dictionary: {}, Reason: {}",
+                             orphanedDict.toString(),
+                             e.getMessage());
+            }
+        }
+    }
+
+    private static List<LightweightCompressionDictionary> retrieveLightweightCompressionDictionariesInternal(String query)
+    {
         try
         {
-            UntypedResultSet result = QueryProcessor.execute(fmtQuery, ConsistencyLevel.ONE);
+            UntypedResultSet result = QueryProcessor.execute(query, ConsistencyLevel.ONE);
             if (result.isEmpty())
                 return Collections.emptyList();
             List<LightweightCompressionDictionary> dictionaries = new ArrayList<>();

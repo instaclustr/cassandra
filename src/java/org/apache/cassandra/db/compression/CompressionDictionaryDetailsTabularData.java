@@ -41,6 +41,14 @@ public class CompressionDictionaryDetailsTabularData
 {
     /**
      * Position inside index names of tabular type of tabular data returned upon
+     * listing dictionaries where table id is expected to be located.
+     * We do not need to process this entry at all time, e.g. when not listing
+     * orphaned compression dictionaries.
+     */
+    public static final int TABULAR_DATA_TYPE_TABLE_ID_INDEX = 2;
+
+    /**
+     * Position inside index names of tabular type of tabular data returned upon
      * listing dictionaries where raw dictionary is expected to be located.
      * We do not need to process this entry as listing does not contain any raw dictionary,
      * only exporting does.
