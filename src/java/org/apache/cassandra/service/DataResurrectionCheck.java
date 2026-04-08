@@ -19,6 +19,7 @@
 package org.apache.cassandra.service;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -92,7 +93,7 @@ public class DataResurrectionCheck implements StartupCheck
 
         public static Heartbeat deserializeFromJsonFile(File file) throws IOException
         {
-            byte[] bytes = java.nio.file.Files.readAllBytes(file.toPath());
+            byte[] bytes = Files.readAllBytes(file.toPath());
             try
             {
                 return JsonUtils.deserializeFromJsonBytes(Heartbeat.class, bytes);
@@ -198,9 +199,8 @@ public class DataResurrectionCheck implements StartupCheck
         }
         catch (IOException ex)
         {
-            LOGGER.warn("Failed to deserialize heartbeat file "
-                        + heartbeatFile
-                        + ". Falling back to file last modified time.", ex);
+            LOGGER.warn("Failed to deserialize heartbeat file {}. Falling back to file last modified time.",
+                        heartbeatFile, ex);
             Instant lastModified = Instant.ofEpochMilli(heartbeatFile.lastModified());
             heartbeat = new Heartbeat(lastModified);
         }
@@ -326,7 +326,7 @@ public class DataResurrectionCheck implements StartupCheck
     List<TableGCPeriod> getTablesGcPeriods(String userKeyspace)
     {
         Optional<KeyspaceMetadata> keyspaceMetadata = SchemaKeyspace.fetchNonSystemKeyspaces().get(userKeyspace);
-        if (!keyspaceMetadata.isPresent())
+        if (keyspaceMetadata.isEmpty())
             return Collections.emptyList();
 
         KeyspaceMetadata ksmd = keyspaceMetadata.get();

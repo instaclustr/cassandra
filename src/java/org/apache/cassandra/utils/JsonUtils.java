@@ -197,7 +197,7 @@ public final class JsonUtils
     public static void serializeToJsonFileAtomic(Object object, File outputFile) throws IOException
     {
         // Try to write then perform atomic move so that file can't be corrupted
-        // by process crash in the middle of the write.
+        // by process crash in the middle of the writing.
         File tempFile = new File(outputFile.path() + ".tmp");
         try
         {
