@@ -34,11 +34,11 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
+import java.util.UUID;
 
 import com.vdurmont.semver4j.Semver;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -97,14 +97,13 @@ public class StartupChecksTest
 
     StartupChecks startupChecks;
     Path sstableDir;
-    static File heartbeatFile;
+    File heartbeatFile;
 
     StartupChecksConfiguration options = new StartupChecksConfiguration(new StartupChecks().withDefaultTests(), new HashMap<>());
 
     @BeforeClass
     public static void setupServer()
     {
-        heartbeatFile = createTempFile("cassandra-heartbeat-", "");
         SchemaLoader.prepareServer();
     }
 
@@ -120,6 +119,8 @@ public class StartupChecksTest
         sstableDir = Paths.get(dataDir.absolutePath(), "Keyspace1", "Standard1");
         Files.createDirectories(sstableDir);
 
+        heartbeatFile = createTempFile("cassandra-heartbeat-" + UUID.randomUUID(), "");
+
         options.enable("check_data_resurrection");
         options.getConfig("check_data_resurrection")
                .put(HEARTBEAT_FILE_CONFIG_PROPERTY, heartbeatFile.absolutePath());
@@ -131,11 +132,6 @@ public class StartupChecksTest
     public void tearDown() throws IOException
     {
         new File(sstableDir).deleteRecursive();
-    }
-
-    @AfterClass
-    public static void tearDownClass()
-    {
         heartbeatFile.delete();
     }
 
