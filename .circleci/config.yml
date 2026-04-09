@@ -7974,6 +7974,7 @@ jobs:
         - .m2
     environment:
     - ANT_HOME: /usr/share/ant
+    - ANT_OPTS: "-Xmx2g -Xms512m"
     - LANG: en_US.UTF-8
     - KEEP_TEST_DIR: true
     - DEFAULT_DIR: /home/cassandra/cassandra-dtest
