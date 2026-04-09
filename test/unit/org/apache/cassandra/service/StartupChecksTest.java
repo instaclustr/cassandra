@@ -32,9 +32,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
-import java.util.UUID;
 
 import com.vdurmont.semver4j.Semver;
 
