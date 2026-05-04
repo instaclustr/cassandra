@@ -287,10 +287,11 @@ public class BtiFormat extends AbstractSSTableFormat<BtiTableReader, BtiTableWri
     static class BtiVersion extends Version
     {
         public static final String current_version = "da";
-        public static final String earliest_supported_version = "da";
+        public static final String earliest_supported_version = "cc";
 
-        // versions aa-cz are not supported in OSS
-        // da (5.0): initial version of the BIT format
+        // cc (HCD 1.x): HCD's BTI format — requires migration tool pre-processing
+        //   (OSS41→OSS50 partition index re-encoding, Statistics.db field reorder)
+        // da (5.0): initial version of the BIT format in OSS Cassandra
         // NOTE: when adding a new version, please add that to LegacySSTableTest, too.
 
         private final boolean isLatestVersion;
@@ -396,7 +397,7 @@ public class BtiFormat extends AbstractSSTableFormat<BtiTableReader, BtiTableWri
         @Override
         public boolean hasKeyRange()
         {
-            return true;
+            return version.compareTo("da") >= 0;
         }
 
         @Override
@@ -408,16 +409,30 @@ public class BtiFormat extends AbstractSSTableFormat<BtiTableReader, BtiTableWri
         @Override
         public boolean isCompatibleForStreaming()
         {
-            return isCompatible() && version.charAt(0) == current_version.charAt(0);
+            return isCompatible() && version.compareTo("da") >= 0;
         }
 
         @Override
         public boolean hasUIntDeletionTime()
         {
-            return true;
+            return version.compareTo("da") >= 0;
         }
 
     }
+
+    // Compatibility note for HCD cc SSTables:
+    //
+    // The cc version uses OSS41 ByteComparable encoding in trie indices and
+    // a different Statistics.db field order than da. Before loading cc SSTables,
+    // run the HCD migration tool (StandaloneHcdMigrator) which:
+    //
+    //   1. Rebuilds Partitions.db with OSS50 byte-comparable encoding
+    //   2. Rewrites Statistics.db with C5-compatible field ordering and CRC layout
+    //
+    // After migration, cc SSTables are fully readable by patched Cassandra 5.
+    // The Rows.db trie separators remain in OSS41 encoding, which is safe for
+    // all clustering column types except IntegerType and LongType where the
+    // encoding changed between OSS41 and OSS50.
 
     private static class BtiTableSpecificMetricsProviders implements MetricsProviders
     {
