@@ -6286,5 +6286,4 @@ public class DatabaseDescriptor
     {
         conf.gossip_quarantine_disabled = disabled;
     }
-
 }
