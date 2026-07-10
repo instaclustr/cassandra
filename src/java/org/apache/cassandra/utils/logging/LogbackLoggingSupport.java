@@ -18,15 +18,9 @@
 
 package org.apache.cassandra.utils.logging;
 
-import java.lang.management.ManagementFactory;
-import java.security.AccessControlException;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.management.JMX;
-import javax.management.ObjectName;
-
-import org.apache.cassandra.security.ThreadAwareSecurityManager;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 
@@ -35,13 +29,10 @@ import com.google.common.collect.Maps;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.jmx.JMXConfiguratorMBean;
 import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.classic.spi.TurboFilterList;
-import ch.qos.logback.classic.turbo.ReconfigureOnChangeFilter;
-import ch.qos.logback.classic.turbo.TurboFilter;
+import ch.qos.logback.classic.util.ContextInitializer;
 import ch.qos.logback.core.Appender;
-import ch.qos.logback.core.hook.DelayingShutdownHook;
+import ch.qos.logback.core.hook.DefaultShutdownHook;
 
 /**
  * Encapsulates all logback-specific implementations in a central place.
@@ -57,37 +48,14 @@ public class LogbackLoggingSupport implements LoggingSupport
     @Override
     public void onStartup()
     {
-        // The default logback configuration in conf/logback.xml allows reloading the
-        // configuration when the configuration file has changed (every 60 seconds by default).
-        // This requires logback to use file I/O APIs. But file I/O is not allowed from UDFs.
-        // I.e. if logback decides to check for a modification of the config file while
-        // executing a sandbox thread, the UDF execution and therefore the whole request
-        // execution will fail with an AccessControlException.
-        // To work around this, a custom ReconfigureOnChangeFilter is installed, that simply
-        // prevents this configuration file check and possible reload of the configuration,
-        // while executing sandboxed UDF code.
-        //
-        // NOTE: this is obsolte with logback versions (at least since 1.2.3)
-        Logger logbackLogger = (Logger) LoggerFactory.getLogger(ThreadAwareSecurityManager.class);
-        LoggerContext ctx = logbackLogger.getLoggerContext();
-
-        TurboFilterList turboFilterList = ctx.getTurboFilterList();
-        for (int i = 0; i < turboFilterList.size(); i++)
-        {
-            TurboFilter turboFilter = turboFilterList.get(i);
-            if (turboFilter instanceof ReconfigureOnChangeFilter)
-            {
-                ReconfigureOnChangeFilter reconfigureOnChangeFilter = (ReconfigureOnChangeFilter) turboFilter;
-                turboFilterList.set(i, new SMAwareReconfigureOnChangeFilter(reconfigureOnChangeFilter));
-                break;
-            }
-        }
+        // The SMAwareReconfigureOnChangeFilter workaround (for UDF sandbox AccessControlException)
+        // was already marked obsolete since logback 1.2.3. No startup action is required.
     }
 
     @Override
     public void onShutdown()
     {
-        DelayingShutdownHook logbackHook = new DelayingShutdownHook();
+        DefaultShutdownHook logbackHook = new DefaultShutdownHook();
         logbackHook.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
         logbackHook.run();
     }
@@ -100,10 +68,9 @@ public class LogbackLoggingSupport implements LoggingSupport
         // if both classQualifier and rawLevel are empty, reload from configuration
         if (StringUtils.isBlank(classQualifier) && StringUtils.isBlank(rawLevel))
         {
-            JMXConfiguratorMBean jmxConfiguratorMBean = JMX.newMBeanProxy(ManagementFactory.getPlatformMBeanServer(),
-                                                                          new ObjectName("ch.qos.logback.classic:Name=default,Type=ch.qos.logback.classic.jmx.JMXConfigurator"),
-                                                                          JMXConfiguratorMBean.class);
-            jmxConfiguratorMBean.reloadDefaultConfiguration();
+            LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+            loggerContext.reset();
+            new ContextInitializer(loggerContext).autoConfig();
             return;
         }
         // classQualifier is set, but blank level given
@@ -138,32 +105,4 @@ public class LogbackLoggingSupport implements LoggingSupport
         return it.hasNext();
     }
 
-    /**
-     * The purpose of this class is to prevent logback from checking for config file change,
-     * if the current thread is executing a sandboxed thread to avoid {@link AccessControlException}s.
-     *
-     * This is obsolete with logback versions that replaced {@link ReconfigureOnChangeFilter}
-     * with {@link ch.qos.logback.classic.joran.ReconfigureOnChangeTask} (at least logback since 1.2.3).
-     */
-    private static class SMAwareReconfigureOnChangeFilter extends ReconfigureOnChangeFilter
-    {
-        SMAwareReconfigureOnChangeFilter(ReconfigureOnChangeFilter reconfigureOnChangeFilter)
-        {
-            setRefreshPeriod(reconfigureOnChangeFilter.getRefreshPeriod());
-            setName(reconfigureOnChangeFilter.getName());
-            setContext(reconfigureOnChangeFilter.getContext());
-            if (reconfigureOnChangeFilter.isStarted())
-            {
-                reconfigureOnChangeFilter.stop();
-                start();
-            }
-        }
-
-        protected boolean changeDetected(long now)
-        {
-            if (ThreadAwareSecurityManager.isSecuredThread())
-                return false;
-            return super.changeDetected(now);
-        }
-    }
 }
