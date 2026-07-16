@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -48,15 +49,9 @@ public class TypeParserTest
     public void testRejectsNonAbstractTypeWithoutInitializing() throws SyntaxException
     {
         ClassLoadingTestSupport.assertNotInitialized(ClassLoadingTestNonAssignable.class);
-        try
-        {
-            TypeParser.parse(ClassLoadingTestNonAssignable.class.getName());
-            fail("Should not pass");
-        }
-        catch (ConfigurationException e)
-        {
-            assertTrue(e.getMessage().contains("must extend or implement " + AbstractType.class.getName()));
-        }
+        assertThatThrownBy(() -> TypeParser.parse(ClassLoadingTestNonAssignable.class.getName()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("must extend or implement " + AbstractType.class.getName());
 
         assertFalse(ClassLoadingTestSupport.wasInitialized(ClassLoadingTestNonAssignable.class));
     }

@@ -33,6 +33,7 @@ import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.cassandra.utils.ClassLoadingTestSupport;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -53,15 +54,9 @@ public class MemtableParamsTest
     {
         ClassLoadingTestSupport.assertNotInitialized(MemtableFactoryInvalidReturnType.class);
 
-        try
-        {
-            getMemtableFactory(MemtableFactoryInvalidReturnType.class);
-            fail("Expected exception.");
-        }
-        catch (ConfigurationException e)
-        {
-            assertThat(e.getMessage()).contains("must return");
-        }
+        assertThatThrownBy(() -> getMemtableFactory(MemtableFactoryInvalidReturnType.class))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("must return");
 
         assertThat(ClassLoadingTestSupport.wasInitialized(MemtableFactoryInvalidReturnType.class)).isFalse();
     }
@@ -71,15 +66,9 @@ public class MemtableParamsTest
     {
         ClassLoadingTestSupport.assertNotInitialized(MemtableFactoryInvalidFieldType.class);
 
-        try
-        {
-            getMemtableFactory(MemtableFactoryInvalidFieldType.class);
-            fail("Expected exception.");
-        }
-        catch (ConfigurationException e)
-        {
-            assertThat(e.getMessage()).contains("must be of type");
-        }
+        assertThatThrownBy(() -> getMemtableFactory(MemtableFactoryInvalidFieldType.class))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("must be of type");
 
         assertThat(ClassLoadingTestSupport.wasInitialized(MemtableFactoryInvalidFieldType.class)).isFalse();
     }
