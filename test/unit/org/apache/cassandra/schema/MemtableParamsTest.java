@@ -56,7 +56,7 @@ public class MemtableParamsTest
 
         assertThatThrownBy(() -> getMemtableFactory(MemtableFactoryInvalidReturnType.class))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("must return");
+        .hasStackTraceContaining("must return");
 
         assertThat(ClassLoadingTestSupport.wasInitialized(MemtableFactoryInvalidReturnType.class)).isFalse();
     }
@@ -68,7 +68,7 @@ public class MemtableParamsTest
 
         assertThatThrownBy(() -> getMemtableFactory(MemtableFactoryInvalidFieldType.class))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("must be of type");
+        .hasStackTraceContaining("must be of type");
 
         assertThat(ClassLoadingTestSupport.wasInitialized(MemtableFactoryInvalidFieldType.class)).isFalse();
     }
