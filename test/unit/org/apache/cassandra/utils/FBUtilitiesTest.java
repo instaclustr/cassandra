@@ -49,6 +49,7 @@ import org.apache.cassandra.audit.IAuditLogger;
 import org.apache.cassandra.config.Config;
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.exceptions.ConfigurationException;
+import org.apache.cassandra.security.ISslContextFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -99,6 +100,17 @@ public class FBUtilitiesTest
         .isInstanceOf(ConfigurationException.class)
         .hasRootCauseInstanceOf(ConfigurationException.class)
         .hasStackTraceContaining("must extend or implement " + IAuditLogger.class.getName());
+
+        assertFalse(ClassLoadingTestSupport.wasInitialized(ClassLoadingTestNonAssignable.class));
+    }
+
+    @Test
+    public void testNewSslContextFactoryRejectsWrongTypeWithoutInitializing()
+    {
+        ClassLoadingTestSupport.assertNotInitialized(ClassLoadingTestNonAssignable.class);
+        assertThatThrownBy(() -> FBUtilities.newSslContextFactory(ClassLoadingTestNonAssignable.class.getName(), Collections.emptyMap()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasStackTraceContaining("must extend or implement " + ISslContextFactory.class.getName());
 
         assertFalse(ClassLoadingTestSupport.wasInitialized(ClassLoadingTestNonAssignable.class));
     }

@@ -677,12 +677,16 @@ public class FBUtilities
 
         try
         {
-            Class<?> sslContextFactoryClass = Class.forName(className);
-            return (ISslContextFactory) sslContextFactoryClass.getConstructor(Map.class).newInstance(parameters);
+            Class<? extends ISslContextFactory> sslContextFactoryClass =
+                FBUtilities.classForNameWithoutInitialization(className, "ISslContextFactory", ISslContextFactory.class);
+            return sslContextFactoryClass.getConstructor(Map.class).newInstance(parameters);
         }
         catch (Exception ex)
         {
-            throw new ConfigurationException("Unable to create instance of ISslContextFactory for " + className, ex);
+            // Surface the underlying load failure (e.g. ClassNotFoundException) as the direct cause rather than the
+            // intermediate ConfigurationException that reports it.
+            Throwable cause = ex instanceof ConfigurationException && ex.getCause() != null ? ex.getCause() : ex;
+            throw new ConfigurationException("Unable to create instance of ISslContextFactory for " + className, cause);
         }
     }
 
