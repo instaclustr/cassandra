@@ -33,10 +33,12 @@ import org.apache.cassandra.cql3.CQLTester;
 import org.apache.cassandra.cql3.QueryProcessor;
 import org.apache.cassandra.cql3.UntypedResultSet;
 import org.apache.cassandra.db.ColumnFamilyStore;
+import org.apache.cassandra.db.Keyspace;
 import org.apache.cassandra.db.memtable.Memtable;
 import org.apache.cassandra.utils.btree.BTree;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertSame;
 
 /**
  * Row-level analogue of {@link SetCellAccountingTest}. Where that test grows/resets a single {@code set<text>}
@@ -63,12 +65,20 @@ public class PartitionRowAccountingTest extends CQLTester
             confField.setAccessible(true);
             Config conf = (Config) confField.get(null);
             conf.memtable_allocation_type = Config.MemtableAllocationType.offheap_objects;
+            conf.memtable_cleanup_threshold = 0.8f; // to reduce risk of memtable switch during a test
         }
         catch (ReflectiveOperationException e)
         {
             throw new RuntimeException(e);
         }
         CQLTester.prepareServer();
+    }
+
+    private static void flushAllToBaseline()
+    {
+        for (Keyspace ks : Keyspace.all())
+            for (ColumnFamilyStore c : ks.getColumnFamilyStores())
+                c.forceBlockingFlush(ColumnFamilyStore.FlushReason.UNIT_TESTS);
     }
 
     private ColumnFamilyStore createTestTable()
@@ -165,6 +175,10 @@ public class PartitionRowAccountingTest extends CQLTester
         final long insertTs = 1000L;
         final long deleteTs = 2000L; // newer than insertTs, so the tombstone shadows the cells
 
+        flushAllToBaseline();
+        Memtable mtRetain = cfsRetain.getCurrentMemtable();
+        Memtable mtShadow = cfsShadow.getCurrentMemtable();
+
         for (int ck = 0; ck < rows; ck++)
         {
             // retain path: write the row, then delete it -> the tombstone shadows existing (owned) cells
@@ -175,6 +189,11 @@ public class PartitionRowAccountingTest extends CQLTester
             QueryProcessor.executeInternal(rowDelete(tblShadow, ck, deleteTs));
             QueryProcessor.executeInternal(wideInsert(tblShadow, ck, insertTs));
         }
+
+        assertSame("retain memtable rolled (flushed) mid-test -- on-heap ownership measurement invalid",
+                   mtRetain, cfsRetain.getCurrentMemtable());
+        assertSame("removeShadowed memtable rolled (flushed) mid-test -- on-heap ownership measurement invalid",
+                   mtShadow, cfsShadow.getCurrentMemtable());
 
         long onHeapRetain = ownsOnHeapNow(cfsRetain), onHeapShadow = ownsOnHeapNow(cfsShadow);
         long offHeapRetain = ownsOffHeapNow(cfsRetain), offHeapShadow = ownsOffHeapNow(cfsShadow);
@@ -214,6 +233,10 @@ public class PartitionRowAccountingTest extends CQLTester
         final long insertTs = 1000L;
         final long deleteTs = 2000L; // newer than insertTs, so the tombstone shadows the collection cells
 
+        flushAllToBaseline();
+        Memtable mtRetain = cfsRetain.getCurrentMemtable();
+        Memtable mtShadow = cfsShadow.getCurrentMemtable();
+
         for (int ck = 0; ck < rows; ck++)
         {
             // retain path: write the row (large collection), then delete it -> the tombstone shadows existing (owned)
@@ -225,6 +248,11 @@ public class PartitionRowAccountingTest extends CQLTester
             QueryProcessor.executeInternal(rowDelete(tblShadow, ck, deleteTs));
             QueryProcessor.executeInternal(setInsert(tblShadow, ck, insertTs));
         }
+
+        assertSame("retain memtable rolled (flushed) mid-test -- on-heap ownership measurement invalid",
+                   mtRetain, cfsRetain.getCurrentMemtable());
+        assertSame("removeShadowed memtable rolled (flushed) mid-test -- on-heap ownership measurement invalid",
+                   mtShadow, cfsShadow.getCurrentMemtable());
 
         long onHeapRetain = ownsOnHeapNow(cfsRetain), onHeapShadow = ownsOnHeapNow(cfsShadow);
         long offHeapRetain = ownsOffHeapNow(cfsRetain), offHeapShadow = ownsOffHeapNow(cfsShadow);
@@ -267,6 +295,10 @@ public class PartitionRowAccountingTest extends CQLTester
         final long collectionDeleteTs = 1000L;
         final long rowDeleteTs = 2000L; // newer, so the row tombstone supersedes the collection tombstone
 
+        flushAllToBaseline();
+        Memtable mtRetain = cfsRetain.getCurrentMemtable();
+        Memtable mtShadow = cfsShadow.getCurrentMemtable();
+
         for (int ck = 0; ck < rows; ck++)
         {
             // retain path: write a collection tombstone (an owned complex deletion over an empty cell tree),
@@ -278,6 +310,11 @@ public class PartitionRowAccountingTest extends CQLTester
             QueryProcessor.executeInternal(rowDelete(tblShadow, ck, rowDeleteTs));
             QueryProcessor.executeInternal(collectionDelete(tblShadow, ck, collectionDeleteTs));
         }
+
+        assertSame("retain memtable rolled (flushed) mid-test -- on-heap ownership measurement invalid",
+                   mtRetain, cfsRetain.getCurrentMemtable());
+        assertSame("removeShadowed memtable rolled (flushed) mid-test -- on-heap ownership measurement invalid",
+                   mtShadow, cfsShadow.getCurrentMemtable());
 
         long onHeapRetain = ownsOnHeapNow(cfsRetain), onHeapShadow = ownsOnHeapNow(cfsShadow);
         logger.info("collection-tombstone retain-path onHeap=" + onHeapRetain +
