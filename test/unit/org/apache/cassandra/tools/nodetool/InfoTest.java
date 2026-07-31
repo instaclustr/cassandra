@@ -33,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class InfoTest extends CQLTester
 {
     private static final Pattern PREPARED_STATEMENT_CACHE_PATTERN =
-    Pattern.compile("Prepared Statement Cache\\s+: entries (\\d+), size ([^,]+), capacity ([^,]+), (\\d+) executions, (\\d+) evictions");
+    Pattern.compile("Prepared Stmt Cache\\s+: entries (\\d+), size ([^,]+), capacity ([^,]+), (\\d+) executions, (\\d+) evictions");
 
     @BeforeClass
     public static void setup() throws Exception
@@ -52,7 +52,7 @@ public class InfoTest extends CQLTester
         ToolRunner.ToolResult tool = ToolRunner.invokeNodetool("info");
         tool.assertOnCleanExit();
         String stdout = tool.getStdout();
-        assertThat(stdout).contains("Prepared Statement Cache");
+        assertThat(stdout).contains("Prepared Stmt Cache");
         Matcher matcher = PREPARED_STATEMENT_CACHE_PATTERN.matcher(stdout);
         assertThat(matcher.find()).isTrue();
         assertThat(Integer.parseInt(matcher.group(1))).isGreaterThan(0);
