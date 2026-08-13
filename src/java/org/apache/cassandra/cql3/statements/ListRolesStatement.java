@@ -85,6 +85,9 @@ public class ListRolesStatement extends AuthorizationStatement
 
     public void authorize(ClientState state) throws InvalidRequestException
     {
+        // Authorization is enforced in execute(): a caller without DESCRIBE on the root roles
+        // resource may only view roles granted to them, and is rejected with UnauthorizedException
+        // before any existence check is reached.
     }
 
     public ResultMessage execute(ClientState state) throws RequestValidationException, RequestExecutionException

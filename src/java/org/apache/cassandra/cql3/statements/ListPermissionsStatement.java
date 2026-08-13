@@ -85,11 +85,12 @@ public class ListPermissionsStatement extends AuthorizationStatement
         // an unauthorized caller cannot use the "doesn't exist" error as an existence oracle.
         if (resource != null)
             resource = maybeCorrectResource(resource, state);
-   }
+    }
 
     public void authorize(ClientState state)
     {
-        // checked in validate
+        // Authorization is enforced by IAuthorizer.list() inside execute(), which throws
+        // UnauthorizedException before any existence check is reached.
     }
 
     // TODO: Create a new ResultMessage type (?). Rows will do for now.
