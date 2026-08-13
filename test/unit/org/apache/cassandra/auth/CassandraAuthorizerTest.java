@@ -105,7 +105,7 @@ public class CassandraAuthorizerTest extends CQLTester
     }
 
     @Test
-    public void testListDoesNotLeakRoleExistenceToUnauthorizedUsers()
+    public void testListDoesNotLeakRoleExistenceToUnauthorizedUsers() throws Throwable
     {
         useSuperUser();
 
