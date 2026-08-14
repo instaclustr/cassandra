@@ -83,9 +83,28 @@ New features
     - CEP-49 - it is possible to implement custom compression providers, e.g.
       integrating with a specialized hardware which makes de/compression faster.
       See CASSANDRA-20975 for more information.
+    - The compression algorithm used for internode connections is now configurable
+      via the new internode_compression_config yaml property (e.g. ZstdCompressor
+      with a compression_level), applying to the connections that internode_compression
+      selects for compression. The algorithm is declared per connection during the
+      handshake, so nodes may be reconfigured one at a time and may even use different
+      algorithms; compression parameters only affect the sending side. Connections to
+      peers that do not yet support this feature (or whose messaging version is not
+      yet known) automatically fall back to the previous LZ4 framing, making the
+      option safe to enable during rolling upgrades. When unset (the default), the
+      legacy LZ4 framing is used everywhere, preserving existing behaviour.
+      See CASSANDRA-20488.
 
 Upgrading
 ---------
+
+    - The messaging version has been bumped to VERSION_70 (serialization is unchanged
+      from VERSION_60). As with previous messaging version bumps, streaming
+      (bootstrap, rebuild, repair sync) is not supported between nodes on different
+      messaging versions, so plan topology changes outside the rolling-upgrade window.
+      Hints written before or during the upgrade are dispatched via the
+      decode-and-re-encode path (rather than verbatim) until they are replayed,
+      which is slightly slower but functionally identical.
 
 Deprecation
 -----------

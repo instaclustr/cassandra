@@ -119,6 +119,7 @@ import org.apache.cassandra.locator.NodeProximity;
 import org.apache.cassandra.locator.ReconnectableSnitchHelper;
 import org.apache.cassandra.locator.SeedProvider;
 import org.apache.cassandra.locator.SnitchAdapter;
+import org.apache.cassandra.net.InternodeCompressors;
 import org.apache.cassandra.repair.autorepair.AutoRepairConfig;
 import org.apache.cassandra.security.AbstractCryptoProvider;
 import org.apache.cassandra.security.EncryptionContext;
@@ -618,6 +619,9 @@ public class DatabaseDescriptor
         InetAddressAndPort.initializeDefaultPort(getStoragePort());
 
         validateUpperBoundStreamingConfig();
+
+        // resolves and validates internode_compression_config (null = legacy LZ4 framing only)
+        InternodeCompressors.initialize(conf.internode_compression_config);
 
         if (conf.auto_snapshot_ttl != null)
         {
@@ -4692,6 +4696,11 @@ public class DatabaseDescriptor
     public static void setInternodeCompression(Config.InternodeCompression compression)
     {
         conf.internode_compression = compression;
+    }
+
+    public static ParameterizedClass getInternodeCompressionConfig()
+    {
+        return conf.internode_compression_config;
     }
 
     public static boolean getInterDCTcpNoDelay()

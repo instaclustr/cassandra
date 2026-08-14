@@ -505,6 +505,21 @@ public class InboundConnectionInitiator
                     frameDecoder = new FrameDecoderUnprotected(allocator);
                     break;
                 }
+                case COMPRESSED:
+                {
+                    try
+                    {
+                        frameDecoder = InternodeCompressors.decoder(initiate.compressionAlgorithmId, allocator);
+                    }
+                    catch (IllegalArgumentException e)
+                    {
+                        // should be unreachable between correctly-gated peers; produce a descriptive
+                        // protocol error rather than a bare failure if it ever happens
+                        throw new IllegalArgumentException(String.format("peer %s requested COMPRESSED framing with unknown compression algorithm id %d",
+                                                                         from, initiate.compressionAlgorithmId));
+                    }
+                    break;
+                }
                 default:
                     throw new AssertionError();
             }

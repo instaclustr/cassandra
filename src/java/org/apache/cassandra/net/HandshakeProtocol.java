@@ -73,9 +73,9 @@ class HandshakeProtocol
      *                      1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
      *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
      * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     * |C C C M C      |    REQUEST    |      MIN      |      MAX      |
-     * |A A M O R      |    VERSION    |   SUPPORTED   |   SUPPORTED   |
-     * |T T P D C      |  (DEPRECATED) |    VERSION    |    VERSION    |
+     * |C C C M C A A R|    REQUEST    |      MIN      |      MAX      |
+     * |A A M O R L L S|    VERSION    |   SUPPORTED   |   SUPPORTED   |
+     * |T T P D C G G V|  (DEPRECATED) |    VERSION    |    VERSION    |
      * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      * }
      * </pre>
@@ -83,6 +83,10 @@ class HandshakeProtocol
      * CMP - compression enabled bit
      * MOD - connection mode; if the bit is on, the connection is for streaming; if the bit is off, it is for inter-node messaging.
      * CRC - crc enabled bit
+     * ALG - compression algorithm id ({@link InternodeCompressors.Algorithm#id}), 2 bits; only meaningful
+     *       (and only non-zero) when the framing id is {@link OutboundConnectionSettings.Framing#COMPRESSED}
+     * RSV - reserved, must be zero; may be assigned in a future release, gated on the messaging version
+     *       that assigns it
      * VERSION - {@link org.apache.cassandra.net.MessagingService#current_version}
      */
     static class Initiate
@@ -96,13 +100,20 @@ class HandshakeProtocol
         final AcceptVersions acceptVersions;
         final ConnectionType type;
         final Framing framing;
+        /** {@link InternodeCompressors.Algorithm#id} when framing is COMPRESSED, otherwise 0 */
+        final int compressionAlgorithmId;
         final InetAddressAndPort from;
 
-        Initiate(AcceptVersions acceptVersions, ConnectionType type, Framing framing, InetAddressAndPort from)
+        Initiate(AcceptVersions acceptVersions, ConnectionType type, Framing framing, int compressionAlgorithmId, InetAddressAndPort from)
         {
+            assert (framing == Framing.COMPRESSED) == (compressionAlgorithmId != 0)
+                 : "compression algorithm id must be set if and only if framing is COMPRESSED";
+            assert compressionAlgorithmId >= 0 && compressionAlgorithmId <= 0x3
+                 : "compression algorithm id must fit in 2 bits: " + compressionAlgorithmId;
             this.acceptVersions = acceptVersions;
             this.type = type;
             this.framing = framing;
+            this.compressionAlgorithmId = compressionAlgorithmId;
             this.from = from;
         }
 
@@ -116,6 +127,9 @@ class HandshakeProtocol
 
             // framing id is split over 2nd and 4th bits, for backwards compatibility
             flags |= ((framing.id & 1) << 2) | ((framing.id & 2) << 3);
+            // compression algorithm id occupies the previously-unused bits 5-6; always 0 unless COMPRESSED.
+            // bit 7 remains reserved (and validated to be zero on decode)
+            flags |= (compressionAlgorithmId & 0x3) << 5;
             flags |= (acceptVersions.min << 8); // legacy (pre40)
             flags |= (acceptVersions.min << 16);
             flags |= (acceptVersions.max << 24);
@@ -166,6 +180,18 @@ class HandshakeProtocol
                 int framingBits = getBits(flags, 2, 1) | (getBits(flags, 4, 1) << 1);
                 Framing framing = Framing.forId(framingBits);
 
+                // bits 5-6; peers that do not support COMPRESSED framing always send 0 here
+                int compressionAlgorithmId = getBits(flags, 5, 2);
+                if ((framing == Framing.COMPRESSED) != (compressionAlgorithmId != 0))
+                    throw new IOException("Invalid handshake: compression algorithm id " + compressionAlgorithmId +
+                                          " is inconsistent with framing " + framing);
+
+                // bit 7 is reserved: validating it (rather than silently masking it away) means a future
+                // release can assign it, gated on a messaging version, without risking misinterpretation
+                // by versions that predate the assignment
+                if (getBits(flags, 7, 1) != 0)
+                    throw new IOException("Invalid handshake: reserved flag bit 7 is set");
+
                 boolean isStream = getBits(flags, 3, 1) == 1;
 
                 ConnectionType type = isStream
@@ -180,7 +206,7 @@ class HandshakeProtocol
                     throw new InvalidCrc(read, computed);
 
                 buf.skipBytes(nio.position() - start);
-                return new Initiate(new AcceptVersions(minMessagingVersion, maxMessagingVersion), type, framing, from);
+                return new Initiate(new AcceptVersions(minMessagingVersion, maxMessagingVersion), type, framing, compressionAlgorithmId, from);
 
             }
             catch (EOFException e)
@@ -198,16 +224,17 @@ class HandshakeProtocol
             Initiate that = (Initiate)other;
             return    this.type == that.type
                    && this.framing == that.framing
+                   && this.compressionAlgorithmId == that.compressionAlgorithmId
                    && Objects.equals(this.acceptVersions, that.acceptVersions);
         }
 
         @Override
         public String toString()
         {
-            return String.format("Initiate(min: %d, max: %d, type: %s, framing: %b, from: %s)",
+            return String.format("Initiate(min: %d, max: %d, type: %s, framing: %s, compressionAlgorithmId: %d, from: %s)",
                                  acceptVersions.min,
                                  acceptVersions.max,
-                                 type, framing, from);
+                                 type, framing, compressionAlgorithmId, from);
         }
     }
 

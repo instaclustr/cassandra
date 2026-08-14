@@ -1168,10 +1168,12 @@ public class OutboundConnection
                         });
                         ++successfulConnections;
 
+                        // settings.framing is null unless explicitly pinned; framing(category) re-evaluates
+                        // the same decision the initiator made for this attempt (see OutboundConnectionInitiator)
                         logger.info("{} successfully connected, version = {}, framing = {}, encryption = {}",
                                     id(true),
                                     success.messagingVersion,
-                                    settings.framing,
+                                    settings.framing(type.category()),
                                     encryptionConnectionSummary(channel));
                         break;
 

@@ -54,7 +54,10 @@ public class OutboundConnectionSettings
         // uses our framing format with header crc24
         LZ4(1),
         // uses simple frames with separate header and payload crc
-        CRC(2);
+        CRC(2),
+        // same framing format as LZ4, but the payload compressor is negotiated by algorithm id
+        // during the handshake (see InternodeCompressors); requires internode_compression_config
+        COMPRESSED(3);
 
         public static Framing forId(int id)
         {
@@ -63,6 +66,7 @@ public class OutboundConnectionSettings
                 case 0: return UNPROTECTED;
                 case 1: return LZ4;
                 case 2: return CRC;
+                case 3: return COMPRESSED;
             }
             throw new IllegalStateException();
         }
@@ -459,8 +463,22 @@ public class OutboundConnectionSettings
         if (category.isStreaming())
             return Framing.UNPROTECTED;
 
-        return shouldCompressConnection(getBroadcastAddressAndPort(), to)
-               ? Framing.LZ4 : Framing.CRC;
+        if (!shouldCompressConnection(getBroadcastAddressAndPort(), to))
+            return Framing.CRC;
+
+        // Negotiable-compressor framing requires explicit opt-in via internode_compression_config, and is
+        // gated per algorithm on the messaging version that introduced it (Algorithm.minimumVersion):
+        // peers whose messaging version we don't know yet, or that advertise anything older (including
+        // newer binaries capped to an older version by storage compatibility mode), fall back to the
+        // legacy LZ4 framing. The check of our own current_version keeps the feature disabled while this
+        // node itself runs in a downgraded storage compatibility mode.
+        if (InternodeCompressors.isConfigured() // cheap short-circuit: skip the version-map lookups when the feature is off
+            && MessagingService.instance().versions.knows(to)
+            && InternodeCompressors.mayCompress(MessagingService.current_version,
+                                                MessagingService.instance().versions.get(to)))
+            return Framing.COMPRESSED;
+
+        return Framing.LZ4;
     }
 
     // note that connectTo is updated even if specified, in the case of pre40 messaging and using encryption (to update port)
@@ -469,8 +487,12 @@ public class OutboundConnectionSettings
         if (to == null)
             throw new IllegalArgumentException();
 
+        // note: framing is deliberately NOT materialised here (unless explicitly set): it depends on
+        // mutable state (the peer's known messaging version), so it is re-evaluated via framing(category)
+        // on every connection attempt by OutboundConnectionInitiator, rather than being frozen into the
+        // template for the lifetime of the connection pool
         return new OutboundConnectionSettings(authenticator(), to, connectTo(),
-                                              encryption(), framing(category),
+                                              encryption(), framing,
                                               socketSendBufferSizeInBytes(), applicationSendQueueCapacityInBytes(),
                                               applicationSendQueueReserveEndpointCapacityInBytes(),
                                               applicationSendQueueReserveGlobalCapacityInBytes(),

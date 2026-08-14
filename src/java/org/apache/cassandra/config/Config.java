@@ -527,6 +527,14 @@ public class Config
     public JMXServerOptions jmx_server_options;
 
     public InternodeCompression internode_compression = InternodeCompression.none;
+    /**
+     * Which compressor to use when a connection is compressed per {@link #internode_compression}.
+     * When unset (the default), the legacy hardwired LZ4 framing is used. When set, connections to
+     * peers that support it are compressed with the configured algorithm ({@code class_name} of one
+     * of the supported {@code ICompressor}s, e.g. ZstdCompressor, with optional {@code parameters}
+     * such as {@code compression_level}); connections to other peers fall back to the LZ4 framing.
+     */
+    public ParameterizedClass internode_compression_config = null;
 
     @Replaces(oldName = "hinted_handoff_throttle_in_kb", converter = Converters.KIBIBYTES_DATASTORAGE, deprecated = true)
     public DataStorageSpec.IntKibibytesBound hinted_handoff_throttle = new DataStorageSpec.IntKibibytesBound("1024KiB");

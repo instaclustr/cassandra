@@ -63,6 +63,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.apache.cassandra.net.MessagingService.VERSION_40;
 import static org.apache.cassandra.net.MessagingService.VERSION_50;
 import static org.apache.cassandra.net.MessagingService.VERSION_60;
+import static org.apache.cassandra.net.MessagingService.VERSION_70;
 import static org.apache.cassandra.utils.MonotonicClock.Global.approxTime;
 
 public class Mutation implements IMutation, Supplier<Mutation>
@@ -399,6 +400,7 @@ public class Mutation implements IMutation, Supplier<Mutation>
     private int serializedSize40;
     private int serializedSize50;
     private int serializedSize51;
+    private int serializedSize70;
 
     public int serializedSize(int version)
     {
@@ -416,6 +418,10 @@ public class Mutation implements IMutation, Supplier<Mutation>
                 if (serializedSize51 == 0)
                     serializedSize51 = (int) serializer.serializedSize(this, VERSION_60);
                 return serializedSize51;
+            case VERSION_70:
+                if (serializedSize70 == 0)
+                    serializedSize70 = (int) serializer.serializedSize(this, VERSION_70);
+                return serializedSize70;
             default:
                 throw new IllegalStateException("Unknown serialization version: " + version);
         }

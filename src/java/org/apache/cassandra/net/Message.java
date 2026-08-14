@@ -61,6 +61,7 @@ import static org.apache.cassandra.net.MessageFlag.ARTIFICIAL_LATENCY;
 import static org.apache.cassandra.net.MessagingService.VERSION_40;
 import static org.apache.cassandra.net.MessagingService.VERSION_50;
 import static org.apache.cassandra.net.MessagingService.VERSION_60;
+import static org.apache.cassandra.net.MessagingService.VERSION_70;
 import static org.apache.cassandra.utils.FBUtilities.getBroadcastAddressAndPort;
 import static org.apache.cassandra.utils.MonotonicClock.Global.approxTime;
 import static org.apache.cassandra.utils.vint.VIntCoding.computeUnsignedVIntSize;
@@ -1268,6 +1269,7 @@ public class Message<T> implements ResponseContext
     private int serializedSize40;
     private int serializedSize50;
     private int serializedSize51;
+    private int serializedSize70;
 
     /**
      * Serialized size of the entire message, for the provided messaging version. Caches the calculated value.
@@ -1288,6 +1290,10 @@ public class Message<T> implements ResponseContext
                 if (serializedSize51 == 0)
                     serializedSize51 = serializer.serializedSize(this, VERSION_60);
                 return serializedSize51;
+            case VERSION_70:
+                if (serializedSize70 == 0)
+                    serializedSize70 = serializer.serializedSize(this, VERSION_70);
+                return serializedSize70;
             default:
                 throw new IllegalStateException("Unknown serialization version " + version);
         }
@@ -1296,6 +1302,7 @@ public class Message<T> implements ResponseContext
     private int payloadSize40 = -1;
     private int payloadSize50 = -1;
     private int payloadSize51 = -1;
+    private int payloadSize70 = -1;
 
     private int payloadSize(int version)
     {
@@ -1313,6 +1320,10 @@ public class Message<T> implements ResponseContext
                 if (payloadSize51 < 0)
                     payloadSize51 = serializer.payloadSize(this, VERSION_60);
                 return payloadSize51;
+            case VERSION_70:
+                if (payloadSize70 < 0)
+                    payloadSize70 = serializer.payloadSize(this, VERSION_70);
+                return payloadSize70;
 
             default:
                 throw new IllegalStateException("Unkown serialization version " + version);

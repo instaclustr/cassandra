@@ -1842,6 +1842,23 @@ client_encryption_options:
 #   nothing is compressed.
 internode_compression: dc
 
+# internode_compression_config selects which compressor is used for connections that
+# internode_compression decides to compress; with internode_compression: none it has
+# no effect. When unset (the default), the legacy LZ4 framing is used. When set,
+# connections to peers that support negotiable compression use the configured
+# algorithm; other connections fall back to the LZ4 framing.
+# Supported compressors: LZ4Compressor (shorthand: lz4) and ZstdCompressor
+# (shorthand: zstd); class_name accepts either form. Parameters
+# (e.g. compression_level) only affect the sending side of each connection, so nodes
+# may use different parameters.
+# Connections to peers that do not yet support negotiable internode compression (or whose
+# messaging version is not yet known) automatically fall back to the legacy LZ4 framing,
+# so this option is safe to enable during rolling upgrades.
+# internode_compression_config:
+#   class_name: ZstdCompressor
+#   parameters:
+#     - compression_level: 3
+
 # Enable or disable tcp_nodelay for inter-dc communication.
 # Disabling it will result in larger (but fewer) network packets being sent,
 # reducing overhead from the TCP protocol itself, at the cost of increasing

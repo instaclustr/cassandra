@@ -137,6 +137,7 @@ public class CassandraMetricsRegistry extends MetricRegistry
                                    .add(HintedHandoffMetrics.TYPE_NAME)
                                    .add(HintsServiceMetrics.TYPE_NAME)
                                    .add(org.apache.cassandra.index.accord.IndexMetrics.TYPE)
+                                   .add(InternodeCompressionMetrics.TYPE_NAME)
                                    .add(InternodeInboundMetrics.TYPE_NAME)
                                    .add(InternodeOutboundMetrics.TYPE_NAME)
                                    .add(org.apache.cassandra.journal.Metrics.TYPE_NAME)

@@ -64,6 +64,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.apache.cassandra.net.MessagingService.VERSION_40;
 import static org.apache.cassandra.net.MessagingService.VERSION_50;
 import static org.apache.cassandra.net.MessagingService.VERSION_60;
+import static org.apache.cassandra.net.MessagingService.VERSION_70;
 import static org.apache.cassandra.utils.Clock.Global.nanoTime;
 
 public class CounterMutation implements IMutation
@@ -374,6 +375,7 @@ public class CounterMutation implements IMutation
     private int serializedSize40;
     private int serializedSize50;
     private int serializedSize51;
+    private int serializedSize70;
 
     public int serializedSize(int version)
     {
@@ -391,6 +393,10 @@ public class CounterMutation implements IMutation
                 if (serializedSize51 == 0)
                     serializedSize51 = (int) serializer.serializedSize(this, VERSION_60);
                 return serializedSize51;
+            case VERSION_70:
+                if (serializedSize70 == 0)
+                    serializedSize70 = (int) serializer.serializedSize(this, VERSION_70);
+                return serializedSize70;
             default:
                 throw new IllegalStateException("Unknown serialization version: " + version);
         }

@@ -79,6 +79,7 @@ import static org.apache.cassandra.net.InternodeConnectionUtils.certificates;
 import static org.apache.cassandra.net.OutboundConnectionInitiator.Result.incompatible;
 import static org.apache.cassandra.net.OutboundConnectionInitiator.Result.messagingSuccess;
 import static org.apache.cassandra.net.OutboundConnectionInitiator.Result.streamingSuccess;
+import static org.apache.cassandra.net.OutboundConnectionSettings.Framing;
 import static org.apache.cassandra.net.SocketFactory.WIRETRACE;
 import static org.apache.cassandra.net.SocketFactory.isCausedByConnectionReset;
 import static org.apache.cassandra.net.SocketFactory.newSslHandler;
@@ -308,6 +309,16 @@ public class OutboundConnectionInitiator<SuccessType extends OutboundConnectionI
     private class Handler extends ByteToMessageDecoder
     {
         /**
+         * The framing for this connection attempt. Framing is intentionally not baked into the settings
+         * template by {@link OutboundConnectionSettings#withDefaults}: unless explicitly pinned, it is
+         * re-evaluated here on every attempt, so that a decision made before the peer's messaging version
+         * was known (which precludes COMPRESSED framing) is not frozen for the lifetime of the connection
+         * pool. It is evaluated exactly once per attempt, when the {@link Initiate} is sent, and the same
+         * value is then used to select the frame encoder once the handshake completes.
+         */
+        private Framing framing;
+
+        /**
          * {@inheritDoc}
          *
          * Invoked when the channel is made active, and sends out the {@link Initiate}.
@@ -317,7 +328,17 @@ public class OutboundConnectionInitiator<SuccessType extends OutboundConnectionI
         @Override
         public void channelActive(final ChannelHandlerContext ctx) throws Exception
         {
-            Initiate msg = new Initiate(settings.acceptVersions, type, settings.framing, settings.from);
+            framing = settings.framing(type.category());
+            int compressionAlgorithmId = 0;
+            if (framing == Framing.COMPRESSED)
+            {
+                InternodeCompressors.Algorithm algorithm = InternodeCompressors.configuredAlgorithmOrNull();
+                if (algorithm == null)
+                    framing = Framing.LZ4; // configuration was cleared since framing was evaluated; fall back
+                else
+                    compressionAlgorithmId = algorithm.id;
+            }
+            Initiate msg = new Initiate(settings.acceptVersions, type, framing, compressionAlgorithmId, settings.from);
             logger.trace("starting handshake with peer {}, msg = {}", settings.connectToId(), msg);
 
             AsyncChannelPromise.writeAndFlush(ctx, msg.encode(),
@@ -369,7 +390,7 @@ public class OutboundConnectionInitiator<SuccessType extends OutboundConnectionI
                     // This is a bit ugly
                     if (type.isMessaging())
                     {
-                        switch (settings.framing)
+                        switch (framing)
                         {
                             case LZ4:
                                 frameEncoder = FrameEncoderLZ4.fastInstance;
@@ -379,6 +400,9 @@ public class OutboundConnectionInitiator<SuccessType extends OutboundConnectionI
                                 break;
                             case UNPROTECTED:
                                 frameEncoder = FrameEncoderUnprotected.instance;
+                                break;
+                            case COMPRESSED:
+                                frameEncoder = InternodeCompressors.encoder();
                                 break;
                         }
 
