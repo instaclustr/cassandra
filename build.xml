@@ -562,7 +562,7 @@
         <scm connection="${scm.connection}" developerConnection="${scm.developerConnection}" url="${scm.url}"/>
         <dependencyManagement>
           <dependency groupId="org.xerial.snappy" artifactId="snappy-java" version="1.1.10.4"/>
-          <dependency groupId="at.yawk.lz4" artifactId="lz4-java" version="1.11.1"/>
+          <dependency groupId="at.yawk.lz4" artifactId="lz4-java" version="1.11.2"/>
           <dependency groupId="com.github.luben" artifactId="zstd-jni" version="1.5.7-2"/>
           <dependency groupId="com.google.guava" artifactId="guava" version="32.0.1-jre">
             <exclusion groupId="com.google.code.findbugs" artifactId="jsr305" />
@@ -590,10 +590,10 @@
           <dependency groupId="org.slf4j" artifactId="jcl-over-slf4j" version="1.7.25" />
           <dependency groupId="ch.qos.logback" artifactId="logback-core" version="1.2.13"/>
           <dependency groupId="ch.qos.logback" artifactId="logback-classic" version="1.2.13"/>
-          <dependency groupId="com.fasterxml.jackson.core" artifactId="jackson-core" version="2.21.5"/>
-          <dependency groupId="com.fasterxml.jackson.core" artifactId="jackson-databind" version="2.21.5"/>
+          <dependency groupId="com.fasterxml.jackson.core" artifactId="jackson-core" version="2.21.6"/>
+          <dependency groupId="com.fasterxml.jackson.core" artifactId="jackson-databind" version="2.21.6"/>
           <dependency groupId="com.fasterxml.jackson.core" artifactId="jackson-annotations" version="2.21"/>
-          <dependency groupId="com.fasterxml.jackson.datatype" artifactId="jackson-datatype-jsr310" version="2.21.5"/>
+          <dependency groupId="com.fasterxml.jackson.datatype" artifactId="jackson-datatype-jsr310" version="2.21.6"/>
           <dependency groupId="com.fasterxml.jackson.dataformat" artifactId="jackson-dataformat-yaml" version="2.13.2"  scope="test">
             <!-- CASSANDRA-20848 2.19.x would bring snakeyaml 2.4 which is for now incompatible with rest of the codebase -->
             <exclusion groupId="org.yaml" artifactId="snakeyaml"/>
