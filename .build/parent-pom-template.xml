@@ -294,9 +294,9 @@
         <version>1.1.10.4</version>
       </dependency>
       <dependency>
-        <groupId>org.lz4</groupId>
+        <groupId>at.yawk.lz4</groupId>
         <artifactId>lz4-java</artifactId>
-        <version>1.8.0</version>
+        <version>1.11.2</version>
       </dependency>
       <dependency>
         <groupId>com.github.luben</groupId>
@@ -412,37 +412,37 @@
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-core</artifactId>
-        <version>1.2.12</version>
+        <version>1.2.13</version>
       </dependency>
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.2.12</version>
+        <version>1.2.13</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-core</artifactId>
-        <version>2.19.2</version>
+        <version>2.21.6</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
-        <version>2.19.2</version>
+        <version>2.21.6</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-annotations</artifactId>
-        <version>2.19.2</version>
+        <version>2.21</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.datatype</groupId>
         <artifactId>jackson-datatype-jsr310</artifactId>
-        <version>2.19.2</version>
+        <version>2.21.6</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.dataformat</groupId>
         <artifactId>jackson-dataformat-yaml</artifactId>
-        <version>2.19.2</version>
+        <version>2.21.6</version>
         <scope>test</scope>
         <!-- CASSANDRA-20848 2.19.x would bring snakeyaml 2.4 which is for now incompatible with rest of the codebase -->
         <exclusions>
@@ -746,7 +746,7 @@
       <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty-all</artifactId>
-        <version>4.1.119.Final</version>
+        <version>4.1.130.Final</version>
         <exclusions>
           <exclusion>
             <groupId>io.netty</groupId>
@@ -840,18 +840,18 @@
       <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty-transport-native-epoll</artifactId>
-        <version>4.1.119.Final</version>
+        <version>4.1.130.Final</version>
       </dependency>
       <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty-transport-native-epoll</artifactId>
-        <version>4.1.119.Final</version>
+        <version>4.1.130.Final</version>
         <classifier>linux-x86_64</classifier>
       </dependency>
       <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty-transport-native-epoll</artifactId>
-        <version>4.1.119.Final</version>
+        <version>4.1.130.Final</version>
         <classifier>linux-aarch_64</classifier>
       </dependency>
 
