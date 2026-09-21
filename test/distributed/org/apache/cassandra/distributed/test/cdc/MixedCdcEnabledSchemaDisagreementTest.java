@@ -88,8 +88,6 @@ public class MixedCdcEnabledSchemaDisagreementTest extends TestBaseImpl
 
             IInstanceConfig newNodeConfig = cluster.newInstanceConfig();
             newNodeConfig.set("auto_bootstrap", true);
-            // Mirrors the DoorDash/CASSANDRA-21618 scenario: the DC/node being scaled out defaults
-            // cdc_enabled to false while the rest of the cluster already has cdc=true tables.
             newNodeConfig.set("cdc_enabled", false);
 
             IInvokableInstance newNode = cluster.bootstrap(newNodeConfig);
