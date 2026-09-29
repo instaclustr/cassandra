@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-version: 2
+version: 2.1
 jobs:
   j8_jvm_upgrade_dtests:
     docker:
