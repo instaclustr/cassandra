@@ -135,8 +135,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_utests_fqltool_repeat:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -403,8 +404,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_dtests_vnode_repeat:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -646,8 +648,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_utests_system_keyspace_directory:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -839,8 +842,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_utests_stress_repeat:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -1161,8 +1165,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j8_utests_compression_repeat:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -1252,8 +1257,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_unit_tests:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -1482,8 +1488,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_cqlsh_dtests_py38:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -2213,8 +2220,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_cqlsh_dtests_py38_offheap:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -2613,8 +2621,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_cqlsh_dtests_py3:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -2789,8 +2798,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_utests_cdc:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -3102,8 +3112,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j8_dtests_offheap_repeat:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -3236,8 +3247,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_dtests_offheap_repeat:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -3505,8 +3517,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_jvm_dtests_vnode:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -3740,8 +3753,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j8_utests_compression:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -3859,8 +3873,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_utests_long:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -4024,8 +4039,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j8_dtests_large:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -4110,8 +4126,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_utests_stress:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -4294,8 +4311,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j8_upgrade_dtests_repeat:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -4428,8 +4446,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_utests_cdc_repeat:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -4768,8 +4787,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j8_jvm_dtests_vnode_repeat:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -4859,8 +4879,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_utests_compression:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -5089,8 +5110,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_cqlsh_dtests_py3_offheap:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -5291,8 +5313,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_cqlsh_dtests_py311_offheap:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -5493,8 +5516,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_dtests_large_repeat:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -5738,8 +5762,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j8_utests_stress_repeat:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -5829,8 +5854,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j8_dtests_vnode_repeat:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -5963,8 +5989,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_cqlsh_dtests_py3_vnode:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -6160,8 +6187,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_dtests_offheap:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -6360,8 +6388,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_cqlsh_dtests_py38_vnode:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -6765,8 +6794,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j8_dtests_offheap:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -6851,8 +6881,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j8_unit_tests:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -6970,8 +7001,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_jvm_dtests:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -7377,8 +7409,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j8_dtests_vnode:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -7463,8 +7496,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_cqlshlib_tests:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -7619,8 +7653,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_dtests:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -7923,8 +7958,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j8_utests_long:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -7996,8 +8032,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j8_utests_cdc:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -8115,8 +8152,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j8_cqlsh_dtests_py311_offheap:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -8225,8 +8263,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j8_dtests_repeat:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -8359,8 +8398,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j8_jvm_dtests:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -8478,8 +8518,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j8_build:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -8586,8 +8627,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j8_cqlsh_dtests_py38_vnode:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -8696,8 +8738,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_unit_tests_repeat:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -8861,8 +8904,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j8_cqlshlib_tests:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -8925,8 +8969,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_dtests_vnode:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -9125,8 +9170,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j8_dtests_large_vnode_repeat:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -9259,8 +9305,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
   j11_utests_long_repeat:
     docker:
     - image: mohamedmurshidh731/cassandra-testing-ubuntu2004-java11-w-dependencies:4.1.10-ic-2
@@ -9456,8 +9503,9 @@ jobs:
     - REPEATED_ANT_TEST_METHODS: null
     - REPEATED_ANT_TEST_VNODES: false
     - REPEATED_ANT_TEST_COUNT: 500
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
-    - JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    - JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - CASSANDRA_USE_JDK11: true
 workflows:
   version: 2
   java8_separate_tests:
