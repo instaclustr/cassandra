@@ -1541,9 +1541,8 @@ executors:
     shell: /bin/bash -eo pipefail -l
     environment:
       <<: *default_env_vars
-      JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
-      JDK_HOME: /usr/lib/jvm/java-11-openjdk-amd64
-      CASSANDRA_USE_JDK11: true
+      JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+      JDK_HOME: /usr/lib/jvm/java-8-openjdk-amd64
 
   java11-executor:
     parameters:
