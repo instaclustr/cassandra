@@ -24,7 +24,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -82,7 +82,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -113,10 +113,10 @@ jobs:
   j17_dtests:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -191,7 +191,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -224,7 +224,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 1
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -310,7 +310,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -377,7 +377,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -410,7 +410,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -468,7 +468,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -499,10 +499,10 @@ jobs:
   j11_dtests_latest_repeat:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -603,7 +603,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -670,7 +670,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -704,7 +704,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -790,7 +790,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -820,10 +820,10 @@ jobs:
   j17_cqlsh_dtests_py38_vnode:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -900,7 +900,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -930,10 +930,10 @@ jobs:
   j17_dtests_vnode_repeat:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -1056,7 +1056,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -1086,10 +1086,10 @@ jobs:
   j11_dtests_vnode_repeat:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -1190,7 +1190,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -1221,10 +1221,10 @@ jobs:
   j17_cqlsh_dtests_py311_latest:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -1301,7 +1301,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -1334,7 +1334,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -1420,7 +1420,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -1454,7 +1454,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -1512,7 +1512,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -1546,7 +1546,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -1632,7 +1632,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -1662,10 +1662,10 @@ jobs:
   j11_cqlsh_dtests_py38_latest:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -1742,7 +1742,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -1776,7 +1776,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -1834,7 +1834,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -1864,10 +1864,10 @@ jobs:
   j11_cqlsh_dtests_py311:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -1944,7 +1944,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -1975,10 +1975,10 @@ jobs:
   j17_dtests_large_vnode_repeat:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -2079,7 +2079,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -2109,10 +2109,10 @@ jobs:
   j17_dtests_repeat:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -2235,7 +2235,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -2268,7 +2268,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -2354,7 +2354,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -2388,7 +2388,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -2446,7 +2446,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -2476,10 +2476,10 @@ jobs:
   j17_cqlsh_dtests_py311:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -2556,7 +2556,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -2586,10 +2586,10 @@ jobs:
   j11_cqlsh_dtests_py38:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -2666,7 +2666,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -2700,7 +2700,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -2758,7 +2758,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -2831,7 +2831,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -2865,7 +2865,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -2923,7 +2923,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -2957,7 +2957,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -3043,7 +3043,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -3076,7 +3076,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -3241,7 +3241,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -3272,10 +3272,10 @@ jobs:
   j11_dtests_large_vnode:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -3328,7 +3328,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -3362,7 +3362,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -3420,7 +3420,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -3450,10 +3450,10 @@ jobs:
   j11_dtests_large_vnode_repeat:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -3554,7 +3554,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -3585,10 +3585,10 @@ jobs:
   j11_dtests_large:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -3641,7 +3641,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -3675,7 +3675,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -3733,7 +3733,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -3767,7 +3767,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -3853,7 +3853,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -3884,10 +3884,10 @@ jobs:
   j11_upgrade_dtests_repeat:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -3988,7 +3988,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -4022,7 +4022,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 1
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -4108,7 +4108,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -4141,7 +4141,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -4306,7 +4306,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -4336,7 +4336,7 @@ jobs:
   j17_build:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
     parallelism: 1
@@ -4399,6 +4399,7 @@ jobs:
         - .m2
     environment:
     - ANT_HOME: /usr/share/ant
+    - ANT_OPTS: "-Xmx3G"
     - LANG: en_US.UTF-8
     - KEEP_TEST_DIR: true
     - DEFAULT_DIR: /home/cassandra/cassandra-dtest
@@ -4414,7 +4415,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -4447,7 +4448,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -4533,7 +4534,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -4567,7 +4568,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -4625,7 +4626,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -4658,7 +4659,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 1
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -4744,7 +4745,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -4817,7 +4818,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -4851,7 +4852,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -4909,7 +4910,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -4943,7 +4944,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -5001,7 +5002,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -5106,7 +5107,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -5180,7 +5181,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -5214,7 +5215,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -5272,7 +5273,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -5387,7 +5388,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -5421,7 +5422,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 1
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -5507,7 +5508,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -5581,7 +5582,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -5615,7 +5616,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -5673,7 +5674,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -5704,10 +5705,10 @@ jobs:
   j17_dtests_vnode:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -5782,7 +5783,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -5812,10 +5813,10 @@ jobs:
   j11_dtests_repeat:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -5916,7 +5917,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -5950,7 +5951,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -6036,7 +6037,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -6070,7 +6071,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -6156,7 +6157,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -6187,10 +6188,10 @@ jobs:
   j17_dtests_latest_repeat:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -6291,7 +6292,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -6324,7 +6325,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -6382,7 +6383,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -6413,10 +6414,10 @@ jobs:
   j11_upgrade_dtests:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -6469,7 +6470,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -6500,10 +6501,10 @@ jobs:
   j11_dtests_large_repeat:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -6604,7 +6605,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -6638,7 +6639,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -6696,7 +6697,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -6769,7 +6770,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -6799,10 +6800,10 @@ jobs:
   j17_dtests_large_vnode:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -6855,7 +6856,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -6885,10 +6886,10 @@ jobs:
   j11_cqlsh_dtests_py38_vnode:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -6965,7 +6966,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -6999,7 +7000,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -7057,7 +7058,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -7091,7 +7092,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -7149,7 +7150,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -7180,10 +7181,10 @@ jobs:
   j11_cqlsh_dtests_py311_latest:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -7260,7 +7261,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -7326,7 +7327,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -7356,10 +7357,10 @@ jobs:
   j11_cqlsh_dtests_py311_vnode:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -7436,7 +7437,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -7470,7 +7471,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -7556,7 +7557,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -7586,10 +7587,10 @@ jobs:
   j17_cqlsh_dtests_py38_latest:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -7666,7 +7667,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -7696,10 +7697,10 @@ jobs:
   j17_cqlsh_dtests_py311_vnode:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -7776,7 +7777,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -7809,7 +7810,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 1
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -7895,7 +7896,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -7926,10 +7927,10 @@ jobs:
   j17_dtests_latest:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -8004,7 +8005,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -8037,7 +8038,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -8123,7 +8124,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -8196,7 +8197,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -8226,7 +8227,7 @@ jobs:
   j11_build:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
     parallelism: 1
@@ -8289,6 +8290,7 @@ jobs:
         - .m2
     environment:
     - ANT_HOME: /usr/share/ant
+    - ANT_OPTS: "-Xmx3G"
     - LANG: en_US.UTF-8
     - KEEP_TEST_DIR: true
     - DEFAULT_DIR: /home/cassandra/cassandra-dtest
@@ -8304,7 +8306,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -8338,7 +8340,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -8396,7 +8398,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -8427,10 +8429,10 @@ jobs:
   j11_dtests_latest:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -8483,7 +8485,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -8549,7 +8551,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -8580,10 +8582,10 @@ jobs:
   j11_dtests:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -8636,7 +8638,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -8667,10 +8669,10 @@ jobs:
   j17_cqlsh_dtests_py38:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -8747,7 +8749,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -8780,7 +8782,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -8866,7 +8868,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -8899,7 +8901,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -8957,7 +8959,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -9031,7 +9033,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -9064,7 +9066,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -9122,7 +9124,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -9152,10 +9154,10 @@ jobs:
   j17_dtests_large:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -9208,7 +9210,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -9241,7 +9243,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -9299,7 +9301,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -9373,7 +9375,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -9406,7 +9408,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -9464,7 +9466,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -9494,10 +9496,10 @@ jobs:
   j11_dtests_vnode:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11-w-dependencies:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -9550,7 +9552,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -9584,7 +9586,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -9642,7 +9644,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -9672,10 +9674,10 @@ jobs:
   j17_dtests_large_repeat:
     docker:
     - image: apache/cassandra-testing-ubuntu2004-java11:latest
-    resource_class: medium
+    resource_class: large
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -9776,7 +9778,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -9809,7 +9811,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -9867,7 +9869,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -9900,7 +9902,7 @@ jobs:
     resource_class: medium
     working_directory: ~/
     shell: /bin/bash -eo pipefail -l
-    parallelism: 4
+    parallelism: 25
     steps:
     - attach_workspace:
         at: /home/cassandra
@@ -9958,7 +9960,7 @@ jobs:
     - REPEATED_TESTS_STOP_ON_FAILURE: false
     - REPEATED_UTESTS: null
     - REPEATED_UTESTS_COUNT: 500
-    - REPEATED_UTESTS_FQLTOOL: null
+    - REPEATED_UTESTS_FQLTOOL: org.apache.cassandra.fqltool.FQLReplayTest
     - REPEATED_UTESTS_FQLTOOL_COUNT: 500
     - REPEATED_UTESTS_SSTABLELOADER: null
     - REPEATED_UTESTS_SSTABLELOADER_COUNT: 500
@@ -10270,6 +10272,28 @@ workflows:
         - j11_build
         upstream:
           start_j17_utests_fqltool:
+          - success
+          j11_build:
+          - success
+    - start_j11_utests_fqltool_repeat:
+        type: approval
+    - j11_utests_fqltool_repeat:
+        requires:
+        - start_j11_utests_fqltool_repeat
+        - j11_build
+        upstream:
+          start_j11_utests_fqltool_repeat:
+          - success
+          j11_build:
+          - success
+    - start_j17_utests_fqltool_repeat:
+        type: approval
+    - j17_utests_fqltool_repeat:
+        requires:
+        - start_j17_utests_fqltool_repeat
+        - j11_build
+        upstream:
+          start_j17_utests_fqltool_repeat:
           - success
           j11_build:
           - success
@@ -10776,6 +10800,24 @@ workflows:
           - success
           j11_build:
           - success
+    - j11_utests_fqltool_repeat:
+        requires:
+        - start_utests_fqltool
+        - j11_build
+        upstream:
+          start_utests_fqltool:
+          - success
+          j11_build:
+          - success
+    - j17_utests_fqltool_repeat:
+        requires:
+        - start_utests_fqltool
+        - j11_build
+        upstream:
+          start_utests_fqltool:
+          - success
+          j11_build:
+          - success
     - start_utests_sstableloader:
         type: approval
     - j11_utests_sstableloader:
@@ -11260,6 +11302,17 @@ workflows:
           - success
           j17_build:
           - success
+    - start_j17_utests_fqltool_repeat:
+        type: approval
+    - j17_utests_fqltool_repeat:
+        requires:
+        - start_j17_utests_fqltool_repeat
+        - j17_build
+        upstream:
+          start_j17_utests_fqltool_repeat:
+          - success
+          j17_build:
+          - success
     - start_j17_utests_sstableloader:
         type: approval
     - j17_utests_sstableloader:
@@ -11463,6 +11516,15 @@ workflows:
     - start_utests_fqltool:
         type: approval
     - j17_utests_fqltool:
+        requires:
+        - start_utests_fqltool
+        - j17_build
+        upstream:
+          start_utests_fqltool:
+          - success
+          j17_build:
+          - success
+    - j17_utests_fqltool_repeat:
         requires:
         - start_utests_fqltool
         - j17_build
