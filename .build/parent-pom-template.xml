@@ -296,17 +296,17 @@
       <dependency>
         <groupId>at.yawk.lz4</groupId>
         <artifactId>lz4-java</artifactId>
-        <version>1.11.4</version>
+        <version>1.12.1</version>
       </dependency>
       <dependency>
         <groupId>com.github.luben</groupId>
         <artifactId>zstd-jni</artifactId>
-        <version>1.5.7-17</version>
+        <version>1.5.7-25</version>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>32.0.1-jre</version>
+        <version>33.7.2-jre</version>
         <exclusions>
           <exclusion>
             <artifactId>jsr305</artifactId>
@@ -422,12 +422,12 @@
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-core</artifactId>
-        <version>2.21.7</version>
+        <version>2.21.8</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
-        <version>2.21.7</version>
+        <version>2.21.8</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
@@ -437,12 +437,12 @@
       <dependency>
         <groupId>com.fasterxml.jackson.datatype</groupId>
         <artifactId>jackson-datatype-jsr310</artifactId>
-        <version>2.21.7</version>
+        <version>2.21.8</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.dataformat</groupId>
         <artifactId>jackson-dataformat-yaml</artifactId>
-        <version>2.21.7</version>
+        <version>2.21.8</version>
         <scope>test</scope>
         <!-- CASSANDRA-20848 2.19.x would bring snakeyaml 2.4 which is for now incompatible with rest of the codebase -->
         <exclusions>
@@ -817,7 +817,7 @@
       <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty-tcnative-boringssl-static</artifactId>
-        <version>2.0.70.Final</version>
+        <version>2.0.85.Final</version>
       </dependency>
       <dependency>
         <groupId>org.bouncycastle</groupId>
