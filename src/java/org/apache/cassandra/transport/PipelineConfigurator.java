@@ -279,10 +279,10 @@ public class PipelineConfigurator
             pipeline.addLast(DEBUG_HANDLER, new LoggingHandler(LogLevel.INFO));
 
         pipeline.addLast(ENVELOPE_ENCODER, Envelope.Encoder.instance);
-        // Before STARTUP only OPTIONS, whose body is empty, and STARTUP are accepted, so nothing larger than a STARTUP
-        // is ever valid here. Envelope.Decoder buffers the whole body before InitialConnectionHandler sees the message,
-        // so bounding only the STARTUP opcode would let an unauthenticated client pin native_transport_max_frame_size
-        // bytes per connection by claiming that body length under another opcode and never sending the body.
+        // Before STARTUP, the only valid messages are OPTIONS (empty body) and STARTUP, so no valid
+        // message here can be larger than the biggest STARTUP the option limits allow. Envelope.Decoder
+        // checks a message's declared length before buffering its body, so applying that limit to every
+        // opcode, not just STARTUP, bounds what an unauthenticated connection can make the server buffer.
         Envelope.Decoder initialDecoder = new Envelope.Decoder(StartupMessage.maxEncodedSize());
         pipeline.addLast(INITIAL_HANDLER, new InitialConnectionHandler(initialDecoder, connectionFactory, this));
         // The exceptionHandler will take care of handling exceptionCaught(...) events while still running

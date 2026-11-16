@@ -206,12 +206,12 @@ public class StartupMessage extends Message.Request
     }
 
     /**
-     * Validates and sanitizes a startup option key or value string.
-     * Enforces byte-length bounds, blocks ISO control characters, newlines,
-     * and ensures keys are non-null.
+     * Validates a startup option key or value string. Enforces byte-length bounds, blocks
+     * ISO control characters(other than tab), newlines, and ensures keys are non-null.
      *
      * @param str the string to validate
      * @param isKey true if validating a key, false if validating a value
+     * @param maxLength maximum allowed UTF-8 byte length; a negative value means unlimited
      * @throws ProtocolException if the string violates validation constraints
      */
     private static void validateString(String str, boolean isKey, int maxLength)
@@ -247,7 +247,7 @@ public class StartupMessage extends Message.Request
             i += Character.charCount(cp);
         }
 
-        // Byte-length limit is opt-in; a negative limit means unlimited.
+        // a negative limit means unlimited.
         if (maxLength < 0 || utf8Length <= maxLength)
             return;
 

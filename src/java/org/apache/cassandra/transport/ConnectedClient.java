@@ -215,7 +215,7 @@ public final class ConnectedClient
      * Escapes backslashes first, then special delimiter characters (commas and equals signs)
      * in keys and values to prevent format injection in operator-facing maps.
      * <p>
-     * Example: {@code foo,bar=baz} becomes {@code foo\\,bar\\=baz}
+     * Example: {@code foo,bar=baz} becomes {@code foo\,bar\=baz}
      *
      * @param str the raw option string
      * @return the safely escaped string
