@@ -268,7 +268,15 @@ public class AuthenticationTimeoutHandlerTest extends CQLTester
 
     private static EmbeddedChannel newChannelWithHandler()
     {
-        return new EmbeddedChannel(new AuthenticationTimeoutHandler(AUTH_TIMEOUT_MS));
+        // The clock of an embedded channel follows the real time unless it is frozen, advanceTimeBy only adds to it.
+        // It is frozen before the handler sees the channel becoming active, which is when it schedules the timeout,
+        // so that the deadline is reached only by the time the test advances and never by the time the test takes
+        // to run.
+        EmbeddedChannel channel = new EmbeddedChannel();
+        channel.freezeTime();
+        channel.pipeline().addLast(new AuthenticationTimeoutHandler(AUTH_TIMEOUT_MS));
+        channel.pipeline().fireChannelActive();
+        return channel;
     }
 
     private static void advanceTimeBy(EmbeddedChannel channel, long millis)
